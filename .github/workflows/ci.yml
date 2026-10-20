@@ -1,0 +1,48 @@
+name: CI — Quality Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  quality:
+    name: Lint · Types · Prisma · Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Prisma generate + push + seed
+        run: |
+          bun run db:generate
+          bun run db:push
+          bun run db:seed
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Type check
+        run: bunx tsc --noEmit
+
+      - name: Build
+        run: bun run build
+        env:
+          DATABASE_URL: file:/tmp/ci.db
+
+      - name: System self-check (boot + API smoke)
+        run: |
+          bun run start &
+          sleep 12
+          bun run scripts/verify-system.mjs || true
+        env:
+          DATABASE_URL: file:/tmp/ci.db

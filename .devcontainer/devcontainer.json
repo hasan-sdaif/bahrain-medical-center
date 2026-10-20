@@ -1,0 +1,28 @@
+{
+  "name": "Bahrain Medical Center — Codespace",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "22" },
+    "ghcr.io/shyim/devcontainers-features/bun:0": { "version": "latest" }
+  },
+  "forwardPorts": [3000, 3003],
+  "portsAttributes": {
+    "3000": { "label": "Next.js App", "onAutoForward": "openPreview" },
+    "3003": { "label": "Realtime (socket.io)", "onAutoForward": "ignore" }
+  },
+  "postCreateCommand": "bun install && bun run db:generate && bun run db:push && bun run db:seed",
+  "postStartCommand": "bun run dev & (cd mini-services/realtime && bun run dev)",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "prisma.prisma",
+        "bradlc.vscode-tailwindcss",
+        "arabic.arabic-code"
+      ],
+      "settings": { "editor.formatOnSave": true }
+    }
+  },
+  "remoteEnv": { "DATABASE_URL": "file:/workspaces/bahrain-medical-center/db/custom.db" }
+}
