@@ -28,8 +28,8 @@ export interface FaultResp { requestId: string; code: string; workOrder: { id: s
 export interface WoMessage { id: string; senderId: string | null; body: string; kind: string; at: string }
 export interface WoPart { id: string; itemCode: string; qty: number; issuedAt: string | null }
 export interface WoRow {
-  id: string; code: string; kind: string; status: string; priority: string;
-  asset: { code: string; nameAr: string; nameEn: string; category: string };
+  id: string; code: string; kind: string; status: string; priority: string; titleAr?: string | null;
+  asset: { code: string; nameAr: string; nameEn: string; category: string } | null;
   technicianId: string | null; slaDueAt: string | null; dueIn: number | null;
   startedAt: string | null; finishedAt: string | null; closedAt: string | null;
   rootCauseAr: string | null; actionAr: string | null; downtimeMin: number | null;

@@ -390,6 +390,70 @@ const routes: RouteTable = {
     }
     return json({ date: dayStart.toISOString().slice(0, 10), slots: slots.slice(0, 40) });
   },
+
+  // ── Waitlist / recalls (استدعاءات — قائمة انتظار المواعيد) ───────────────
+  "GET waitlist/list": async (req) => {
+    const actor = actorFrom(req);
+    const deny = guard(actor, "appointments"); if (deny) return deny;
+    const rows = await db.waitlist.findMany({ orderBy: { createdAt: "asc" } });
+    const patients = await db.patient.findMany({ where: { id: { in: rows.map((w) => w.patientId) } } });
+    const patById = new Map(patients.map((p) => [p.id, p]));
+    const depts = await db.department.findMany();
+    const deptById = new Map(depts.map((d) => [d.id, d]));
+    const mapped = rows.flatMap((w) => {
+      const p = patById.get(w.patientId);
+      if (!p) return [];
+      const d = w.departmentId ? deptById.get(w.departmentId) : undefined;
+      return [{
+        id: w.id, status: w.status, priority: w.priority, reasonAr: w.note, createdAt: w.createdAt.toISOString(),
+        patient: { id: p.id, mrn: p.mrn, nameAr: `${p.firstNameAr} ${p.familyAr}`, nameEn: `${p.firstNameEn ?? ""} ${p.familyEn ?? ""}`.trim(), phone: p.phone, assurance: p.assurance },
+        dept: d ? { code: d.code, nameAr: d.nameAr, nameEn: d.nameEn } : null,
+      }];
+    });
+    // priority weight first (§17.5), then FIFO by createdAt
+    mapped.sort((a, b) => (PRIORITY_WEIGHT[b.priority] ?? 0) - (PRIORITY_WEIGHT[a.priority] ?? 0) || a.createdAt.localeCompare(b.createdAt));
+    return json(mapped);
+  },
+  "POST waitlist/add": async (req) => {
+    const actor = actorFrom(req);
+    const deny = guard(actor, "appointments"); if (deny) return deny;
+    const b = jo(await req.json()) as { patientId?: string; deptCode?: string; reasonAr?: string; priority?: string };
+    if (!b.patientId || !b.deptCode) return problem("VALIDATION");
+    const patient = await db.patient.findUnique({ where: { id: b.patientId } });
+    if (!patient) return problem("NOT_FOUND");
+    const dept = await db.department.findUnique({ where: { code: b.deptCode } });
+    if (!dept) return problem("NOT_FOUND");
+    const priority = PRIORITY_WEIGHT[b.priority ?? "normal"] !== undefined ? b.priority! : "normal";
+    const w = await db.waitlist.create({ data: { patientId: patient.id, departmentId: dept.id, employeeId: actor!.id, priority, status: "waiting", note: (b.reasonAr ?? "").trim() || null } });
+    await audit({ actorId: actor!.id, actorRole: actor!.role, action: "create", resource: "waitlist", resourceId: w.id, patientId: patient.id, after: { dept: b.deptCode, priority } });
+    return json({ id: w.id }, 201);
+  },
+  "POST waitlist/offer": async (req) => {
+    const actor = actorFrom(req);
+    const deny = guard(actor, "appointments"); if (deny) return deny;
+    const b = jo(await req.json()) as { id?: string; slotAt?: string };
+    const w = await db.waitlist.findUnique({ where: { id: String(b.id ?? "") } });
+    if (!w) return problem("NOT_FOUND");
+    if (w.status !== "waiting") return problem("STATE_INVALID", { detail: `status ${w.status} — already handled` });
+    const start = new Date(String(b.slotAt ?? ""));
+    if (Number.isNaN(start.getTime()) || start.getTime() < Date.now() - 60000) return problem("VALIDATION", { detail: "slot must be a valid future time" });
+    const dept = w.departmentId ? await db.department.findUnique({ where: { id: w.departmentId } }) : null;
+    if (!dept) return problem("STATE_INVALID", { detail: "waitlist row has no department" });
+    // first appointment type of that dept (prefer the primary "-NEW" consult), price from type
+    const typeRow = (await db.appointmentType.findFirst({ where: { departmentId: dept.id, active: true, code: { endsWith: "-NEW" } }, orderBy: { code: "asc" } }))
+      ?? (await db.appointmentType.findFirst({ where: { departmentId: dept.id, active: true }, orderBy: { code: "asc" } }));
+    if (!typeRow) return problem("NOT_FOUND", { detail: "no appointment type for department" });
+    const end = new Date(start.getTime() + typeRow.durationMin * 60000);
+    const patientConflict = await db.appointment.findFirst({ where: { patientId: w.patientId, status: { in: ["requested", "confirmed", "arrived"] }, start: { lt: end }, end: { gt: start } } });
+    if (patientConflict) return problem("PATIENT_DOUBLE_BOOKED", { at: patientConflict.start.toISOString() });
+    const doc = await db.employee.findFirst({ where: { departmentId: dept.id, isDoctor: true, active: true } });
+    const code = await nextApptCode();
+    const appt = await db.appointment.create({ data: { code, patientId: w.patientId, departmentId: dept.id, employeeId: doc?.id ?? null, appointmentTypeId: typeRow.id, start, end, status: "requested", channel: "reception", priceFils: typeRow.priceFils, createdBy: actor!.id } });
+    await db.waitlist.update({ where: { id: w.id }, data: { status: "offered" } });
+    await db.notification.create({ data: { patientId: w.patientId, kind: "waitlist-offer", titleAr: "عرض موعد من قائمة الانتظار", titleEn: "Waitlist appointment offer", bodyAr: `تم حجز موعدك ${code} في ${dept.nameAr} — يرجى تأكيد الحضور`, bodyEn: `Appointment ${code} held for you at ${dept.nameEn} — please confirm`, channel: "sms", status: "sent" } });
+    await audit({ actorId: actor!.id, actorRole: actor!.role, action: "offer", resource: "waitlist", resourceId: w.id, patientId: w.patientId, after: { appointmentCode: code, start: start.toISOString(), type: typeRow.code, priceFils: typeRow.priceFils } });
+    return json({ ok: true, appointmentCode: code, appointmentId: appt.id, start: start.toISOString(), priceFils: typeRow.priceFils }, 201);
+  },
 };
 
 export default routes;

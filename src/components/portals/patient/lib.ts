@@ -39,6 +39,7 @@ export interface GrowthChild { child: { id: string; nameAr: string; dob: string 
 export interface AccessLogRow { id: string; at: string; action: string; by: string; role: string; reason: string | null; ip: string | null }
 export interface HomeTest { code: string; nameAr: string; nameEn?: string; priceFils: number; fasting: boolean }
 export interface HomeTrack { code: string; status: string; slot: string; feeFils: number; tests: HomeTest[]; visit: { eta: string | null; arrivedAt: string | null; drawnAt: string | null } | null; createdAt: string }
+export interface ImmunizationItem { id: string; ownerAr: string; ownerEn: string; vaccine: string; vaccineEn: string | null; doseLabel: string; givenAt: string; nextDueAt: string | null }
 export interface CatalogService { code: string; nameAr: string; nameEn: string; priceFils: number; durationMin: number; deptAr: string; deptCode: string; prepAr: string | null; prepEn: string | null; isVideo: boolean; fasting: boolean }
 export interface CatalogDept { code: string; nameAr: string; nameEn: string; descAr: string | null; descEn: string | null }
 export interface CatalogPayload { departments: CatalogDept[]; services: CatalogService[] }

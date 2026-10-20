@@ -7,7 +7,7 @@ import { audit } from "@/lib/audit";
 import { problem, jo, actorFrom, jsonv } from "@/lib/api";
 import { nextEncounterCode, nextOrderCode, nextReferralCode, nextConsentCode } from "@/lib/numbering";
 import { referralDueAt } from "@/lib/algorithms";
-import { SIGNERS, can } from "../perm";
+import { SIGNERS, CLINICAL_VIEWERS, can } from "../perm";
 import type { RouteTable } from "../router";
 import { json } from "../router";
 
@@ -290,5 +290,191 @@ const routes: RouteTable = {
     await audit({ actorId: actor!.id, actorRole: actor!.role, action: "message", resource: "thread", resourceId: b.threadId });
     return json({ id: m.id }, 201);
   },
+
+  // ── Immunizations (pediatrics — gap G1) ────────────────────────────────
+  "GET immunizations/for-patient": async (req, url) => {
+    const actor = actorFrom(req);
+    if (!actor) return problem("UNAUTHORIZED");
+    if (!CLINICAL_VIEWERS.has(actor.role)) return problem("FORBIDDEN", { module: "clinical" });
+    const pid = url.searchParams.get("id") ?? url.searchParams.get("patientId") ?? "";
+    const p = await db.patient.findUnique({ where: { id: pid } });
+    if (!p) return problem("NOT_FOUND");
+    const rows = await db.immunization.findMany({ where: { patientId: pid }, orderBy: { givenAt: "desc" } });
+    return json({
+      given: rows.map((i) => ({ id: i.id, vaccine: i.vaccine, vaccineEn: i.vaccineEn, doseLabel: i.doseLabel, givenAt: i.givenAt.toISOString(), batch: i.batch, site: i.site, nextDueAt: i.nextDueAt?.toISOString() ?? null })),
+      due: dueImmunizations(p.dob, rows),
+      catalog: VACCINE_WHITELIST.map(({ code, ar, en }) => ({ code, ar, en })),
+    });
+  },
+  "POST immunizations/record": async (req) => {
+    const actor = actorFrom(req);
+    const deny = guardSign(actor); if (deny) return deny;
+    const b = jo(await req.json()) as { patientId?: string; vaccine?: string; doseNo?: number; date?: string; batch?: string; site?: string; nextDueAt?: string };
+    if (!b.patientId || !b.vaccine) return problem("VALIDATION");
+    const v = VACCINE_WHITELIST.find((x) => x.code === b.vaccine || x.ar === b.vaccine || x.en === b.vaccine);
+    if (!v) return problem("VALIDATION", { detail: `vaccine not in catalog: ${b.vaccine}`, code: "VACCINE_UNKNOWN" });
+    const p = await db.patient.findUnique({ where: { id: String(b.patientId) } });
+    if (!p) return problem("NOT_FOUND");
+    const doseNo = Math.min(9, Math.max(1, Math.floor(Number(b.doseNo ?? 1) || 1)));
+    const givenAt = b.date ? new Date(b.date) : new Date();
+    if (Number.isNaN(givenAt.getTime())) return problem("VALIDATION", { detail: "invalid date", code: "BAD_DATE" });
+    const explicitNext = b.nextDueAt ? new Date(b.nextDueAt) : null;
+    const nextDueAt = explicitNext && !Number.isNaN(explicitNext.getTime()) ? explicitNext : nextDueFor(v.code, doseNo, p.dob, givenAt);
+    const imm = await db.immunization.create({ data: { patientId: p.id, vaccine: v.ar, vaccineEn: v.en, doseLabel: String(doseNo), givenAt, batch: b.batch?.trim() || null, site: b.site ?? null, givenBy: actor!.id, nextDueAt } });
+    await audit({ actorId: actor!.id, actorRole: actor!.role, action: "create", resource: "immunization", resourceId: imm.id, patientId: p.id, after: { vaccine: v.code, doseNo, batch: b.batch ?? null } });
+    return json({ id: imm.id, nextDueAt: nextDueAt?.toISOString() ?? null }, 201);
+  },
+
+  // ── Therapeutic programs / pathways (البرامج العلاجية — gap G2) ──────────
+  "GET pathways/list": async (req) => {
+    const actor = actorFrom(req);
+    if (!actor || !can(actor.role, "clinical")) return problem("FORBIDDEN");
+    const rows = await db.pathway.findMany({ where: { active: true }, orderBy: { code: "asc" } });
+    return json(rows.map((p) => ({
+      id: p.id, code: p.code, nameAr: p.nameAr, nameEn: p.nameEn,
+      steps: (Array.isArray(p.steps) ? p.steps : []) as { key?: string; ar?: string; en?: string }[],
+    })));
+  },
+  "GET pathways/for-patient": async (req, url) => {
+    const actor = actorFrom(req);
+    if (!actor || !CLINICAL_VIEWERS.has(actor.role)) return problem("FORBIDDEN", { module: "clinical" });
+    const pid = url.searchParams.get("id") ?? "";
+    if (!pid) return problem("VALIDATION");
+    const rows = await db.pathwayInstance.findMany({ where: { patientId: pid }, orderBy: { startedAt: "desc" } });
+    const templates = await db.pathway.findMany({ where: { id: { in: rows.map((r) => r.pathwayId) } } });
+    const tplById = new Map(templates.map((p) => [p.id, p]));
+    return json(rows.flatMap((i) => {
+      const tpl = tplById.get(i.pathwayId);
+      if (!tpl) return [];
+      return [{
+        id: i.id, status: i.status, currentStep: i.currentStep,
+        startedAt: i.startedAt.toISOString(), completedAt: i.completedAt?.toISOString() ?? null,
+        pathway: {
+          id: tpl.id, code: tpl.code, nameAr: tpl.nameAr, nameEn: tpl.nameEn,
+          steps: (Array.isArray(tpl.steps) ? tpl.steps : []) as { key?: string; ar?: string; en?: string }[],
+        },
+      }];
+    }));
+  },
+  "POST pathways/enroll": async (req) => {
+    const actor = actorFrom(req);
+    const deny = guardSign(actor); if (deny) return deny;
+    const b = jo(await req.json()) as { patientId?: string; pathwayId?: string };
+    if (!b.patientId || !b.pathwayId) return problem("VALIDATION");
+    const patient = await db.patient.findUnique({ where: { id: b.patientId } });
+    const pathway = await db.pathway.findUnique({ where: { id: b.pathwayId } });
+    if (!patient || !pathway) return problem("NOT_FOUND");
+    const active = await db.pathwayInstance.findFirst({ where: { patientId: patient.id, pathwayId: pathway.id, status: "active" } });
+    if (active) return problem("STATE_INVALID", { detail: "active instance already exists for this program" });
+    const inst = await db.pathwayInstance.create({ data: { pathwayId: pathway.id, patientId: patient.id, currentStep: 0, status: "active" } });
+    await audit({ actorId: actor!.id, actorRole: actor!.role, action: "create", resource: "pathway-instance", resourceId: inst.id, patientId: patient.id, after: { pathway: pathway.code } });
+    return json({ id: inst.id, pathway: pathway.code, currentStep: 0, status: "active" }, 201);
+  },
+  "POST pathways/advance": async (req) => {
+    const actor = actorFrom(req);
+    const deny = guardSign(actor); if (deny) return deny;
+    const b = jo(await req.json()) as { instanceId?: string };
+    const inst = await db.pathwayInstance.findUnique({ where: { id: String(b.instanceId ?? "") } });
+    if (!inst) return problem("NOT_FOUND");
+    if (inst.status !== "active") return problem("STATE_INVALID", { detail: `program ${inst.status} — cannot advance` });
+    const tpl = await db.pathway.findUnique({ where: { id: inst.pathwayId } });
+    if (!tpl) return problem("NOT_FOUND", { detail: "pathway template missing" });
+    const steps = (Array.isArray(tpl.steps) ? tpl.steps : []) as unknown[];
+    const nextStep = inst.currentStep + 1;
+    const done = nextStep >= steps.length;
+    await db.pathwayInstance.update({
+      where: { id: inst.id },
+      data: done ? { status: "done", completedAt: new Date(), currentStep: steps.length } : { currentStep: nextStep },
+    });
+    await audit({
+      actorId: actor!.id, actorRole: actor!.role, action: "advance", resource: "pathway-instance", resourceId: inst.id, patientId: inst.patientId,
+      before: { currentStep: inst.currentStep }, after: { currentStep: done ? steps.length : nextStep, status: done ? "done" : "active" },
+    });
+    return json({ ok: true, currentStep: done ? steps.length : nextStep, status: done ? "done" : "active", completed: done });
+  },
 };
 export default routes;
+
+// ── Immunization catalog + deterministic due/overdue schedule (G1) ──────────
+// No vaccine catalog table exists — seed-relevant whitelist (ar/en) + a small
+// reference schedule by age in months. MONTH_MS = 365.25/12 keeps it stable.
+const VACCINE_WHITELIST = [
+  { code: "BCG", ar: "لقاح الدرن (BCG)", en: "BCG (TB)", keys: ["BCG", "الدرن"] },
+  { code: "HEPB", ar: "لقاح التهاب الكبد B", en: "Hepatitis B", keys: ["HEPB", "HEPATITIS", "الكبد"] },
+  { code: "DTAP", ar: "الثلاثي البكتيري (DTaP)", en: "DTaP", keys: ["DTAP", "DTP", "البكتيري"] },
+  { code: "OPV", ar: "شلل الأطفال الفموي (OPV)", en: "OPV (polio)", keys: ["OPV", "شلل"] },
+  { code: "MMR", ar: "الثلاثي الفيروسي (MMR)", en: "MMR", keys: ["MMR", "الفيروسي"] },
+  { code: "FLU", ar: "الإنفلونزا الموسمية", en: "Seasonal influenza", keys: ["FLU", "INFLUENZA", "إنفلونزا", "الإنفلونزا"] },
+  { code: "COVID", ar: "كوفيد-19", en: "COVID-19", keys: ["COVID", "كوفيد"] },
+] as const;
+
+const IMM_SCHEDULE: { code: string; dose: number; ageMonths: number }[] = [
+  { code: "BCG", dose: 1, ageMonths: 0 },
+  { code: "HEPB", dose: 1, ageMonths: 0 },
+  { code: "HEPB", dose: 2, ageMonths: 1 },
+  { code: "OPV", dose: 1, ageMonths: 2 },
+  { code: "DTAP", dose: 1, ageMonths: 2 },
+  { code: "OPV", dose: 2, ageMonths: 4 },
+  { code: "DTAP", dose: 2, ageMonths: 4 },
+  { code: "HEPB", dose: 3, ageMonths: 6 },
+  { code: "DTAP", dose: 3, ageMonths: 6 },
+  { code: "OPV", dose: 3, ageMonths: 6 },
+  { code: "MMR", dose: 1, ageMonths: 12 },
+  { code: "MMR", dose: 2, ageMonths: 18 },
+  { code: "DTAP", dose: 4, ageMonths: 18 },
+  { code: "OPV", dose: 4, ageMonths: 18 },
+];
+const MONTH_MS = 30.4375 * 86400000;
+const DAY_MS = 86400000;
+const ANNUAL = 365 * DAY_MS;
+
+function vaccineCodeOf(row: { vaccine: string; vaccineEn: string | null }): string | null {
+  const hay = `${row.vaccineEn ?? ""} ${row.vaccine}`.toUpperCase();
+  const hit = VACCINE_WHITELIST.find((v) => v.keys.some((k) => hay.includes(k.toUpperCase())));
+  return hit ? hit.code : null;
+}
+
+function dueStatus(dueAt: number, now: number): "overdue" | "due" | "upcoming" {
+  return now > dueAt + 30 * DAY_MS ? "overdue" : now >= dueAt ? "due" : "upcoming";
+}
+
+/** Next-dose hint for a just-recorded dose: next series slot by age, or +1y for annual vaccines. */
+function nextDueFor(code: string, doseNo: number, dob: Date, givenAt: Date): Date | null {
+  const next = IMM_SCHEDULE.find((s) => s.code === code && s.dose === doseNo + 1);
+  if (next) return new Date(dob.getTime() + next.ageMonths * MONTH_MS);
+  if (code === "FLU" || code === "COVID") return new Date(givenAt.getTime() + ANNUAL);
+  return null;
+}
+
+/** Due/overdue computation: unsatisfied series doses (next one per vaccine) + annual vaccines. */
+function dueImmunizations(dob: Date, rows: { vaccine: string; vaccineEn: string | null; givenAt: Date }[]): { code: string; ar: string; en: string; dose: number; dueAt: string; status: string }[] {
+  const now = Date.now();
+  const counts = new Map<string, number>();
+  const lastAt = new Map<string, number>();
+  for (const r of rows) {
+    const c = vaccineCodeOf(r);
+    if (!c) continue;
+    counts.set(c, (counts.get(c) ?? 0) + 1);
+    lastAt.set(c, Math.max(lastAt.get(c) ?? 0, r.givenAt.getTime()));
+  }
+  const ageMonths = (now - dob.getTime()) / MONTH_MS;
+  const out: { code: string; ar: string; en: string; dose: number; dueAt: string; status: string }[] = [];
+  const started = new Set<string>();
+  for (const s of IMM_SCHEDULE) {
+    if (started.has(s.code) || (counts.get(s.code) ?? 0) >= s.dose) continue;
+    started.add(s.code);
+    const v = VACCINE_WHITELIST.find((x) => x.code === s.code)!;
+    const dueAt = dob.getTime() + s.ageMonths * MONTH_MS;
+    out.push({ code: s.code, ar: v.ar, en: v.en, dose: s.dose, dueAt: new Date(dueAt).toISOString(), status: dueStatus(dueAt, now) });
+  }
+  for (const [code, minAge] of [["FLU", 6], ["COVID", 144]] as const) {
+    if (ageMonths < minAge) continue;
+    const last = lastAt.get(code);
+    const dueAt = last ? last + ANNUAL : now;
+    if (last && now < dueAt) continue; // still covered by the last dose
+    const v = VACCINE_WHITELIST.find((x) => x.code === code)!;
+    out.push({ code, ar: v.ar, en: v.en, dose: (counts.get(code) ?? 0) + 1, dueAt: new Date(dueAt).toISOString(), status: dueStatus(dueAt, now) });
+  }
+  const rank: Record<string, number> = { overdue: 0, due: 1, upcoming: 2 };
+  return out.sort((a, b) => rank[a.status] - rank[b.status] || a.dueAt.localeCompare(b.dueAt));
+}

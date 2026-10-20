@@ -265,5 +265,12 @@ const d: Dict = {
   "pp.priv.notif.appt": { ar: "تذكيرات المواعيد", en: "Appointment reminders" },
   "pp.priv.notif.results": { ar: "إشعار جاهزية النتائج", en: "Results-ready alerts" },
   "pp.priv.notif.billing": { ar: "إشعارات الفواتير والمدفوعات", en: "Invoice & payment alerts" },
+  // ── immunizations (G1) ──
+  "pp.imm.title": { ar: "التطعيمات", en: "Immunizations" },
+  "pp.imm.empty": { ar: "لا تطعيمات موثقة — تواصل مع عيادة الأطفال للتحديث", en: "No immunizations on record — contact the pediatric clinic to update" },
+  "pp.imm.doseN": { ar: "الجرعة {n}", en: "Dose {n}" },
+  "pp.imm.nextDue": { ar: "الجرعة القادمة", en: "Next dose" },
+  "pp.imm.overdue": { ar: "متأخرة", en: "Overdue" },
+  "pp.imm.note": { ar: "السجل يشمل التابعين (الأطفال) المشمولين بولايتك", en: "The record includes dependants (children) under your guardianship" },
 };
 export default d;

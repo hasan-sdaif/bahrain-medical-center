@@ -328,8 +328,9 @@ model Waitlist {
   departmentId String?
   employeeId  String?
   windowPref  String?
-  status    String   @default("waiting")
-  note      String?
+  priority  String   @default("normal") // emergency|elderly|disabled|pregnant|child|normal
+  status    String   @default("waiting") // waiting|offered|booked|removed
+  note      String?  // reason (Arabic free text)
   createdAt DateTime @default(now())
 }
 
@@ -1062,12 +1063,13 @@ model Pathway {
 }
 
 model PathwayInstance {
-  id         String   @id @default(cuid())
+  id         String    @id @default(cuid())
   pathwayId  String
   patientId  String
-  currentStep Int     @default(0)
-  status     String   @default("active") // active|done|aborted
-  startedAt  DateTime @default(now())
+  currentStep Int      @default(0)
+  status     String    @default("active") // active|done|aborted
+  startedAt  DateTime  @default(now())
+  completedAt DateTime?
 }
 
 model Handover {
@@ -1258,9 +1260,10 @@ model MaintenanceRequest {
 model WorkOrder {
   id           String   @id @default(cuid())
   code         String   @unique // WO-261020-011
-  kind         String   @default("corrective") // corrective|preventive|calibration
-  asset        Asset    @relation(fields: [assetId], references: [id])
-  assetId      String
+  kind         String   @default("corrective") // corrective|preventive|calibration|reorder
+  titleAr      String?  // reorder: عنوان يحوي رمز الصنف (فلترة الاستدعاء الدوري)
+  asset        Asset?   @relation(fields: [assetId], references: [id])
+  assetId      String?
   requestId    String?  @unique
   planId       String?
   technicianId String?

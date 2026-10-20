@@ -216,6 +216,20 @@ const routes: RouteTable = {
     const rows = await db.notification.findMany({ where: { patientId: s.pid }, orderBy: { createdAt: "desc" }, take: 20 });
     return json(rows.map((n) => ({ id: n.id, kind: n.kind, titleAr: n.titleAr, titleEn: n.titleEn, bodyAr: n.bodyAr, at: n.createdAt.toISOString() })));
   },
+  "GET immunizations": async (req) => {
+    const s = patientActor(req); if (!s) return notPatient();
+    // self + guardian dependants (children vaccines matter most for the portal)
+    const rel = await db.patientRelationship.findMany({ where: { relatedId: s.pid, relation: "guardian" } });
+    const scope = [s.pid, ...rel.map((r) => r.patientId)];
+    const rows = await db.immunization.findMany({ where: { patientId: { in: scope } }, orderBy: { givenAt: "desc" }, take: 20 });
+    const people = await db.patient.findMany({ where: { id: { in: scope } }, select: { id: true, firstNameAr: true, familyAr: true, firstNameEn: true, familyEn: true } });
+    const nameOf = new Map(people.map((p) => [p.id, { ar: `${p.firstNameAr} ${p.familyAr}`, en: `${p.firstNameEn ?? ""} ${p.familyEn ?? ""}`.trim() }]));
+    return json(rows.map((i) => ({
+      id: i.id, ownerAr: nameOf.get(i.patientId)?.ar ?? "", ownerEn: nameOf.get(i.patientId)?.en ?? "",
+      vaccine: i.vaccine, vaccineEn: i.vaccineEn, doseLabel: i.doseLabel,
+      givenAt: i.givenAt.toISOString(), nextDueAt: i.nextDueAt?.toISOString() ?? null,
+    })));
+  },
 };
 void nextTicket;
 export default routes;

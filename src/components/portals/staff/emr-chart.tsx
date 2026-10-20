@@ -11,10 +11,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { StatusBadge } from "@/components/shared/badges";
 import { Bandage, ChartLine, Folders, Lock, Pill, TriangleAlert } from "lucide-react";
 import { Empty, Section, type ChartData } from "./emr-shared";
+import { ImmunizationsCard } from "./emr-immunizations";
+import { ProgramsCard } from "./emr-programs";
 
 interface Props { chart: ChartData; reload: () => void }
 
-export function ChartTab({ chart }: Props) {
+export function ChartTab({ chart, reload }: Props) {
   const { t, lang } = useI18n();
   const c = chart.clinical;
 
@@ -128,6 +130,12 @@ export function ChartTab({ chart }: Props) {
           </ul>
         )}
       </Section>
+
+      {/* immunizations — history + due/overdue schedule (pediatrics, G1) */}
+      <ImmunizationsCard chart={chart} reload={reload} />
+
+      {/* therapeutic programs — enroll + step progress (G2) */}
+      <ProgramsCard chart={chart} reload={reload} />
     </div>
   );
 }

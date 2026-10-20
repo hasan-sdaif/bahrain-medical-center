@@ -138,8 +138,8 @@ export default function QualityTab() {
     <div className="space-y-4">
       <Panel loading={loading} error={error} onRetry={reload} isEmpty={!data} rows={6}>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Kpi label={t("ops.quality.nps")} value={<span className="font-mono">{data!.nps}</span>} sub={t("ops.quality.surveys", { n: data!.surveyCount })} icon={<Smile className="size-3.5" />} />
-          <Kpi label={t("ops.quality.surveys.count")} value={<span className="font-mono">{data!.surveyCount}</span>} icon={<MessageSquare className="size-3.5" />} />
+          <Kpi label={t("ops.quality.nps")} value={<span className="font-mono">{data?.nps ?? 0}</span>} sub={t("ops.quality.surveys", { n: data?.surveyCount ?? 0 })} icon={<Smile className="size-3.5" />} />
+          <Kpi label={t("ops.quality.surveys.count")} value={<span className="font-mono">{data?.surveyCount ?? 0}</span>} icon={<MessageSquare className="size-3.5" />} />
           <Kpi label={t("ops.quality.open")} value={<span className="font-mono">{openInc}</span>} icon={<AlertTriangle className="size-3.5" />} />
           <Kpi label={t("ops.quality.oversla")} value={<span className="font-mono">{overSla}</span>} icon={<Clock className="size-3.5" />} />
         </div>

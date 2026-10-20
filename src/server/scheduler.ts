@@ -1,10 +1,12 @@
 /**
  * Background scheduler — started from src/instrumentation.ts on server boot.
  * Runs every 60s: critical alert escalation (10/20 min), appointment reminders,
- * preventive WO generation, license expiry warnings, low stock alerts.
+ * preventive WO generation, license expiry warnings, low stock alerts,
+ * auto-reorder of items below par (G2, throttled to every 10 min).
  */
 import { db } from "@/lib/db";
-import { ja } from "@/lib/api";
+import { ja, jo } from "@/lib/api";
+import { nextWoCode } from "@/lib/numbering";
 
 let started = false;
 
@@ -22,8 +24,8 @@ async function emitRealtime(event: string, payload: unknown): Promise<void> {
   } catch { /* realtime optional */ }
 }
 
-export async function runSchedulerTick(): Promise<{ escalations: number; reminders: number; pm: number; warnings: number }> {
-  const result = { escalations: 0, reminders: 0, pm: 0, warnings: 0 };
+export async function runSchedulerTick(): Promise<{ escalations: number; reminders: number; pm: number; warnings: number; reorders: number }> {
+  const result = { escalations: 0, reminders: 0, pm: 0, warnings: 0, reorders: 0 };
   const now = Date.now();
 
   // 1) Critical alert escalation chain (§17.6): 10min → onCall doctor; 20min → head+med director
@@ -93,7 +95,60 @@ export async function runSchedulerTick(): Promise<{ escalations: number; reminde
     await notify(null, "pharmacist", "low-stock", `مخزون منخفض: ${d.nameAr}`, `Low stock: ${d.nameEn}`, `الكمية ${d.stockQty} دون الحد الأدنى`, `Qty ${d.stockQty} below par`);
   }
 
+  // 6) Auto-reorder of items below par (G2) — at most every 10 min
+  if (now - lastReorderAt >= REORDER_INTERVAL_MS) {
+    lastReorderAt = now;
+    try { result.reorders = await runReorderCheck(); } catch (e) { console.error("[scheduler:reorder]", (e as Error).message); }
+  }
+
   return result;
+}
+
+const REORDER_INTERVAL_MS = 10 * 60_000;
+let lastReorderAt = 0;
+const OPEN_WO = ["open", "assigned", "in-progress", "awaiting-part"] as const;
+
+/**
+ * Auto-reorder (G2, Frappe-style auto material request): for every active Item,
+ * sum available Batch quantities (status ok + not expired); when total < parLevel
+ * and no open reorder WorkOrder exists for that item code, create a reorder WO
+ * (priority per gap ratio) + a Task for the inventory role + a notification.
+ * Idempotent: the item code is stored in the WO titleAr + checklist and open
+ * reorder WOs are skipped on subsequent runs.
+ */
+export async function runReorderCheck(): Promise<number> {
+  const items = await db.item.findMany({ where: { active: true } });
+  const batches = await db.batch.findMany({ where: { ownerType: "item", status: "ok", expiry: { gt: new Date() } } });
+  const onHand = new Map<string, number>();
+  for (const b of batches) onHand.set(b.ownerId, (onHand.get(b.ownerId) ?? 0) + Math.max(0, b.qty));
+  const openReorders = await db.workOrder.findMany({ where: { kind: "reorder", status: { in: [...OPEN_WO] } } });
+  const taken = new Set<string>();
+  for (const w of openReorders) {
+    const code = (jo(w.checklist) as { itemCode?: string }).itemCode;
+    if (code) taken.add(code);
+    if (w.titleAr) for (const m of w.titleAr.matchAll(/ITM-[A-Z]+-\d+/g)) taken.add(m[0]);
+  }
+  let created = 0;
+  for (const it of items) {
+    const qty = onHand.get(it.id) ?? 0;
+    if (qty >= it.parLevel || taken.has(it.code)) continue;
+    const gap = it.parLevel > 0 ? (it.parLevel - qty) / it.parLevel : 1;
+    const priority = gap >= 0.5 ? "high" : gap >= 0.25 ? "normal" : "low";
+    const code = await nextWoCode();
+    const wo = await db.workOrder.create({
+      data: {
+        code, kind: "reorder", assetId: null, priority, status: "open",
+        titleAr: `إعادة طلب تلقائي ${it.code} — ${it.nameAr}`,
+        slaDueAt: new Date(Date.now() + (priority === "high" ? 24 : 48) * 3600000),
+        checklist: { itemCode: it.code, qtyOnHand: qty, parLevel: it.parLevel, reorderQty: it.reorderQty },
+      },
+    });
+    await db.task.create({ data: { titleAr: `طلب شراء ${it.code} — ${it.nameAr} (كمية ${it.reorderQty} ${it.uom})`, role: "inventory", status: "new", priority, kind: "reorder", refType: "work-order", refId: wo.id, dueAt: new Date(Date.now() + 2 * 86400000) } });
+    await notify(null, "inventory", "reorder", `إعادة طلب تلقائي: ${it.nameAr}`, `Auto reorder: ${it.nameEn}`, `الكمية المتاحة ${qty} دون الحد الأدنى ${it.parLevel} — أمر عمل ${code}`, `On-hand ${qty} below par ${it.parLevel} — WO ${code}`);
+    await emitRealtime("notif:new", { kind: "reorder", item: it.code });
+    created++;
+  }
+  return created;
 }
 
 export function startScheduler(): void {

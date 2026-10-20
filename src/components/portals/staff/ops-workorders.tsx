@@ -17,6 +17,7 @@ const KIND_TONE: Record<string, string> = {
   corrective: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
   preventive: "bg-teal-100 text-teal-900 dark:bg-teal-950 dark:text-teal-200",
   calibration: "bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200",
+  reorder: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
 };
 
 function KindChip({ kind }: { kind: string }) {
@@ -33,6 +34,10 @@ function PriorityChip({ priority }: { priority: string }) {
   );
 }
 
+function itemCodeOf(wo: WoRow): string {
+  return (wo.titleAr?.match(/ITM-[A-Z]+-\d+/) ?? [])[0] ?? "—";
+}
+
 function Meta({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="min-w-0">
@@ -42,8 +47,30 @@ function Meta({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-export default function WorkOrdersTab() {
+function AssetCell({ wo, detailed }: { wo: WoRow; detailed?: boolean }) {
   const { t, lang } = useI18n();
+  if (wo.asset) {
+    return detailed
+      ? <>{bi(lang, wo.asset.nameAr, wo.asset.nameEn)} · <span className="font-mono">{wo.asset.code}</span></>
+      : (
+        <>
+          <div className="text-sm font-medium">{bi(lang, wo.asset.nameAr, wo.asset.nameEn)}</div>
+          <div className="font-mono text-[10px] text-muted-foreground">{wo.asset.code}</div>
+        </>
+      );
+  }
+  return detailed
+    ? <>{wo.titleAr ?? t("ops.wo.kind.reorder")} · <span className="font-mono">{itemCodeOf(wo)}</span></>
+    : (
+      <>
+        <div className="text-sm font-medium">{wo.titleAr ? itemCodeOf(wo) : t("ops.wo.kind.reorder")}</div>
+        <div className="font-mono text-[10px] text-muted-foreground">{t("ops.wo.store")}</div>
+      </>
+    );
+}
+
+export default function WorkOrdersTab() {
+  const { t } = useI18n();
   const { staff } = useApp();
   const { data, loading, error, reload } = useOps<WoRow[]>("/api/staff/maintenance/work-orders");
   const [selId, setSelId] = useState<string | null>(null);
@@ -75,8 +102,7 @@ export default function WorkOrdersTab() {
                 <TableRow key={w.id} onClick={() => setSelId(w.id)} className="cursor-pointer">
                   <TableCell className="py-2.5 font-mono text-xs">{w.code}</TableCell>
                   <TableCell className="py-2.5">
-                    <div className="text-sm font-medium">{bi(lang, w.asset.nameAr, w.asset.nameEn)}</div>
-                    <div className="font-mono text-[10px] text-muted-foreground">{w.asset.code}</div>
+                    <AssetCell wo={w} />
                   </TableCell>
                   <TableCell className="py-2.5"><KindChip kind={w.kind} /></TableCell>
                   <TableCell className="py-2.5"><StatusBadge status={w.status} /></TableCell>
@@ -104,7 +130,7 @@ export default function WorkOrdersTab() {
                   <SlaChip minutes={wo.dueIn} over={wo.overSla} />
                 </DialogTitle>
                 <DialogDescription>
-                  {bi(lang, wo.asset.nameAr, wo.asset.nameEn)} · <span className="font-mono">{wo.asset.code}</span>
+                  <AssetCell wo={wo} detailed />
                 </DialogDescription>
               </DialogHeader>
 

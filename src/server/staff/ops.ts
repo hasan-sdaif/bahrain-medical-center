@@ -141,8 +141,8 @@ const routes: RouteTable = {
     if (!actor || !can(actor.role, "maintenance")) return problem("FORBIDDEN");
     const rows = await db.workOrder.findMany({ include: { asset: true, messages: { orderBy: { at: "asc" } }, parts: true }, orderBy: { createdAt: "desc" }, take: 30 });
     return json(rows.map((w) => ({
-      id: w.id, code: w.code, kind: w.kind, status: w.status, priority: w.priority,
-      asset: { code: w.asset.code, nameAr: w.asset.nameAr, nameEn: w.asset.nameEn, category: w.asset.category },
+      id: w.id, code: w.code, kind: w.kind, status: w.status, priority: w.priority, titleAr: w.titleAr,
+      asset: w.asset ? { code: w.asset.code, nameAr: w.asset.nameAr, nameEn: w.asset.nameEn, category: w.asset.category } : null,
       technicianId: w.technicianId, slaDueAt: w.slaDueAt?.toISOString() ?? null, dueIn: w.slaDueAt ? Math.round((w.slaDueAt.getTime() - Date.now()) / 60000) : null,
       startedAt: w.startedAt?.toISOString() ?? null, finishedAt: w.finishedAt?.toISOString() ?? null, closedAt: w.closedAt?.toISOString() ?? null,
       rootCauseAr: w.rootCauseAr, actionAr: w.actionAr, downtimeMin: w.downtimeMin, checklist: jo(w.checklist),
@@ -174,7 +174,7 @@ const routes: RouteTable = {
         awaiting: undefined, rootCauseAr: status === "awaiting-part" ? (b.note ?? w.rootCauseAr) : w.rootCauseAr,
       } as never,
     });
-    if (status === "in-progress") await db.asset.update({ where: { id: w.assetId }, data: { status: "in-maintenance" } });
+    if (status === "in-progress" && w.assetId) await db.asset.update({ where: { id: w.assetId }, data: { status: "in-maintenance" } });
     await db.workOrderMessage.create({ data: { workOrderId: w.id, body: `تحول الحالة إلى ${status}${b.note ? ` — ${b.note}` : ""}`, kind: "system" } });
     await audit({ actorId: actor!.id, actorRole: actor!.role, action: "wo-status", resource: "work-order", resourceId: w.id, after: { status } });
     return json({ ok: true, status });
@@ -191,6 +191,7 @@ const routes: RouteTable = {
       data: { status: "closed", finishedAt: new Date(), closedAt: new Date(), closedBy: actor!.id, rootCauseAr: b.rootCauseAr ?? w.rootCauseAr, actionAr: b.actionAr ?? w.actionAr, downtimeMin: downtime, signatureBy: b.signatureBy ?? w.signatureBy },
     });
     // issue reserved parts (deduct from stock)
+    if (w.assetId) await db.asset.update({ where: { id: w.assetId }, data: { status: "operational", downtimeMin: { increment: downtime } } });
     for (const p of w.parts) {
       if (p.batchId && !p.issuedAt) {
         const batch = await db.batch.findUnique({ where: { id: p.batchId } });
@@ -201,7 +202,6 @@ const routes: RouteTable = {
       }
       await db.workOrderPart.update({ where: { id: p.id }, data: { issuedAt: new Date() } });
     }
-    await db.asset.update({ where: { id: w.assetId }, data: { status: "operational", downtimeMin: { increment: downtime } } });
     await db.workOrderMessage.create({ data: { workOrderId: w.id, body: `تم الإغلاق — سبب العطل: ${b.rootCauseAr ?? ""}. زمن التوقف ${downtime} دقيقة.`, kind: "system" } });
     await audit({ actorId: actor!.id, actorRole: actor!.role, action: "wo-close", resource: "work-order", resourceId: w.id, after: { downtime, parts: w.parts.length, signatureBy: b.signatureBy ?? null } });
     return json({ ok: true, downtimeMin: downtime, mttrMin: downtime });

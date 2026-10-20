@@ -9,6 +9,7 @@ import { PrintStyle } from "./emr-shared";
 import { ReceptionBoard } from "./reception-board";
 import { ReceptionSearch } from "./reception-search";
 import { ReceptionQueue } from "./reception-queue";
+import { ReceptionWaitlist } from "./reception-waitlist";
 
 export default function Reception() {
   const { t } = useI18n();
@@ -22,6 +23,7 @@ export default function Reception() {
             <TabsTrigger value="board" className="text-xs px-3 h-7">{t("rec.tab.board")}</TabsTrigger>
             <TabsTrigger value="search" className="text-xs px-3 h-7">{t("rec.tab.search")}</TabsTrigger>
             <TabsTrigger value="queue" className="text-xs px-3 h-7">{t("rec.tab.queue")}</TabsTrigger>
+            <TabsTrigger value="waitlist" className="text-xs px-3 h-7">{t("rec.tab.waitlist")}</TabsTrigger>
           </TabsList>
         </div>
         <TabsContent value="board" className="mt-0">
@@ -32,6 +34,9 @@ export default function Reception() {
         </TabsContent>
         <TabsContent value="queue" className="mt-0">
           <ReceptionQueue />
+        </TabsContent>
+        <TabsContent value="waitlist" className="mt-0">
+          <ReceptionWaitlist />
         </TabsContent>
       </Tabs>
     </div>

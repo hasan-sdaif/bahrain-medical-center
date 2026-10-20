@@ -106,13 +106,33 @@ Admin:
 - `GET /api/staff/audit/chain` → `{ok,checked,brokenAt}` (hash-chain verification)
 - `GET /api/staff/settings/list` → `{settings,flags,sequences,licenses}` (sysadmin)
 - `GET /api/staff/me/modules` → allowed modules for role
+Immunizations (§G1 — pediatrics):
+- `GET /api/staff/immunizations/for-patient?id=` → `{given:[{vaccine,doseNo,givenAt,batch,site,nextDueAt}], due:[{vaccine,doseNo,dueAt,state:overdue|due|upcoming}], catalog:[{key,nameAr,nameEn}]}` (CLINICAL_VIEWERS)
+- `POST /api/staff/immunizations/record` `{patientId,vaccine,doseNo,date?,batch?,site?,nextDueAt?}` → 201 `{id,nextDueAt}` (SIGNERS∪nurse; 422 VACCINE_UNKNOWN)
+Waitlist/recalls (§G2 — reception):
+- `GET /api/staff/waitlist/list` → rows ordered by priority weight then FIFO (appointments module)
+- `POST /api/staff/waitlist/add` `{patientId,deptCode,reasonAr,priority}` → 201
+- `POST /api/staff/waitlist/offer` `{id,slotAt}` → 201 `{appointmentCode}` — creates requested appointment + SMS notification (409 if not waiting/past slot/double-booked)
+Therapeutic programs (§G2 — clinical):
+- `GET /api/staff/pathways/list` → active templates + steps
+- `GET /api/staff/pathways/for-patient?id=` → `{instances:[{id,pathwayId,titleAr,status,currentStep,steps,enrolledAt,completedAt}]}`
+- `POST /api/staff/pathways/enroll` `{patientId,pathwayId}` → 201 (409 duplicate active)
+- `POST /api/staff/pathways/advance` `{instanceId}` → `{currentStep,status}` (last step → done + completedAt; 409 terminal)
+Auto-reorder (§G2 — scheduler): every 10 min — Item stock (unexpired batches sum) < parLevel && no open `kind:"reorder"` WO → WorkOrder + inventory Task + notification (idempotent).
 
 ## Devices
 - `POST /api/kiosk/check-in` `{barcode:"BMC-APPT-xxxx"}` or `{cpr:"9 digits"}` or `{mrn}` → `{ticket:{code},room,mrn,idMasked}` (409 TOO_EARLY)
+- `POST /api/kiosk/reader-scan` `{cpr,readerId?}` → Identity Reader Adapter (§3.6): blind-index exact match → `{matched,needsRegistration,patient?{id,mrn,nameAr,nameEn,dob,gender,cprMasked}}`
 - `GET /api/queue/display` → `{display:[{pointAr,pointEn,code,room,waitingCount}], generatedAt}`
 - `POST /api/verify/check` `{code:"BMC-XXXXXXXXXXXXXXXXXXXXXX"}` → `{valid,kind,titleAr,issuedAt,doctorNameAr,doctorLicense}` (no patient data)
 - `GET /api/system/health` → `{ok,db,realtime,counts,now}`
 - Webhook: `POST /api/webhooks/payment/benefit` (x-signature HMAC) — no card data stored
+
+## FHIR R4 bridge — /api/fhir
+- `GET /api/fhir/metadata` → CapabilityStatement (read/search-type on 9 resources)
+- `GET /api/fhir/Patient` · `GET /api/fhir/Patient/{id}` — identifiers (CPR masked), names, DOB, gender, address
+- `GET /api/fhir/Encounter?patient=` · `GET /api/fhir/Observation?patient=` (vitals + lab results) · `GET /api/fhir/ServiceRequest?patient=` · `GET /api/fhir/DiagnosticReport?patient=` · `GET /api/fhir/MedicationRequest?patient=` · `GET /api/fhir/Immunization?patient=` · `GET /api/fhir/Consent?patient=` · `GET /api/fhir/DocumentReference?patient=` — searchset Bundles
+- `GET /api/fhir/bridge-status` → adapter health for integrations
 
 ## Shared helpers
 - Money: `MoneyText` component / `BHD3(fils)` from `@/lib/money` — fils are integers (1.500 BHD = 1500).

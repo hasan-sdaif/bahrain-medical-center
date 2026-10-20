@@ -62,6 +62,8 @@ const d: Dict = {
   "ops.wo.kind.corrective": { ar: "تصحيحي", en: "Corrective" },
   "ops.wo.kind.preventive": { ar: "وقائي", en: "Preventive" },
   "ops.wo.kind.calibration": { ar: "معايرة", en: "Calibration" },
+  "ops.wo.kind.reorder": { ar: "إعادة طلب مخزون", en: "Stock reorder" },
+  "ops.wo.store": { ar: "مخزون", en: "Store" },
   "ops.wo.detail": { ar: "أمر عمل", en: "Work order" },
   "ops.wo.tech": { ar: "فني الصيانة", en: "Technician" },
   "ops.wo.reporter": { ar: "المُبلِّغ", en: "Reporter" },

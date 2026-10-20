@@ -4,14 +4,15 @@
  * (barcode preview), due invoices, unread notifications, latest documents.
  */
 import { useI18n, bi } from "@/i18n";
+import { apiGet } from "@/lib/api-client";
 import { MoneyText, StatusBadge, FlagBadges } from "@/components/shared/badges";
 import { bhDateString, bhTimeString } from "@/lib/bahrain";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { EmptyState, SectionCard } from "./parts";
+import { EmptyState, ErrorBox, LoadingRows, SectionCard } from "./parts";
 import type { PatientScreen } from "./nav";
-import type { Appt, DocItem, OverviewPayload } from "./lib";
+import { useFetch, type Appt, type DocItem, type ImmunizationItem, type OverviewPayload } from "./lib";
 import {
   BadgeCheck, Bell, CalendarDays, CalendarPlus, CreditCard, FileText, FlaskConical,
   Receipt, Syringe, type LucideIcon,
@@ -46,6 +47,44 @@ function UpcomingRow({ a }: { a: Appt }) {
       </div>
       <StatusBadge status={a.status} />
     </li>
+  );
+}
+
+/** Immunizations summary (self + guardian dependants) — light endpoint (G1). */
+function ImmunizationsCard() {
+  const { t, lang } = useI18n();
+  const imms = useFetch<ImmunizationItem[]>(() => apiGet<ImmunizationItem[]>("/api/patient/immunizations"));
+  const now = Date.now();
+  const doseOf = (label: string) => {
+    const m = /^الجرعة\s*(\d+)$/.exec(label.trim()) ?? /^(\d+)$/.exec(label.trim());
+    return m ? t("pp.imm.doseN", { n: m[1] }) : label;
+  };
+  return (
+    <SectionCard title={t("pp.imm.title")} icon={Syringe} className="lg:col-span-3">
+      {imms.loading ? <LoadingRows n={2} h="h-14" /> :
+        imms.error ? <ErrorBox error={imms.error} onRetry={imms.reload} className="border-0" /> :
+          !imms.data?.length ? <EmptyState icon={Syringe} text={t("pp.imm.empty")} className="border-0 py-2" /> : (
+            <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3" role="list">
+              {imms.data.slice(0, 6).map((i) => (
+                <li key={i.id} className="flex flex-col gap-1 rounded-xl border p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="truncate text-sm font-medium">{bi(lang, i.vaccine, i.vaccineEn)}</p>
+                    <span className="shrink-0 font-mono text-xs text-muted-foreground" dir="ltr">{bhDateString(i.givenAt)}</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                    <span>{doseOf(i.doseLabel)}</span>
+                    <span aria-hidden>·</span>
+                    <span className="truncate">{bi(lang, i.ownerAr, i.ownerEn)}</span>
+                    {i.nextDueAt && (new Date(i.nextDueAt).getTime() <= now
+                      ? <Badge variant="outline" className="ms-auto border-transparent bg-red-100 text-[10px] font-semibold text-red-900 dark:bg-red-950 dark:text-red-200">{t("pp.imm.overdue")}</Badge>
+                      : <Badge variant="outline" className="ms-auto border-transparent bg-amber-100 text-[10px] font-semibold text-amber-900 dark:bg-amber-950 dark:text-amber-200">{t("pp.imm.nextDue")}: <span className="font-mono ms-1" dir="ltr">{bhDateString(i.nextDueAt)}</span></Badge>)}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+      <p className="mt-2 text-xs text-muted-foreground">{t("pp.imm.note")}</p>
+    </SectionCard>
   );
 }
 
@@ -115,6 +154,8 @@ export default function OverviewScreen({ data, navigate }: Props) {
         )}
         <Button variant="outline" size="sm" className="mt-2 min-h-11 w-full" onClick={() => navigate("invoices")}>{t("pp.inv.title")}</Button>
       </SectionCard>
+
+      <ImmunizationsCard />
 
       <SectionCard
         title={t("pp.overview.docs")} icon={FileText}
