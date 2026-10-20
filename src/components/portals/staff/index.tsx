@@ -93,14 +93,21 @@ export default function StaffPortal() {
   const [inboxCount, setInboxCount] = useState(0);
   const allowed = useMemo(() => MODULE_DEFS.filter((m) => !staff || m.roles.includes(staff.role)).map((m) => m.key), [staff]);
 
+  const staffKey = staff?.employeeId ?? "";
+  const allowedKey = allowed.join(",");
   useEffect(() => {
-    if (!staff) return;
-    setActive(allowed.includes("reception") ? "reception" : allowed[0]);
+    if (!staffKey) return;
+    queueMicrotask(() => {
+      const list = allowedKey.split(",").filter(Boolean) as ModuleKey[];
+      setActive(list.includes("reception") ? "reception" : (list[0] ?? "reception"));
+    });
+  }, [staffKey, allowedKey]);
+  useEffect(() => {
+    if (!staffKey) return;
     const poll = () => apiGet<{ tasks: unknown[] }>("/api/staff/inbox").then((d) => setInboxCount(d.tasks.length)).catch(() => null);
-    poll();
     const id = setInterval(poll, 60_000);
     return () => clearInterval(id);
-  }, [staff?.employeeId, allowed.join(",")]);
+  }, [staffKey]);
 
   if (!staff) return <StaffLogin />;
 

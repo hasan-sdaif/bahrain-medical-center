@@ -12,7 +12,7 @@ import { json } from "./router";
 
 const routes: RouteTable = {
   // Kiosk: barcode from patient app/permanent card, or CPR entry
-  "POST kiosk/check-in": async (req) => {
+  "POST check-in": async (req) => {
     const b = jo(await req.json()) as { barcode?: string; cpr?: string; mrn?: string };
     let patientId: string | null = null;
     let method = "";
@@ -50,7 +50,7 @@ const routes: RouteTable = {
     } catch { /* optional */ }
     return json({ ok: true, ticket: { code: ticket.code }, room: dept?.roomLabel ?? "٣", mrn: (await db.patient.findUnique({ where: { id: patientId } }))!.mrn, idMasked: patientId ? maskCpr(((await db.patientIdentifier.findFirst({ where: { patientId } }))?.number ?? "")) : "" }, 201);
   },
-  "GET queue/display": async () => {
+  "GET display": async () => {
     const points = await db.servicePoint.findMany();
     const tickets = await db.queueTicket.findMany({ where: { status: { in: ["waiting", "called", "serving"] } }, orderBy: { issuedAt: "desc" } });
     const display = points.map((p) => {
@@ -61,7 +61,7 @@ const routes: RouteTable = {
     });
     return json({ display, generatedAt: new Date().toISOString() });
   },
-  "POST verify/check": async (req) => {
+  "POST check": async (req) => {
     const b = jo(await req.json()) as { code?: string };
     const code = (b.code ?? "").trim().toUpperCase();
     if (!verifyCodeOk(code)) return json({ valid: false, reason: "FORMAT" });
@@ -72,7 +72,7 @@ const routes: RouteTable = {
     return json({ valid: true, kind: doc.kind, titleAr: doc.titleAr, titleEn: doc.titleEn, issuedAt: doc.issuedAt.toISOString().slice(0, 10), doctorNameAr: emp?.nameAr ?? "—", doctorLicense: emp?.licenseNo ?? "—", expiresAt: doc.expiryAt?.toISOString().slice(0, 10) ?? null });
   },
   // Realtime relay status (devices page)
-  "GET system/health": async () => {
+  "GET health": async () => {
     const [patients, appts, tickets, alerts, won, realtimeOk] = await Promise.all([
       db.patient.count(), db.appointment.count(), db.queueTicket.count(), db.criticalAlert.count({ where: { status: { in: ["new", "escalated-1", "escalated-2"] } } }), db.workOrder.count({ where: { status: { in: ["open", "assigned", "in-progress", "awaiting-part"] } } }),
       fetch("http://localhost:3003/").then((r) => r.ok).catch(() => false),

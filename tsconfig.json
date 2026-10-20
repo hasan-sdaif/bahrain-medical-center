@@ -37,6 +37,13 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules", "skills", "examples", "download", "tool-results", "mini-services", "prisma/wipe_test.ts"
+    "node_modules",
+    "skills",
+    "examples",
+    "download",
+    "tool-results",
+    "mini-services",
+    "reference-systems",
+    "prisma/wipe_test.ts"
   ]
 }
