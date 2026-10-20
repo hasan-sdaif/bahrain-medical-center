@@ -1,9 +1,14 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
+// ============================================================================
+// BAHRAIN MEDICAL CENTER — Unified Data Model (Prisma + SQLite)
+// Spec: docs/spec (bahrain-medical-center-ai-prompt.md §19.1, merged.md §35-A)
+// Conventions (ADR-001):
+//  • Tables: snake_case plural via @@map. Fields: camelCase (Prisma ergonomics).
+//  • Money: Int fils (1 BHD = 1000 fils) — exact decimal, never floats (§17.10).
+//  • No DB enums (SQLite-safe): status/type fields are String validated by
+//    src/lib/types.ts unions + Zod at the API edge.
+//  • Dates: UTC in DB (DateTime), displayed UTC+03:00.
+//  • Json fields for structured blobs (ranges, checklists, snapshots).
+// ============================================================================
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,20 +18,1528 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
+// ─────────────────────────── ORG / STAFF / HR ───────────────────────────────
+model Branch {
   id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
+  code      String   @unique
+  nameAr    String
+  nameEn    String
+  addressAr String?
+  addressEn String?
+  phone     String?
+  lat       Float?
+  lng       Float?
+  hoursAr   String?
+  hoursEn   String?
+  isMain    Boolean  @default(false)
   createdAt DateTime @default(now())
+  departments Department[]
+  employees   Employee[]
+}
+
+model Department {
+  id             String  @id @default(cuid())
+  code           String  @unique
+  nameAr         String
+  nameEn         String
+  shortAr        String?
+  shortEn        String?
+  descAr         String?
+  descEn         String?
+  color          String  @default("#0d9488")
+  icon           String  @default("stethoscope")
+  sortOrder      Int     @default(0)
+  sensitive      String  @default("standard") // standard|psych|oncology|breast
+  onlineBooking  Boolean @default(true)
+  publicVisible  Boolean @default(true)
+  defaultSlotMin Int     @default(20)
+  prepAr         String?
+  prepEn         String?
+  roomLabel      String?
+  branch         Branch? @relation(fields: [branchId], references: [id])
+  branchId       String?
+  employees      Employee[]
+  appointmentTypes AppointmentType[]
+  appointments   Appointment[]
+}
+
+model Employee {
+  id               String       @id @default(cuid())
+  staffNo          String       @unique // EMP-0001
+  nameAr           String
+  nameEn           String
+  role             String // reception|nurse|doctor|dentist|surgeon|oncologist|psychiatrist|nutritionist|pediatrician|lab-tech|phlebotomist|radiologist|pharmacist|cashier|insurance|callcenter|collector|inventory|maintenance-tech|maintenance-sup|hr|quality|dpo|auditor|sysadmin|content|center-manager|med-director|dept-head
+  jobTitleAr       String
+  jobTitleEn       String
+  department       Department?  @relation(fields: [departmentId], references: [id])
+  departmentId     String?
+  branch           Branch?      @relation(fields: [branchId], references: [id])
+  branchId         String?
+  isDoctor         Boolean      @default(false)
+  specialtyAr      String?
+  specialtyEn      String?
+  credentialsAr    String?
+  credentialsEn    String?
+  languages        Json? // ["ar","en"]
+  photoUrl         String?
+  bioAr            String?
+  bioEn            String?
+  gender           String       @default("male")
+  phone            String?
+  email            String?
+  username         String?      @unique
+  active           Boolean      @default(true)
+  licenseNo        String?
+  licenseAuthority String?
+  licenseExpiresAt DateTime?
+  privilegedProcs  Json?
+  licenseSuspendedAt DateTime?
+  consultationMin  Int          @default(20)
+  schedule         Json? // weekly template
+  onCallZones      Json?
+  cvAr             String?
+  cvEn             String?
+  accentColor      String       @default("#0d9488")
+  createdAt        DateTime     @default(now())
+  shifts           Shift[]
+  leaves           Leave[]
+  appointments     Appointment[]
+  prescriptionsGiven Prescription[]
+}
+
+model Shift {
+  id         String   @id @default(cuid())
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  employeeId String
+  date       DateTime
+  kind       String // morning|evening|night|oncall
+  start      DateTime
+  end        DateTime
+  note       String?
+}
+
+model Leave {
+  id          String    @id @default(cuid())
+  employee    Employee  @relation(fields: [employeeId], references: [id])
+  employeeId  String
+  type        String // annual|sick|unpaid|training|maternity
+  from        DateTime
+  to          DateTime
+  status      String    @default("requested") // requested|approved|rejected
+  reason      String?
+  delegateTo  String?
+  approvedBy  String?
+}
+
+model FacilityLicense {
+  id          String    @id @default(cuid())
+  kind        String // facility|lab|pharmacy|radiology|defense|insurance
+  nameAr      String
+  nameEn      String
+  authority   String
+  number      String
+  issuedAt    DateTime
+  expiresAt   DateTime
+  documentUrl String?
+  owner       String?
+}
+
+// ─────────────────────────── PATIENTS / MPI ─────────────────────────────────
+model Patient {
+  id            String        @id @default(cuid())
+  mrn           String        @unique // P26-0000123-7
+  assurance     Int           @default(3) // 1 chip | 2 visual | 3 self | 4 temp
+  firstNameAr   String
+  fatherAr      String?
+  grandAr       String?
+  familyAr      String
+  firstNameEn   String?
+  familyEn      String?
+  latinName     String?
+  normalizedKey String? // normalized Arabic search key
+  dob           DateTime
+  gender        String // male|female
+  nationality   String
+  motherNameAr  String?
+  maritalStatus String?
+  occupation    String?
+  bloodType     String?
+  phone         String?
+  altPhone      String?
+  email         String?
+  preferredLang String        @default("ar")
+  contactChannel String        @default("sms")
+  address        Json?
+  emergency      Json?
+  photoUrl       String?
+  interpreterNeeded Boolean    @default(false)
+  notesAr       String?
+  deceased      Boolean       @default(false)
+  createdBy      String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  identifiers   PatientIdentifier[]
+  flags         PatientFlag[]
+  policies      InsurancePolicy[]
+  appointments        Appointment[]
+  encounters          Encounter[]
+  orders              Order[]
+  specimens           Specimen[]
+  labResults          LabResult[]
+  criticalAlerts      CriticalAlert[]
+  prescriptions       Prescription[]
+  invoices            Invoice[]
+  payments            Payment[]
+  preAuthorizations   PreAuthorization[]
+  claims              Claim[]
+  consents             Consent[]
+  documents            Document[]
+  referrals            Referral[]
+  tasks                Task[]
+  queueTickets         QueueTicket[]
+  vitals               Vitals[]
+  problems             Problem[]
+  allergies            Allergy[]
+  medicationStatements MedicationStatement[]
+  immunizations        Immunization[]
+  growthRecords        GrowthRecord[]
+  homeRequests         HomeRequest[]
+  messageThreads       MessageThread[]
+  mdtCases             MdtCase[]
+  imagingStudies     ImagingStudy[]
+}
+
+model PatientIdentifier {
+  id          String   @id @default(cuid())
+  patient     Patient  @relation(fields: [patientId], references: [id])
+  patientId   String
+  type        String // CPR|GCC_ID|PASSPORT|TMP
+  number      String
+  country     String?
+  issuedAt    DateTime?
+  expiresAt   DateTime?
+  source      String   @default("manual") // chip|visual|manual|self
+  blindIndex  String   @unique
+  note        String?
+  createdAt   DateTime @default(now())
+}
+
+model InsurancePolicy {
+  id          String   @id @default(cuid())
+  patient     Patient  @relation(fields: [patientId], references: [id])
+  patientId   String
+  payer       PayerCompany @relation(fields: [payerId], references: [id])
+  payerId     String
+  membershipNo String
+  category    String   @default("standard")
+  copayFils   Int      @default(0)
+  coinsPct    Int      @default(0) // percent 0..100
+  ceilingFils Int      @default(0)
+  validUntil  DateTime?
+  status      String   @default("active")
+  cardUrl     String?
+}
+
+model PatientFlag {
+  id        String   @id @default(cuid())
+  patient   Patient  @relation(fields: [patientId], references: [id])
+  patientId String
+  kind      String // allergy|chronic|pregnant|vip|staff-member|minor|disabled|interpreter|debt|legal|restricted
+  valueAr   String?
+  valueEn   String?
+  severity  String   @default("info") // info|warn|critical
+}
+
+model PatientRelationship {
+  id         String   @id @default(cuid())
+  patientId  String
+  relatedId  String
+  relation   String // guardian|child|spouse|authorized
+  verifiedBy String?
+  verifiedAt DateTime?
+  expiresAt  DateTime?
+  note       String?
+}
+
+model CareTeamMember {
+  id         String   @id @default(cuid())
+  patientId  String
+  employeeId String
+  role       String   @default("treating") // primary|treating|consultant|cover
+  from       DateTime @default(now())
+  to         DateTime?
+  autoFrom   String? // appointment|referral|encounter
+}
+
+// ─────────────────────────── APPOINTMENTS / QUEUE ───────────────────────────
+model AppointmentType {
+  id             String  @id @default(cuid())
+  code           String  @unique
+  nameAr         String
+  nameEn         String
+  department     Department? @relation(fields: [departmentId], references: [id])
+  departmentId   String?
+  durationMin    Int     @default(20)
+  priceFils      Int     @default(0)
+  priceInsuredFils Int   @default(0)
+  requiresReferral Boolean @default(false)
+  requiresFasting Boolean @default(false)
+  requiresPreAuth  Boolean @default(false)
+  isVideo        Boolean @default(false)
+  instructionsAr String?
+  instructionsEn String?
+  followupWindowDays Int @default(14)
+  active         Boolean @default(true)
+  onlineBookable Boolean @default(true)
+  appointments Appointment[]
+}
+
+model Appointment {
+  id              String   @id @default(cuid())
+  code            String   @unique // A-261020-0042 (daily seq)
+  patientId       String
+  department      Department @relation(fields: [departmentId], references: [id])
+  departmentId    String
+  employee        Employee? @relation(fields: [employeeId], references: [id])
+  employeeId      String?
+  appointmentType AppointmentType @relation(fields: [appointmentTypeId], references: [id])
+  appointmentTypeId String
+  branchId        String?
+  start           DateTime
+  end             DateTime
+  status          String   @default("requested") // requested|confirmed|arrived|in-service|completed|cancelled|no-show|rescheduled
+  channel         String   @default("reception") // portal|web|callcenter|reception|doctor|kiosk|referral
+  note            String?
+  prepAck         Boolean  @default(false)
+  priceFils       Int      @default(0)
+  paymentStatus   String   @default("unpaid") // unpaid|deposit|paid|insured|package
+  cancelReason    String?
+  createdBy       String?
+  checkinAt       DateTime?
+  checkinMethod   String? // barcode|cpr|manual
+  createdAt       DateTime @default(now())
+  ticket          QueueTicket?
+  patient  Patient @relation(fields: [patientId], references: [id])
+}
+
+model Waitlist {
+  id        String   @id @default(cuid())
+  patientId String
+  departmentId String?
+  employeeId  String?
+  windowPref  String?
+  status    String   @default("waiting")
+  note      String?
+  createdAt DateTime @default(now())
+}
+
+model ServicePoint {
+  id       String @id @default(cuid())
+  code     String @unique
+  nameAr   String
+  nameEn   String
+  kind     String // reception|triage|clinic|phlebotomy|lab|radiology|pharmacy|cashier
+  branchId String?
+  room     String?
+  letter   String @default("A")
+  active   Boolean @default(true)
+  tickets  QueueTicket[]
+}
+
+model QueueTicket {
+  id             String      @id @default(cuid())
+  code           String      @unique // A-042
+  patientId      String
+  appointmentId  String?  @unique
+  appointment    Appointment? @relation(fields: [appointmentId], references: [id])
+  servicePoint   ServicePoint @relation(fields: [servicePointId], references: [id])
+  servicePointId String
+  priority       String      @default("normal") // emergency|elderly|disabled|pregnant|child|normal
+  status         String      @default("waiting") // issued|waiting|called|serving|done|no-show|redirected
+  issuedAt       DateTime    @default(now())
+  calledAt       DateTime?
+  callCount      Int         @default(0)
+  roomLabel      String?
+  servedAt       DateTime?
+  doneAt         DateTime?
+  waitedMin      Int         @default(0)
+  source         String      @default("reception")
+  patient  Patient @relation(fields: [patientId], references: [id])
+}
+
+// ─────────────────────────── CLINICAL / EMR ─────────────────────────────────
+model Encounter {
+  id            String   @id @default(cuid())
+  code          String   @unique // V-261020-0187
+  patientId     String
+  departmentId  String
+  doctorId      String?
+  appointmentId String?
+  type          String   @default("consultation") // consultation|followup|comprehensive|procedure|tele|home
+  status        String   @default("scheduled") // scheduled|arrived|triage|awaiting-doctor|in-exam|awaiting-results|exam-done|billing|closed|cancelled|no-show|left-early
+  chief         String?
+  hpi           String?
+  exam          String?
+  assessment    String?
+  plan          String?
+  instructionsAr String?
+  instructionsEn String?
+  soap          Json? // {s,o,a,p} bilingual optional
+  heightCm      Float?
+  weightKg      Float?
+  startedAt     DateTime @default(now())
+  closedAt      DateTime?
+  signedAt      DateTime?
+  followUpAt    DateTime?
+  addendum      Json?
+  createdAt     DateTime @default(now())
+  patient  Patient @relation(fields: [patientId], references: [id])
+}
+
+model Vitals {
+  id         String   @id @default(cuid())
+  patientId  String
+  encounterId String?
+  recordedBy String?
+  tempC      Float?
+  pulse      Int?
+  resp       Int?
+  bpSys      Int?
+  bpDia      Int?
+  spo2       Int?
+  weightKg   Float?
+  heightCm   Float?
+  waistCm    Float?
+  bmi        Float?
+  recordedAt DateTime @default(now())
+  note       String?
+  patient  Patient @relation(fields: [patientId], references: [id])
+}
+
+model Problem {
+  id        String   @id @default(cuid())
+  patientId String
+  encounterId String?
+  icd10     String
+  nameAr    String
+  nameEn    String
+  status    String   @default("active") // active|resolved
+  onset     DateTime?
+  resolvedAt DateTime?
+  notedBy   String?
+  createdAt DateTime @default(now())
+  patient  Patient @relation(fields: [patientId], references: [id])
+}
+
+model Allergy {
+  id        String   @id @default(cuid())
+  patientId String
+  substance String
+  reaction  String?
+  severity  String   @default("moderate")
+  notedBy   String?
+  patient  Patient @relation(fields: [patientId], references: [id])
+}
+
+model MedicationStatement {
+  id        String   @id @default(cuid())
+  patientId String
+  drugId    String?
+  nameAr    String
+  nameEn    String
+  dose      String?
+  status    String   @default("active") // active|stopped
+  source    String   @default("reported")
+  stoppedAt DateTime?
+  patient  Patient @relation(fields: [patientId], references: [id])
+}
+
+model Immunization {
+  id          String   @id @default(cuid())
+  patientId   String
+  vaccine     String
+  vaccineEn   String?
+  doseLabel   String
+  givenAt     DateTime
+  batch       String?
+  site        String?
+  givenBy     String?
+  nextDueAt   DateTime?
+  certCode    String?
+  patient  Patient @relation(fields: [patientId], references: [id])
+}
+
+model GrowthRecord {
+  id         String   @id @default(cuid())
+  patientId  String
+  metric     String // weight|height|head|bmi
+  value      Float
+  ageMonths  Int
+  z          Float?
+  percentile Float?
+  flag       String?
+  recordedAt DateTime @default(now())
+  patient  Patient @relation(fields: [patientId], references: [id])
+}
+
+// ─────────────────────────── LAB / ORDERS ───────────────────────────────────
+model LabTest {
+  id          String  @id @default(cuid())
+  code        String  @unique
+  loinc       String?
+  nameAr      String
+  nameEn      String
+  category    String  @default("general")
+  sampleType  String  @default("serum")
+  tube        String  @default("SST")
+  fasting     Boolean @default(false)
+  tatHours    Int     @default(24)
+  priceFils   Int     @default(0)
+  unit        String
+  refRange    Json? // {male:{low,high}, female:{low,high}, child:{...}, pregnant:{...}}
+  critical    Json? // {low, high}
+  autoVerify  Boolean @default(true)
+  deltaPct    Int     @default(50)
+  reflexTo    Json?
+  calcRule    String? // LDL | eGFR
+  selfOrder   Boolean @default(false)
+  active      Boolean @default(true)
+  sortOrder   Int     @default(0)
+  results      LabResult[]
+}
+
+model ImagingType {
+  id        String  @id @default(cuid())
+  code      String  @unique
+  nameAr    String
+  nameEn    String
+  modality  String  @default("US") // US|DXR|MG|MRI|CT
+  prepAr    String?
+  prepEn    String?
+  priceFils Int     @default(0)
+  pregnancyCheck Boolean @default(true)
+  doseMgy   Float?
+  durationMin Int   @default(20)
+  template  String? // tirads|birads|general|abdomen|renal|dental
+  active    Boolean @default(true)
+}
+
+model Order {
+  id          String   @id @default(cuid())
+  code        String   @unique // O-261020-0512
+  patientId   String
+  encounterId String?
+  doctorId    String?
+  kind        String   @default("lab") // lab|imaging|procedure|nutrition
+  priority    String   @default("routine") // routine|urgent|stat
+  status      String   @default("draft") // draft|signed|received|in-progress|completed|reported|cancelled|rejected
+  reason      String?
+  fasting     Boolean  @default(false)
+  preAuthId   String?
+  paymentStatus String @default("unpaid")
+  priceFils   Int      @default(0)
+  createdAt   DateTime @default(now())
+  signedAt    DateTime?
+  items       OrderItem[]
+  patient  Patient @relation(fields: [patientId], references: [id])
+}
+
+model OrderItem {
+  id          String   @id @default(cuid())
+  order       Order    @relation(fields: [orderId], references: [id])
+  orderId     String
+  labTestId   String?
+  imagingTypeId String?
+  nameAr      String
+  nameEn      String
+  qty         Int      @default(1)
+  priceFils   Int      @default(0)
+  status      String   @default("ordered") // ordered|collected|in-progress|resulted|verified|released|cancelled
+  results      LabResult[]
+}
+
+model Specimen {
+  id          String   @id @default(cuid())
+  code        String   @unique // S-261020-0231
+  orderId     String
+  patientId   String
+  collectedAt DateTime?
+  collectedBy String?
+  tube        String   @default("SST")
+  status      String   @default("pending") // pending|drawn|in-transit|received|analyzing|analyzed|stored|destroyed|rejected
+  rejection   String?
+  tempC       Float?
+  receivedAt  DateTime?
+  receivedBy  String?
+  handedAt    DateTime? // chain of custody
+  chain       Json?
+  patient  Patient @relation(fields: [patientId], references: [id])
+}
+
+model LabResult {
+  id          String   @id @default(cuid())
+  orderItemId String
+  patientId   String
+  testId      String
+  value       Float?
+  valueText   String?
+  unit        String
+  flag        String? // normal|H|L|CRIT
+  refLow      Float?
+  refHigh     Float?
+  resultedAt  DateTime @default(now())
+  source      String   @default("manual") // analyzer|manual|poc
+  resultedBy  String?
+  verifiedAt  DateTime?
+  verifiedBy  String?
+  autoVerified Boolean @default(false)
+  deltaPct    Float?
+  prevValue   Float?
+  releasedAt  DateTime?
+  releasedBy  String?
+  comment     String?
+  criticalAlert CriticalAlert?
+  patient  Patient @relation(fields: [patientId], references: [id])
+  orderItem  OrderItem @relation(fields: [orderItemId], references: [id])
+  test       LabTest   @relation(fields: [testId], references: [id])
+}
+
+model CriticalAlert {
+  id           String   @id @default(cuid())
+  result       LabResult @relation(fields: [resultId], references: [id])
+  resultId     String @unique
+  patientId    String
+  status       String   @default("new") // new|acknowledged|escalated-1|escalated-2
+  notifiedAt   DateTime @default(now())
+  channel      String   @default("inapp") // inapp|sms|phone
+  ackBy        String?
+  ackAt        DateTime?
+  log          Json?
+  patient  Patient @relation(fields: [patientId], references: [id])
+}
+
+model QcRun {
+  id        String   @id @default(cuid())
+  testId    String?
+  assetId   String?
+  runAt     DateTime @default(now())
+  level     Int      @default(1)
+  target    Float
+  observed  Float
+  status    String   @default("passed") // passed|failed|warned
+  rule      String?  // 1-3s|2-2s|R-4s ...
+  lotNo     String?
+}
+
+model ImagingStudy {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  patientId   String
+  typeId      String
+  orderItemId String?
+  status      String   @default("scheduled") // scheduled|in-progress|captured|report-draft|reported|signed|cancelled
+  performedAt DateTime?
+  performedBy String?
+  images      Json? // synthetic seeds + captions
+  studyUid    String?
+  dose        Float?
+  findingsAr  String?
+  reportAr    String?
+  reportEn    String?
+  template    String?
+  grade       String? // TI-RADS 3 | BI-RADS 4a ...
+  signedBy    String?
+  signedAt    DateTime?
+  createdAt   DateTime @default(now())
+  patient  Patient @relation(fields: [patientId], references: [id])
+}
+
+// ─────────────────────────── PHARMACY ───────────────────────────────────────
+model Drug {
+  id            String  @id @default(cuid())
+  code          String  @unique
+  atc           String?
+  nameAr        String
+  nameEn        String
+  generic       String?
+  form          String  @default("tablet")
+  strength      String?
+  priceFils     Int     @default(0)
+  mgPerKg       Float?
+  maxMgPerKg    Float?
+  maxDailyMg    Int?
+  adultMaxDose  String?
+  pregCategory  String  @default("B")
+  controlled    Boolean @default(false)
+  refrigerated  Boolean @default(false)
+  stockQty      Int     @default(0)
+  parLevel      Int     @default(10)
+  allergyTags   Json? // penicillin|nsaid ...
+  interactTags  Json?
+  lookAlike     String?
+  highAlert     Boolean @default(false)
+  active        Boolean @default(true)
+  prescriptionItems PrescriptionItem[]
+}
+
+model Prescription {
+  id         String   @id @default(cuid())
+  code       String   @unique // RX-261020-0093
+  patientId  String
+  encounterId String?
+  doctorId   String?
+  status     String   @default("draft") // draft|signed|pharmacy-review|preparing|dispensed|partial|cancelled
+  signedAt   DateTime?
+  safety     Json? // {errors:[],warnings:[]}
+  overrideReason String?
+  createdAt  DateTime @default(now())
+  items      PrescriptionItem[]
+  patient  Patient @relation(fields: [patientId], references: [id])
+  doctor   Employee? @relation(fields: [doctorId], references: [id])
+}
+
+model PrescriptionItem {
+  id             String       @id @default(cuid())
+  prescription   Prescription @relation(fields: [prescriptionId], references: [id])
+  prescriptionId String
+  drugId         String
+  doseAr         String
+  doseEn         String
+  route          String       @default("oral")
+  frequency       String
+  durationDays    Int          @default(5)
+  qty            Int          @default(1)
+  refills        Int          @default(0)
+  instrAr        String?
+  instrEn        String?
+  drug  Drug @relation(fields: [drugId], references: [id])
+  dispensings   Dispensing[]
+}
+
+model Dispensing {
+  id            String   @id @default(cuid())
+  prescriptionItemId String
+  batchId       String?
+  qty           Int      @default(1)
+  status        String   @default("ready") // ready|dispensed|partial|returned
+  dispensedBy   String?
+  dispensedAt   DateTime?
+  labelAr       String?
+  labelEn       String?
+  counseled     Boolean  @default(false)
+  paymentStatus String   @default("unpaid")
+  deliveredVia  String?
+  prescriptionItem  PrescriptionItem @relation(fields: [prescriptionItemId], references: [id])
+}
+
+// ─────────────────────────── BILLING / INSURANCE ────────────────────────────
+model PayerCompany {
+  id        String  @id @default(cuid())
+  code      String  @unique
+  nameAr    String
+  nameEn    String
+  kind      String  @default("insurance") // insurance|corporate
+  contact   String?
+  phone     String?
+  contractRef String?
+  coverage  Json? // exclusions, waiting periods, preauth required services
+  creditLimitFils Int @default(0)
+  active    Boolean @default(true)
+  policies  InsurancePolicy[]
+}
+
+model ServiceItem {
+  id        String  @id @default(cuid())
+  code      String  @unique
+  nameAr    String
+  nameEn    String
+  departmentId String?
+  category  String  @default("consultation") // consultation|lab|imaging|dental|procedure|package-item|drug|consent|home
+  priceFils Int     @default(0)
+  vatRate   Int     @default(0) // 0|500 (‰ style: 5% = 50? no — store basis points of percent: 5% => 500)
+  durationMin Int   @default(20)
+  prepAr    String?
+  prepEn    String?
+  online    Boolean @default(true)
+  visible   Boolean @default(true)
+  glCode    String?
+  sortOrder Int     @default(0)
+}
+
+model Package {
+  id        String  @id @default(cuid())
+  code      String  @unique
+  nameAr    String
+  nameEn    String
+  items     Json? // [{serviceCode, qty}]
+  priceFils Int     @default(0)
+  validityDays Int  @default(365)
+  sessions  Int     @default(1)
+  category  String  @default("general")
+  active    Boolean @default(true)
+  descAr    String?
+  descEn    String?
+}
+
+model PatientPackage {
+  id         String   @id @default(cuid())
+  patientId  String
+  packageId  String
+  used       Int      @default(0)
+  total      Int      @default(1)
+  validUntil DateTime?
+  status     String   @default("active") // active|frozen|exhausted|expired
+  purchasedAt DateTime @default(now())
+}
+
+model Invoice {
+  id          String   @id @default(cuid())
+  code        String   @unique // INV-2026-004512
+  patientId   String
+  encounterId String?
+  status      String   @default("draft") // draft|issued|partial|paid|void|credit-note
+  subtotalFils Int     @default(0)
+  discountFils Int     @default(0)
+  vatFils     Int      @default(0)
+  totalFils   Int      @default(0)
+  patientFils Int      @default(0)
+  insurerFils Int      @default(0)
+  issuedAt    DateTime @default(now())
+  cashierId   String?
+  printed     Int      @default(0)
+  notesAr     String?
+  isQuotation Boolean  @default(false)
+  acceptedAt  DateTime?
+  neutralDesc String? // psych privacy: "استشارة"
+  claimId     String?
+  lines       InvoiceLine[]
+  patient  Patient @relation(fields: [patientId], references: [id])
+}
+
+model InvoiceLine {
+  id        String   @id @default(cuid())
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id])
+  invoiceId String
+  kind      String   @default("service")
+  refId     String?
+  nameAr    String
+  nameEn    String
+  qty       Int      @default(1)
+  unitFils  Int      @default(0)
+  vatBp     Int      @default(0) // basis points of percent (5% = 500)
+  grossFils Int      @default(0)
+  vatFils   Int      @default(0)
+}
+
+model Payment {
+  id             String   @id @default(cuid())
+  code           String   @unique // PAY-…
+  invoiceId      String
+  patientId      String
+  method         String   @default("cash") // cash|card|benefit|transfer|insurance|wallet|package
+  amountFils     Int
+  status         String   @default("captured") // started|pending|captured|failed|refunded|disputed
+  txnRef         String?
+  idempotencyKey String   @unique
+  receivedBy     String?
+  receivedAt     DateTime @default(now())
+  benefitRef     String?
+  last4          String?
+  shiftId        String?
+  patient  Patient @relation(fields: [patientId], references: [id])
+}
+
+model CashierShift {
+  id          String   @id @default(cuid())
+  cashierId   String
+  openedAt    DateTime @default(now())
+  closedAt    DateTime?
+  openingFils Int      @default(0)
+  countedFils Int?
+  difference  Int?
+  status      String   @default("open")
+  payments    Json?
+}
+
+model PreAuthorization {
+  id        String   @id @default(cuid())
+  code      String   @unique // PA-261020-003
+  patientId String
+  payerId   String
+  serviceRef String
+  status    String   @default("requested") // requested|submitted|approved|rejected|expired
+  requestedAt DateTime @default(now())
+  approvedRef String?
+  validUntil  DateTime?
+  amountFils Int      @default(0)
+  notes      String?
+  patient  Patient @relation(fields: [patientId], references: [id])
+}
+
+model Claim {
+  id           String   @id @default(cuid())
+  code         String   @unique // CLM-261020-0031
+  patientId    String
+  payerId      String
+  invoiceIds   Json?
+  status       String   @default("prepared") // prepared|submitted|accepted|partial-paid|paid|rejected|resubmitted
+  submittedAt  DateTime?
+  billedFils   Int      @default(0)
+  approvedFils Int      @default(0)
+  rejectReason String?
+  resubmittedAt DateTime?
+  remittedAt   DateTime?
+  patient  Patient @relation(fields: [patientId], references: [id])
+}
+
+model LedgerEntry {
+  id       String   @id @default(cuid())
+  date     DateTime @default(now())
+  account  String
+  debitFils Int     @default(0)
+  creditFils Int    @default(0)
+  memoAr   String?
+  refType  String?
+  refId    String?
+  postedBy String?
+  periodClosed Boolean @default(false)
+}
+
+// ─────────────────────────── CONSENTS / DOCUMENTS ───────────────────────────
+model ConsentTemplate {
+  id          String @id @default(cuid())
+  key         String @unique // consent.surgery ...
+  version     Int    @default(1)
+  kind        String // treatment|privacy|data-sharing|marketing|clinical-photo|surgery|anesthesia|transfusion|chemo|psy|tele|home-draw|third-party-delivery|research|refusal|financial|receipt|delegation|guardian
+  titleAr     String
+  titleEn     String
+  bodyAr      String
+  bodyEn      String
+  minReadSec  Int    @default(10)
+  hardStop    Boolean @default(true)
+  validDays   Int    @default(30)
+  active      Boolean @default(true)
+  approvedBy  String?
+}
+
+model Consent {
+  id            String   @id @default(cuid())
+  code          String   @unique // CST-261020-0077
+  templateKey   String
+  templateVersion Int
+  patientId     String
+  encounterId   String?
+  status        String   @default("active") // active|withdrawn|expired
+  method        String   @default("tablet") // tablet|portal|link|paper
+  signedBy      String?
+  signedAt      DateTime @default(now())
+  witnessId     String?
+  otpVerified   Boolean  @default(false)
+  hash          String?
+  evidence      Json?
+  withdrawnAt   DateTime?
+  readSeconds   Int      @default(0)
+  patient  Patient @relation(fields: [patientId], references: [id])
+}
+
+model Document {
+  id         String   @id @default(cuid())
+  kind       String   @default("report") // report|certificate|referral|implant-card|prescription-print|invoice-print
+  patientId  String?
+  issuedBy   String?
+  titleAr    String
+  titleEn    String
+  bodyAr     String?
+  bodyEn     String?
+  payload    Json?
+  verifyCode String   @unique // 20+ chars
+  issuedAt   DateTime @default(now())
+  revokedAt  DateTime?
+  expiryAt   DateTime?
+  encounterId String?
+  docCode    String?
+  patient  Patient? @relation(fields: [patientId], references: [id])
+}
+
+// ─────────────────────────── COORDINATION ───────────────────────────────────
+model Referral {
+  id           String   @id @default(cuid())
+  code         String   @unique // RF-…
+  patientId    String
+  fromId       String
+  toDepartmentId String
+  toId         String?
+  kind         String   @default("formal") // formal|curbside|external
+  urgency      String   @default("routine") // emergent(2h)|urgent(24h)|routine(3d)
+  status       String   @default("draft") // draft|sent|received|accepted|rejected|needs-info|scheduled|seen|closed
+  reason       String?
+  summary      Json?
+  responseDueAt DateTime?
+  respondedAt  DateTime?
+  closedAt     DateTime?
+  reportAr     String?
+  appointmentId String?
+  createdAt    DateTime @default(now())
+  patient  Patient @relation(fields: [patientId], references: [id])
+}
+
+model MdtMeeting {
+  id        String   @id @default(cuid())
+  titleAr   String
+  titleEn   String
+  kind      String   @default("tumor-board")
+  scheduledAt DateTime
+  status    String   @default("scheduled") // scheduled|held|cancelled
+  minutesAr String?
+  signedBy  String?
+  cases     MdtCase[]
+}
+
+model MdtCase {
+  id        String   @id @default(cuid())
+  meeting   MdtMeeting @relation(fields: [meetingId], references: [id])
+  meetingId String
+  patientId String
+  questionAr String?
+  decisionAr  String?
+  tasks     Json?
+  status    String   @default("listed")
+  patient  Patient @relation(fields: [patientId], references: [id])
+}
+
+model MessageThread {
+  id         String   @id @default(cuid())
+  patientId  String?
+  subjectAr  String
+  subjectEn  String?
+  category   String   @default("general")
+  createdBy  String?
+  createdAt  DateTime @default(now())
+  lastAt     DateTime @default(now())
+  participants Json?
+  patientScoped Boolean @default(false)
+  patient  Patient? @relation(fields: [patientId], references: [id])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  threadId  String
+  senderId  String?
+  senderRole String?
+  body      String
+  attachments Json?
+  priority  String   @default("normal") // normal|urgent
+  system    Boolean  @default(false)
+  readBy    Json?
+  createdAt DateTime @default(now())
+}
+
+model Task {
+  id         String   @id @default(cuid())
+  titleAr    String
+  assigneeId String?
+  role       String?
+  departmentId String?
+  patientId  String?
+  status     String   @default("new") // new|in-progress|blocked|done|cancelled
+  priority   String   @default("normal")
+  dueAt      DateTime?
+  kind       String   @default("todo")
+  refType    String?
+  refId      String?
+  completedAt DateTime?
+  createdAt  DateTime @default(now())
+  patient  Patient? @relation(fields: [patientId], references: [id])
+}
+
+model Pathway {
+  id      String @id @default(cuid())
+  code    String @unique
+  nameAr  String
+  nameEn  String
+  steps   Json?
+  active  Boolean @default(true)
+}
+
+model PathwayInstance {
+  id         String   @id @default(cuid())
+  pathwayId  String
+  patientId  String
+  currentStep Int     @default(0)
+  status     String   @default("active") // active|done|aborted
+  startedAt  DateTime @default(now())
+}
+
+model Handover {
+  id       String   @id @default(cuid())
+  fromId   String
+  date     DateTime
+  content  Json? // SBAR list
+  readBy   Json?
+  createdAt DateTime @default(now())
+}
+
+// ─────────────────────────── HOME CARE ──────────────────────────────────────
+model CoverageZone {
+  id        String  @id @default(cuid())
+  governorate String
+  areas     Json?
+  feeFils   Int     @default(0)
+  morningFils Int   @default(0)
+  eveningFils Int   @default(0)
+  holidayFils Int  @default(0)
+  minOrderFils Int @default(0)
+  active    Boolean @default(true)
+}
+
+model HomeRequest {
+  id          String   @id @default(cuid())
+  code        String   @unique // HV-261020-0021
+  patientId   String
+  channel     String   @default("portal")
+  tests       Json? // [{code,nameAr,priceFils,fasting}]
+  packageCode String?
+  address     Json?
+  slot        String?
+  prefGender  String?
+  fasting     Boolean  @default(false)
+  status      String   @default("requested") // requested|confirmed|assigned|on-the-way|arrived|drawn|to-lab|delivered|failed|cancelled
+  feeFils     Int      @default(0)
+  zoneId      String?
+  notesAr     String?
+  createdAt   DateTime @default(now())
+  confirmedAt DateTime?
+  visit       HomeVisit?
+  patient  Patient @relation(fields: [patientId], references: [id])
+}
+
+model HomeVisit {
+  id           String   @id @default(cuid())
+  request      HomeRequest @relation(fields: [requestId], references: [id])
+  requestId    String @unique
+  collectorId  String?
+  routeOrder   Int      @default(1)
+  eta          DateTime?
+  arrivedAt    DateTime?
+  drawnAt      DateTime?
+  otpShown     Boolean  @default(false)
+  paymentMethod String?
+  amountFils   Int      @default(0)
+  sampleTempC  Float?
+  coldChain    Json?
+  handedAt     DateTime?
+  receivedBy   String?
+  incidents    Json?
+  offlineSync  Json?
+}
+
+// ─────────────────────────── INVENTORY / ASSETS / CMMS ─────────────────────
+model Supplier {
+  id      String  @id @default(cuid())
+  nameAr  String
+  nameEn  String
+  kind    String  @default("medical")
+  contact String?
+  phone   String?
+  rating  Int     @default(4)
+  contracts Json?
+  active  Boolean @default(true)
+}
+
+model Item {
+  id        String  @id @default(cuid())
+  code      String  @unique // ITM-DNT-0089
+  nameAr    String
+  nameEn    String
+  category  String  @default("consumable") // dental|lab-reagent|drug|consumable|spare|office|cleaning
+  uom       String  @default("pc")
+  barcode   String?
+  parLevel  Int     @default(10)
+  reorderQty Int    @default(20)
+  costFils  Int     @default(0)
+  priceFils Int     @default(0)
+  controlled Boolean @default(false)
+  sterile   Boolean @default(false)
+  storage   String  @default("ambient") // ambient|fridge|freezer
+  active    Boolean @default(true)
+}
+
+model Batch {
+  id         String   @id @default(cuid())
+  lotNo      String   // LOT-261003-12
+  ownerType  String   @default("drug") // drug|item
+  ownerId    String
+  expiry     DateTime
+  qty        Int      @default(0)
+  costFils   Int      @default(0)
+  supplierId String?
+  receivedAt DateTime @default(now())
+  poId       String?
+  status     String   @default("ok") // ok|quarantine|recalled|expired
+  recallAt   DateTime?
+}
+
+model StockMove {
+  id        String   @id @default(cuid())
+  batchId   String
+  fromBin   String?
+  toBin     String?
+  qty       Int
+  type      String   @default("receipt") // receipt|issue|transfer|adjust|waste|return
+  refType   String?
+  refId     String?
+  byId      String?
+  at        DateTime @default(now())
+  reason    String?
+}
+
+model BinLocation {
+  id      String @id @default(cuid())
+  code    String @unique
+  nameAr  String
+  nameEn  String
+  kind    String @default("bin") // store|shelf|bin
+  parentId String?
+  barcode String?
+}
+
+model Asset {
+  id           String   @id @default(cuid())
+  code         String   @unique // AST-LAB-014
+  nameAr       String
+  nameEn       String
+  category     String   @default("lab") // lab|radiology|dental|it|facility|vehicle|furniture
+  serialNo     String?
+  model        String?
+  vendorId     String?
+  purchaseDate DateTime?
+  costFils     Int      @default(0)
+  warrantyUntil DateTime?
+  contractRef  String?
+  status       String   @default("operational") // operational|down|in-maintenance|awaiting-calibration|retired
+  location     String?
+  responsible  String?
+  calibrationDueAt DateTime?
+  pmPlanId     String?
+  downtimeMin  Int      @default(0)
+  notes        String?
+  createdAt    DateTime @default(now())
+  requests MaintenanceRequest[]
+  workOrders WorkOrder[]
+}
+
+model MaintenancePlan {
+  id        String  @id @default(cuid())
+  titleAr   String
+  titleEn   String
+  category  String  @default("general")
+  frequencyDays Int @default(90)
+  checklist Json?
+  parts     Json?
+  estMinutes Int    @default(60)
+  active    Boolean @default(true)
+}
+
+model MaintenanceRequest {
+  id          String   @id @default(cuid())
+  code        String   @unique // FR-261020-006
+  asset       Asset    @relation(fields: [assetId], references: [id])
+  assetId     String
+  reportedBy  String?
+  description String
+  impact      String   @default("partial") // full|partial|none
+  category    String   @default("mechanical") // mechanical|electrical|software|radiation|sterile|facility
+  photos      Json?
+  status      String   @default("new") // new|classified|assigned|fixing|awaiting-part|done|closed|cancelled
+  workOrder   WorkOrder?
+  createdAt   DateTime @default(now())
+}
+
+model WorkOrder {
+  id           String   @id @default(cuid())
+  code         String   @unique // WO-261020-011
+  kind         String   @default("corrective") // corrective|preventive|calibration
+  asset        Asset    @relation(fields: [assetId], references: [id])
+  assetId      String
+  requestId    String?  @unique
+  planId       String?
+  technicianId String?
+  priority     String   @default("normal")
+  status       String   @default("open") // open|assigned|in-progress|awaiting-part|done|closed|deferred
+  slaDueAt     DateTime?
+  dueAt        DateTime?
+  startedAt    DateTime?
+  finishedAt   DateTime?
+  closedAt     DateTime?
+  closedBy     String?
+  rootCauseAr  String?
+  actionAr     String?
+  downtimeMin  Int      @default(0)
+  signatureBy  String?
+  checklist    Json?
+  escalatedAt  DateTime?
+  parts        WorkOrderPart[]
+  messages     WorkOrderMessage[]
+  request      MaintenanceRequest? @relation(fields: [requestId], references: [id])
+  createdAt    DateTime @default(now())
+}
+
+model WorkOrderMessage {
+  id          String    @id @default(cuid())
+  workOrder   WorkOrder @relation(fields: [workOrderId], references: [id])
+  workOrderId String
+  senderId    String?
+  body        String
+  kind        String    @default("text") // text|image|part|system
+  at          DateTime  @default(now())
+}
+
+model WorkOrderPart {
+  id          String    @id @default(cuid())
+  workOrder   WorkOrder @relation(fields: [workOrderId], references: [id])
+  workOrderId String
+  batchId     String?
+  itemCode    String?
+  qty         Int       @default(1)
+  reservedAt  DateTime  @default(now())
+  issuedAt    DateTime?
+}
+
+model SterilizationCycle {
+  id         String   @id @default(cuid())
+  cycleNo    String   @unique
+  autoclave  String?
+  params     Json?
+  indicator  String   @default("passed")
+  result     String   @default("passed")
+  runBy      String?
+  at         DateTime @default(now())
+  setIds     Json?
+}
+
+model InstrumentSet {
+  id      String @id @default(cuid())
+  code    String @unique
+  nameAr  String
+  nameEn  String
+  contents Json?
+  status  String @default("sterile")
+  lastCycle String?
+}
+
+// ─────────────────────────── QUALITY / CMS ──────────────────────────────────
+model Incident {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  reporterId String?
+  patientId String?
+  type      String   @default("medication") // medication|fall|needle|lab|service|security
+  severity  String   @default("minor") // near-miss|minor|major|sentinel
+  description String
+  status    String   @default("open")
+  rcaAr     String?
+  capaId    String?
+  at        DateTime @default(now())
+  anonymous Boolean  @default(false)
+}
+
+model Capa {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  source       String   @default("incident")
+  descriptionAr String
+  actionAr     String
+  ownerId      String?
+  dueAt        DateTime?
+  status       String   @default("open")
+  effectiveness String?
+}
+
+model Complaint {
+  createdAt     DateTime @default(now())
+  id        String   @id @default(cuid())
+  code      String   @unique
+  patientId String?
+  channel   String   @default("portal")
+  category  String   @default("service")
+  description String
+  status    String   @default("received") // received|classified|assigned|investigating|responded|closed
+  assignedTo String?
+  slaDueAt  DateTime?
+  resolvedAt DateTime?
+  resolutionAr String?
+}
+
+model SurveyResponse {
+  id         String   @id @default(cuid())
+  patientId  String?
+  encounterId String?
+  kind       String   @default("visit")
+  score      Int      @default(5)
+  nps        Int?
+  comment    String?
+  at         DateTime @default(now())
+}
+
+model Article {
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  titleAr    String
+  titleEn    String
+  bodyAr     String
+  bodyEn     String
+  category   String   @default("education")
+  coverUrl   String?
+  tags       Json?
+  medicalReviewed Boolean @default(true)
+  reviewBy   String?
+  publishedAt DateTime @default(now())
+  visible    Boolean  @default(true)
+}
+
+model Faq {
+  id       String @id @default(cuid())
+  qAr      String
+  qEn      String
+  aAr      String
+  aEn      String
+  category String @default("general")
+  sortOrder Int    @default(0)
+}
+
+model JobOpening {
+  id      String @id @default(cuid())
+  titleAr String
+  titleEn String
+  dept    String?
+  descAr  String
+  descEn  String
+  status  String @default("open")
+  openings Int    @default(1)
+}
+
+// ─────────────────────────── NOTIFICATIONS / AUDIT / SYSTEM ─────────────────
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String?
+  role      String?
+  kind      String   @default("general")
+  titleAr   String
+  titleEn   String
+  bodyAr    String?
+  bodyEn    String?
+  channel   String   @default("inapp") // inapp|push|sms|email|whatsapp|screen
+  status    String   @default("sent")
+  patientId String?
+  meta      Json?
+  readAt    DateTime?
+  sentAt    DateTime @default(now())
+  createdAt DateTime @default(now())
+}
+
+model AuditEvent {
+  id            String   @id @default(cuid())
+  at            DateTime @default(now())
+  actorId       String?
+  actorRole     String?
+  action        String
+  resource      String
+  resourceId    String?
+  patientId     String?
+  before        Json?
+  after         Json?
+  reason        String?
+  ip            String?
+  userAgent     String?
+  correlationId String?
+  hash          String
+  prevHash      String?
+}
+
+model BreakGlass {
+  id        String   @id @default(cuid())
+  staffId   String
+  patientId String
+  reason    String
+  expiresAt DateTime
+  at        DateTime @default(now())
+  notified  Json?
+}
+
+model Setting {
+  id        String  @id @default(cuid())
+  key       String  @unique
+  value     Json
+  group     String  @default("general")
+  version   Int     @default(1)
+  updatedBy String?
   updatedAt DateTime @updatedAt
 }
 
-model Post {
+model NumberSequence {
+  key  String @id
+  next Int    @default(1)
+}
+
+model FeatureFlag {
+  key         String  @id
+  enabled     Boolean @default(true)
+  description String?
+}
+
+model ReaderSession {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  staffId     String?
+  workstationId String @default("WS-001")
+  status      String   @default("pending") // pending|read|consumed|expired
+  payload     Json?
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+}
+
+model OtpCode {
   id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
+  target    String
+  channel   String   @default("sms")
+  code      String
+  purpose   String   @default("booking")
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  consumedAt DateTime?
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+}
+
+model WebBooking {
+  otpHash       String?
+  doctorId      String?
+  departmentCode String?
+  id            String   @id @default(cuid())
+  code          String   @unique
+  nameAr        String
+  phone         String
+  identity      String?
+  appointmentTypeId String?
+  departmentId  String?
+  slot          DateTime?
+  status        String   @default("pending") // pending-otp|confirmed|converted
+  note          String?
+  createdAt     DateTime @default(now())
+}
+
+model PaymentWebhook {
+  id        String   @id @default(cuid())
+  provider  String   @default("benefit-sim")
+  signature String?
+  payload   Json
+  processed Boolean  @default(false)
+  at        DateTime @default(now())
+}
+
+model AiConversation {
+  id        String   @id @default(cuid())
+  patientId String?
+  userId    String?
+  messages  Json?
+  at        DateTime @default(now())
 }

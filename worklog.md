@@ -25,3 +25,21 @@ Work Log:
 
 Stage Summary:
 - Specs fully understood; plan: foundation by main agent (schema, seeds, libs, APIs, shell) → 8 parallel UI subagents (public site, patient portal, staff×4, admin, kiosk/queue/verify) → integration QA (agent-browser + verify harness) → GitHub push + hourly sync.
+
+---
+Task ID: 4-8 (foundation)
+Agent: main (Z.ai Code)
+Task: Prisma schema (94 tables) + seed (17 scenarios data) + core libs + full API layer + realtime service + scheduler
+
+Work Log:
+- prisma/schema.prisma: 94 models — patients/identifiers(blind index)/flags/policies, appointments/queue, encounters/clinical, lab (catalog/results/QC/critical alerts), imaging, drugs/prescriptions/dispensing (FEFO), billing (invoices/payments idempotent/claims/preauths/ledger), consents (19 templates), documents+verify codes, referrals/MDT, home care, assets/CMMS (faults, WOs, chat, parts), inventory (items/batches/bin moves), quality, HR, CMS, audit (hash chain), settings, sequences, web bookings, payment webhooks, AI conversations.
+- prisma/seed.ts + seed-part2.ts: 12 patients (CPR/GCC/passport incl. psych-isolated, VIP, staff-member, pregnant, minor), 32 employees across 10 departments, today's board, queue tickets, K+ 6.9 critical alert scenario, QC runs, Amal breast-lump case (BI-RADS 4a → referral → MDT), invoices/payments/claims/preauths, consents, home requests, work orders (active WO w/ technician chat + reserved part), articles/FAQs, settings, sequences (9001+).
+- src/lib: types (vocab unions, VAT rules, priority weights), money (integer fils BHD), bahrain (CPR validation, blindIndex HMAC, +973, UTC+3), numbering (Luhn MRN, daily codes A-/S-/RX-…), arabic (normalize/fuzzy/dedup score), algorithms (§17: queue priority, Rx safety, weight dosing, delta check, VAT invoice, NN+2-opt routing, LMS growth, preop gate, eGFR/LDL, autoverify), audit (hash chain append-only), api (RFC7807 bilingual problems, actor sessions, jsonv).
+- src/server: perm (RBAC matrix §5.3), router; staff/{core,clinical,lab,pharmacy,billing,ops}; patient; public; devices (kiosk/queue/verify); webhooks (Benefit sim + HMAC); ai (z-ai-web-dev-sdk LLM, backend-only); scheduler (escalation 10/20min, reminders, PM generation, license expiry auto-suspend).
+- API catch-all routes: /api/{staff,patient,public,kiosk,queue,verify,webhooks,ai,system}/[...path]; src/instrumentation.ts starts scheduler.
+- mini-services/realtime (port 3003): socket.io fan-out + POST /emit internal relay (x-bmc-internal header) — running.
+
+Stage Summary:
+- tsc --noEmit: 0 errors. db push ✓, seed ✓ (12 patients, 32 staff, 10 depts, K6.9 alert, active WO chat).
+- Fix notes: JSON literal defaults unsupported on SQLite (use Json? + app defaults); money = Int fils; patient relations added late (schema recovered after self-assignment bug — dedup PrescriptionItem.prescription).
+- Pending: app shell UI (page.tsx), 8 parallel UI domain agents, QA loop, verify harness, docs.
