@@ -5,6 +5,7 @@
  * verification for results awaiting a human.
  */
 import { useMemo, useState } from "react";
+import { Bot, ClipboardList, Cog, FlaskConical, TriangleAlert } from "lucide-react";
 import { useI18n, bi } from "@/i18n";
 import { apiPost } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
@@ -75,12 +76,12 @@ function ResultDialog({ row, open, onClose, onSaved }: { row: EntryRow; open: bo
               <div className="flex items-center gap-2 text-sm"><FlagBadge flag={resp.flag} /><span className="text-xs text-muted-foreground">{t(`lab.res.reason.${resp.reason}`)}</span></div>
               {resp.autoVerified ? (
                 <Alert className="border-emerald-300 bg-emerald-50 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
-                  <AlertDescription>🤖 {t("lab.res.auto")}</AlertDescription>
+                  <AlertDescription className="flex items-center gap-2"><Bot className="size-4 shrink-0" aria-hidden />{t("lab.res.auto")}</AlertDescription>
                 </Alert>
               ) : (
                 <>
                   <Alert className="border-amber-300 bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-200">
-                    <AlertDescription>⚠️ {t("lab.res.human")} — {t(`lab.res.reason.${resp.reason}`)}{resp.deltaPct != null ? ` · ${t("lab.res.delta", { p: resp.deltaPct })}` : ""}</AlertDescription>
+                    <AlertDescription className="flex items-start gap-2"><TriangleAlert className="size-4 shrink-0" aria-hidden /><span>{t("lab.res.human")} — {t(`lab.res.reason.${resp.reason}`)}{resp.deltaPct != null ? ` · ${t("lab.res.delta", { p: resp.deltaPct })}` : ""}</span></AlertDescription>
                   </Alert>
                   <Button disabled={busy} onClick={verify}>{busy ? "…" : t("lab.res.verify")}</Button>
                 </>
@@ -138,9 +139,7 @@ export default function ResultsTab() {
   return (
     <div className="space-y-4">
       <Card className="gap-3">
-        <CardHeader className="py-3 px-4">
-          <CardTitle className="text-sm">🔬 {t("lab.res.entry")} <span className="text-xs font-normal text-muted-foreground">({entry.length})</span></CardTitle>
-        </CardHeader>
+        <CardHeader className="py-3 px-4"><CardTitle className="text-sm flex items-center gap-2"><FlaskConical className="size-4 text-primary" aria-hidden />{t("lab.res.entry")} <span className="text-xs font-normal text-muted-foreground">({entry.length})</span></CardTitle></CardHeader>
         <CardContent className="px-4 pb-4 pt-0">
           <p className="text-xs text-muted-foreground mb-2">{t("lab.res.entryHint")}</p>
           {orders.loading ? <div className="h-16 rounded-lg bg-muted/40 animate-pulse" /> : entry.length === 0 ? (
@@ -174,7 +173,7 @@ export default function ResultsTab() {
                       <TableCell className="text-end">
                         <div className="inline-flex gap-1">
                           <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]" onClick={() => setEntryFor(r)}>{t("lab.res.enter")}</Button>
-                          <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] font-mono" disabled={busyItem === r.itemId} title={t("lab.res.analyzer")} aria-label={t("lab.res.analyzer")} onClick={() => pushAnalyzer(r)}>{busyItem === r.itemId ? "…" : "⚙️ محاكاة HL7"}</Button>
+                          <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] font-mono" disabled={busyItem === r.itemId} title={t("lab.res.analyzer")} aria-label={t("lab.res.analyzer")} onClick={() => pushAnalyzer(r)}>{busyItem === r.itemId ? "…" : (<><Cog className="size-4" aria-hidden />محاكاة HL7</>)}</Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -187,9 +186,7 @@ export default function ResultsTab() {
       </Card>
 
       <Card className="gap-3">
-        <CardHeader className="py-3 px-4">
-          <CardTitle className="text-sm">🧾 {t("lab.res.pending")} <span className="text-xs font-normal text-muted-foreground">({wl.data?.pendingResults.length ?? 0})</span></CardTitle>
-        </CardHeader>
+        <CardHeader className="py-3 px-4"><CardTitle className="text-sm flex items-center gap-2"><ClipboardList className="size-4 text-primary" aria-hidden />{t("lab.res.pending")} <span className="text-xs font-normal text-muted-foreground">({wl.data?.pendingResults.length ?? 0})</span></CardTitle></CardHeader>
         <CardContent className="px-4 pb-4 pt-0">
           {wl.loading ? <div className="h-16 rounded-lg bg-muted/40 animate-pulse" /> : (wl.data?.pendingResults.length ?? 0) === 0 ? (
             <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">{t("common.empty")}</div>

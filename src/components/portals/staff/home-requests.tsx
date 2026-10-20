@@ -46,7 +46,7 @@ export function HomeRequestsTab({ data, reload }: { data: HomeData | null; reloa
     setBusy(true);
     try {
       await apiPost("/api/staff/home/confirm", { requestId: confirming.id, ...(fee.trim() ? { feeFils: FILS(fee) } : {}) });
-      toast({ title: `✅ ${confirming.code}`, description: t("hc.req.confirmed") });
+      toast({ title: confirming.code, description: t("hc.req.confirmed") });
       setConfirming(null); setFee("");
       await reload();
     } catch (err) {

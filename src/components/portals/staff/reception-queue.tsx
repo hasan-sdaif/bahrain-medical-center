@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusBadge } from "@/components/shared/badges";
+import { DoorOpen, Monitor, Volume2 } from "lucide-react";
 import { ErrorBox, LoadingRows, SERVICE_POINTS, errText, type QueueRow } from "./emr-shared";
 import { cn } from "@/lib/utils";
 
@@ -109,7 +110,7 @@ export function ReceptionQueue() {
             <Input id="q-room" value={room} onChange={(e) => setRoom(e.target.value)} className="h-10 text-center font-bold" />
           </div>
           <Button size="lg" className="h-12 px-8 text-base font-bold" disabled={calling} onClick={callNext}>
-            🔊 {calling ? t("common.loading") : t("rec.queue.callnext")}
+            <Volume2 className="size-4" aria-hidden /> {calling ? t("common.loading") : t("rec.queue.callnext")}
           </Button>
           <Badge variant="outline" className="h-9 px-3 text-xs gap-1 self-end ms-auto">{t("rec.queue.waiting")}: <b className="font-mono">{waitingCount}</b></Badge>
         </div>
@@ -122,7 +123,7 @@ export function ReceptionQueue() {
           <div className="font-mono text-4xl font-black tracking-wider" dir="ltr">{called.code}</div>
           <div className="text-lg font-bold">{called.patient?.nameAr}</div>
           <div className="text-sm text-muted-foreground font-mono">{called.patient?.mrn}</div>
-          <Badge className="bg-teal-600 border-transparent text-white text-sm">🚪 {called.room}</Badge>
+          <Badge className="bg-teal-600 border-transparent text-white text-sm"><DoorOpen aria-hidden />{called.room}</Badge>
           {called.priority !== "normal" && <Badge variant="outline" className={cn("border-transparent", PRIO_TONE[called.priority])}>{t(`priority.${called.priority}`)}</Badge>}
           <Button size="sm" className="ms-auto h-9" onClick={() => serve(called.id, called.code, "serve")}>{t("rec.queue.act.serve")}</Button>
         </div>
@@ -178,8 +179,8 @@ export function ReceptionQueue() {
       {/* mini display monitor */}
       <div className="rounded-lg border p-3">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-sm font-semibold">🖥️ {t("rec.queue.display")}</span>
-          <Badge variant="outline" className="text-[10px] bg-teal-50">● {t("rec.queue.live")}</Badge>
+          <span className="text-sm font-semibold inline-flex items-center gap-2"><Monitor className="size-4 shrink-0" aria-hidden />{t("rec.queue.display")}</span>
+          <Badge variant="outline" className="text-[10px] bg-teal-50"><span aria-hidden className="inline-block size-2 rounded-full bg-teal-600" />{t("rec.queue.live")}</Badge>
           <Button size="sm" variant="ghost" className="ms-auto h-7 text-[11px]" onClick={load}>{t("common.refresh")}</Button>
         </div>
         <div className="flex flex-wrap gap-1.5">

@@ -61,7 +61,7 @@ export function NewInvoice({ patient, onCreated, onQuotationAccepted }: {
       onCreated(inv);
       setOpen(false);
       setLines([newLine()]); setDiscount(""); setQuotation(false);
-      toast({ title: `✅ ${inv.code}`, description: t("bc.inv.result") });
+      toast({ title: inv.code, description: t("bc.inv.result") });
     } catch (err) {
       toast({ title: t("common.error"), description: problemDetail(err, lang), variant: "destructive" });
     } finally { setBusy(false); }
@@ -75,7 +75,7 @@ export function NewInvoice({ patient, onCreated, onQuotationAccepted }: {
       const upd = { ...last, status: "issued" as const };
       setLast(upd);
       onQuotationAccepted(last.id);
-      toast({ title: `✅ ${last.code}`, description: t("bc.inv.accepted") });
+      toast({ title: last.code, description: t("bc.inv.accepted") });
     } catch (err) {
       toast({ title: t("common.error"), description: problemDetail(err, lang), variant: "destructive" });
     } finally { setAcceptBusy(false); }
@@ -179,7 +179,7 @@ export function NewInvoice({ patient, onCreated, onQuotationAccepted }: {
                 <AlertDescription>{t("bc.inv.cappedHint")}</AlertDescription>
               </Alert>
             )}
-            {last.insurerFils === 0 && <p className="text-xs text-muted-foreground">ℹ️ {t("bc.inv.noPatientPolicy")}</p>}
+            {last.insurerFils === 0 && <p className="text-xs text-muted-foreground">{t("bc.inv.noPatientPolicy")}</p>}
             {last.isQuotation && last.status === "draft" && (
               <div className="flex flex-wrap items-end gap-2 rounded-xl border border-dashed p-3">
                 <div className="space-y-1 flex-1 min-w-40">

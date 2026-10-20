@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2 } from "lucide-react";
+import { Loader2, Camera } from "lucide-react";
 import { errText, fmtDT, type AssetRow, type FaultResp } from "./ops-shared";
 
 const IMPACTS = ["full", "partial", "none"] as const;
@@ -98,7 +98,7 @@ export function FaultDialog({ asset, open, onOpenChange, onDone }: {
               </SelectContent>
             </Select>
           </div>
-          <p className="text-xs text-muted-foreground">📷 {t("ops.fault.photos")}</p>
+          <p className="text-xs text-muted-foreground flex items-center gap-1.5"><Camera className="size-3.5 shrink-0" aria-hidden />{t("ops.fault.photos")}</p>
           {err ? <Alert variant="destructive"><AlertDescription className="text-sm">{err}</AlertDescription></Alert> : null}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} className="h-11">{t("common.cancel")}</Button>

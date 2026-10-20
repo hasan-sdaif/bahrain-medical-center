@@ -5,6 +5,7 @@
  * the new-run form (CBC/HGB/K/GLU-F × levels 1-3).
  */
 import { useMemo, useState } from "react";
+import { ChartLine, TestTube } from "lucide-react";
 import { useI18n } from "@/i18n";
 import { apiPost } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
@@ -108,7 +109,7 @@ export default function QcTab() {
 
           <Card className="gap-2">
             <CardHeader className="py-3 px-4">
-              <CardTitle className="text-sm">📈 {t("lab.qc.chart")}</CardTitle>
+              <CardTitle className="text-sm flex items-center gap-2"><ChartLine className="size-4 text-primary" aria-hidden />{t("lab.qc.chart")}</CardTitle>
             </CardHeader>
             <CardContent className="px-4 pb-4 pt-0">
               <p className="text-[11px] text-muted-foreground mb-1">{t("lab.qc.chartHint")}</p>
@@ -139,7 +140,7 @@ export default function QcTab() {
 
       <Card className="gap-3">
         <CardHeader className="py-3 px-4">
-          <CardTitle className="text-sm">🧪 {t("lab.qc.new")}</CardTitle>
+          <CardTitle className="text-sm flex items-center gap-2"><TestTube className="size-4 text-primary" aria-hidden />{t("lab.qc.new")}</CardTitle>
         </CardHeader>
         <CardContent className="px-4 pb-4 pt-0">
           <div className="flex flex-wrap items-end gap-3">

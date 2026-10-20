@@ -75,7 +75,7 @@ export function ClaimsTab({ invoices, onClaimed }: { invoices: SessionInvoice[];
         if (coding.trim()) body.correctedCoding = coding.trim();
       }
       const r = await apiPost<{ id: string; code: string }>("/api/staff/claims/submit", body);
-      toast({ title: `✅ ${r.code}`, description: t("bc.cl.submitted", { code: r.code }) });
+      toast({ title: r.code, description: t("bc.cl.submitted", { code: r.code }) });
       onClaimed(picked.filter((v) => invoices.some((i) => i.id === v)), r.code);
       setOpen(false);
       void load();
@@ -93,7 +93,7 @@ export function ClaimsTab({ invoices, onClaimed }: { invoices: SessionInvoice[];
     setBusy(true);
     try {
       await apiPost("/api/staff/claims/remit", { claimId: claim.id, ...body });
-      toast({ title: `✅ ${claim.code}`, description: t("bc.cl.remitted") });
+      toast({ title: claim.code, description: t("bc.cl.remitted") });
       done();
       void load();
     } catch (err) {
@@ -193,7 +193,7 @@ export function ClaimsTab({ invoices, onClaimed }: { invoices: SessionInvoice[];
                   </label>
                 ))}
               </div>
-              {picked.length === 0 && <p className="text-xs text-muted-foreground">ℹ️ {t("bc.cl.selectInvoice")}</p>}
+              {picked.length === 0 && <p className="text-xs text-muted-foreground">{t("bc.cl.selectInvoice")}</p>}
             </div>
             <div className="space-y-1">
               <Label>{t("bc.pa.payer")}</Label>

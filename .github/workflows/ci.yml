@@ -12,6 +12,9 @@ jobs:
     name: Lint · Types · Prisma · Build
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      DATABASE_URL: file:/tmp/ci.db
+      BMC_INTERNAL_KEY: ci-internal-key
     steps:
       - uses: actions/checkout@v4
 
@@ -36,13 +39,26 @@ jobs:
 
       - name: Build
         run: bun run build
-        env:
-          DATABASE_URL: file:/tmp/ci.db
 
-      - name: System self-check (boot + API smoke)
+      - name: Start production server
         run: |
-          bun run start &
-          sleep 12
-          bun run scripts/verify-system.mjs || true
-        env:
-          DATABASE_URL: file:/tmp/ci.db
+          nohup bun run start > server.out 2>&1 &
+          for i in $(seq 1 30); do
+            sleep 2
+            if curl -sf http://localhost:3000/api/system/health > /dev/null 2>&1; then
+              echo "server up after $((i*2))s"; exit 0
+            fi
+          done
+          echo "::error::server did not boot"; cat server.out; exit 1
+
+      - name: System self-check (API smoke)
+        run: bun scripts/verify-system.mjs
+
+      - name: Realtime service check
+        run: |
+          cd mini-services/realtime
+          bun install --frozen-lockfile || bun install
+          nohup bun run start > rt.out 2>&1 &
+          sleep 4
+          curl -sf http://localhost:3003/ | grep -q '"ok":true' && echo "realtime OK"
+          cd ../..

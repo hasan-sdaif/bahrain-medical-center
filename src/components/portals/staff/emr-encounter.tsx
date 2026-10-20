@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/shared/badges";
+import { Check, FileSignature, Flag, Lock, Plus, Stethoscope } from "lucide-react";
 import { Empty, SIGN_ROLES, Section, errText, type ChartData, type EncounterRow } from "./emr-shared";
 import { cn } from "@/lib/utils";
 
@@ -108,7 +109,7 @@ export function EncounterTab({ chart, reload }: Props) {
   if (!chart.clinical) return <Empty label={t("emr.admin.note")} className="py-10" />;
   if (!canWrite) {
     return (
-      <Section title={`🩺 ${t("emr.soap.title")}`}>
+      <Section title={<><Stethoscope className="size-4 shrink-0" aria-hidden />{t("emr.soap.title")}</>}>
         <p className="text-sm text-muted-foreground p-2">{t("emr.enc.nowrite")}</p>
       </Section>
     );
@@ -132,15 +133,15 @@ export function EncounterTab({ chart, reload }: Props) {
             <SelectContent>
               {encounters.map((e) => (
                 <SelectItem key={e.id} value={e.id} className="text-xs">
-                  <span className="font-mono">{e.code}</span> · {bhDateString(e.startedAt)} {e.signedAt ? "✅" : ""}
+                  <span className="font-mono">{e.code}</span> · {bhDateString(e.startedAt)} {e.signedAt ? t("status.signed") : ""}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
-        <Button variant="outline" className="h-9" disabled={busy} onClick={createEnc}>＋ {t("emr.enc.new")}</Button>
-        {canSign && enc && !enc.signedAt && <Button className="h-9 bg-teal-600 hover:bg-teal-700" disabled={busy} onClick={() => setSignOpen(true)}>✍️ {t("emr.enc.sign")}</Button>}
-        {canSign && enc && <Button variant="secondary" className="h-9" disabled={busy} onClick={() => setFinishOpen(true)}>🏁 {t("emr.enc.finish")}</Button>}
+        <Button variant="outline" className="h-9" disabled={busy} onClick={createEnc}><Plus className="size-4" aria-hidden />{t("emr.enc.new")}</Button>
+        {canSign && enc && !enc.signedAt && <Button className="h-9 bg-teal-600 hover:bg-teal-700" disabled={busy} onClick={() => setSignOpen(true)}><FileSignature className="size-4" aria-hidden />{t("emr.enc.sign")}</Button>}
+        {canSign && enc && <Button variant="secondary" className="h-9" disabled={busy} onClick={() => setFinishOpen(true)}><Flag className="size-4" aria-hidden />{t("emr.enc.finish")}</Button>}
         {enc && (
           <span className="flex items-center gap-1.5 ms-auto">
             <StatusBadge status={enc.signedAt ? "signed" : enc.status} />
@@ -154,13 +155,13 @@ export function EncounterTab({ chart, reload }: Props) {
           <b>{t("emr.enc.checks")}:</b>
           {(Object.keys(cl) as (keyof FinChecks)[]).map((k) => (
             <Badge key={k} variant="outline" className={cn("border-transparent", checks[k] ? "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200" : "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200")}>
-              {checks[k] ? "✓" : "…"} {t(`emr.enc.chk.${k}`)}
+              {checks[k] ? <Check aria-hidden /> : "…"} {t(`emr.enc.chk.${k}`)}
             </Badge>
           ))}
         </div>
       )}
 
-      <Section title={`🩺 ${t("emr.soap.title")}`}>
+      <Section title={<><Stethoscope className="size-4 shrink-0" aria-hidden />{t("emr.soap.title")}</>}>
         <div className="grid gap-3 md:grid-cols-2">
           <F k="chief" rows={2} />
           <F k="hpi" rows={4} />
@@ -172,7 +173,7 @@ export function EncounterTab({ chart, reload }: Props) {
             <div className="grid content-end gap-2">
               <p className="text-[11px] text-muted-foreground">{t("emr.soap.hint")}</p>
               <Button className="h-10" disabled={!enc || busy || !!enc?.signedAt} onClick={saveSoap}>
-                {enc?.signedAt ? `🔒 ${t("emr.enc.already")}` : busy ? t("common.loading") : t("common.save")}
+                {enc?.signedAt ? <span className="flex items-center gap-2"><Lock className="size-4" aria-hidden />{t("emr.enc.already")}</span> : busy ? t("common.loading") : t("common.save")}
               </Button>
             </div>
           </div>
@@ -187,7 +188,7 @@ export function EncounterTab({ chart, reload }: Props) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-            <AlertDialogAction onClick={sign}>✍️ {t("common.sign")}</AlertDialogAction>
+            <AlertDialogAction onClick={sign}><FileSignature className="size-4" aria-hidden />{t("common.sign")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -195,13 +196,13 @@ export function EncounterTab({ chart, reload }: Props) {
       <Dialog open={finishOpen} onOpenChange={setFinishOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-sm">🏁 {t("emr.enc.finish")}</DialogTitle>
+            <DialogTitle className="text-sm flex items-center gap-2"><Flag className="size-4 shrink-0" aria-hidden />{t("emr.enc.finish")}</DialogTitle>
             <DialogDescription className="text-xs">{t("emr.enc.finishDesc")}</DialogDescription>
           </DialogHeader>
           <ul className="grid gap-1.5 text-sm">
             {(Object.keys(cl) as (keyof FinChecks)[]).map((k) => (
               <li key={k} className="flex items-center gap-2 rounded-md border p-2">
-                <span className={cn("size-5 grid place-items-center rounded-full text-[11px] font-bold", cl[k] ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800")}>{cl[k] ? "✓" : "!"}</span>
+                <span className={cn("size-5 grid place-items-center rounded-full", cl[k] ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800")}>{cl[k] ? <Check className="size-3" aria-hidden /> : "!"}</span>
                 {t(`emr.enc.chk.${k}`)}
               </li>
             ))}

@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ChartLine, History } from "lucide-react";
 import { Empty, Section, errText, type ChartData } from "./emr-shared";
 
 interface Props { chart: ChartData; reload: () => void }
@@ -59,7 +60,7 @@ export function VitalsTab({ chart, reload }: Props) {
   return (
     <div className="grid gap-3 lg:grid-cols-2">
       {canTriage ? (
-      <Section title={`📈 ${t("emr.tab.vitals")}`}>
+      <Section title={<><ChartLine className="size-4 shrink-0" aria-hidden />{t("emr.tab.vitals")}</>}>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {FIELDS.map((f) => (
             <div key={f.k} className="grid gap-1">
@@ -77,12 +78,12 @@ export function VitalsTab({ chart, reload }: Props) {
         </div>
       </Section>
       ) : (
-        <Section title={`📈 ${t("emr.tab.vitals")}`}>
+        <Section title={<><ChartLine className="size-4 shrink-0" aria-hidden />{t("emr.tab.vitals")}</>}>
           <p className="text-sm text-muted-foreground p-2">{t("emr.vit.norole")}</p>
         </Section>
       )}
 
-      <Section title={`🕘 ${t("emr.vit.history")}`}>
+      <Section title={<><History className="size-4 shrink-0" aria-hidden />{t("emr.vit.history")}</>}>
         {history.length === 0 ? <Empty label={t("emr.none.vitals")} className="py-4" /> : (
           <div className="rounded-md border overflow-x-auto max-h-96 overflow-y-auto bmc-scroll">
             <Table className="text-xs">

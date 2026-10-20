@@ -5,6 +5,7 @@
  * 412 CONSENT_REQUIRED handled as problem+json toast). Report dialog: lab-radreport.
  */
 import { useEffect, useRef, useState } from "react";
+import { Info, Plus, Scan, TriangleAlert } from "lucide-react";
 import { useI18n } from "@/i18n";
 import { apiGet, apiPost } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
@@ -69,7 +70,7 @@ function PatientSearch({ picked, onPick, onClear }: { picked: PickPatient | null
   return (
     <div className="grid gap-2">
       <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("search.placeholder")} className="h-11" aria-label={t("lab.rad.pick")} />
-      {fallback && <p className="text-xs text-muted-foreground">ℹ️ {t("lab.rad.fallback")}</p>}
+      {fallback && <p className="text-xs text-muted-foreground flex items-center gap-1.5"><Info className="size-3.5 shrink-0" aria-hidden />{t("lab.rad.fallback")}</p>}
       {busy && <div className="grid gap-2">{Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-11" />)}</div>}
       {!busy && hits && hits.length > 0 && (
         <div className="rounded-xl border divide-y max-h-56 overflow-y-auto" role="listbox" aria-label={t("lab.rad.pick")}>
@@ -111,7 +112,7 @@ function CaptureDialog({ open, onClose, onDone }: { open: boolean; onClose: () =
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>🩻 {t("lab.rad.new")}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2"><Scan className="size-5 text-primary" aria-hidden />{t("lab.rad.new")}</DialogTitle>
           <DialogDescription>{t("lab.rad.hint")}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-3">
@@ -130,11 +131,11 @@ function CaptureDialog({ open, onClose, onDone }: { open: boolean; onClose: () =
           </div>
           <Label className="flex items-start gap-2.5 font-normal cursor-pointer rounded-lg border bg-amber-50/60 dark:bg-amber-950/20 p-3 text-sm">
             <Checkbox checked={preg} onCheckedChange={(v) => setPreg(v === true)} className="mt-0.5" />
-            <span>🤰 {t("lab.rad.preg")}</span>
+            <span>{t("lab.rad.preg")}</span>
           </Label>
         </div>
         <DialogFooter>
-          <p className="text-xs text-muted-foreground flex-1">{picked && !preg ? `⚠️ ${t("lab.rad.needPick")}` : ""}</p>
+          <p className="text-xs text-muted-foreground flex-1">{picked && !preg ? (<span className="inline-flex items-center gap-1.5"><TriangleAlert className="size-3.5 shrink-0" aria-hidden />{t("lab.rad.needPick")}</span>) : ""}</p>
           <Button variant="outline" onClick={onClose}>{t("common.cancel")}</Button>
           <Button disabled={!picked || !preg || busy} onClick={submit}>{busy ? "…" : t("lab.rad.capture")}</Button>
         </DialogFooter>
@@ -154,7 +155,7 @@ export default function RadTab() {
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
         <p className="text-xs text-muted-foreground flex-1 min-w-52">{t("lab.rad.hint")}</p>
-        <Button size="sm" className="h-9" onClick={() => setCapture(true)}>＋ {t("lab.rad.new")}</Button>
+        <Button size="sm" className="h-9" onClick={() => setCapture(true)}><Plus className="size-4" aria-hidden />{t("lab.rad.new")}</Button>
       </div>
 
       <LabPanel loading={loading} error={error} onRetry={reload} isEmpty={rows.length === 0}>

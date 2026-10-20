@@ -15,18 +15,20 @@ import { PayTab } from "./billing-pay";
 import { ShiftsTab } from "./billing-shifts";
 import { PreauthsTab } from "./billing-preauth";
 import { ClaimsTab } from "./billing-claims";
+import { Banknote, Coins, FileCheck2, ReceiptText, Send } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import type { SessionInvoice, SessionPayment } from "./billing-types";
 
 type TabKey = "invoices" | "pay" | "shifts" | "preauths" | "claims";
 
 const BILLING_ROLES = new Set(["cashier", "insurance", "center-manager"]);
 const INSURANCE_ROLES = new Set(["insurance"]);
-const TABS: readonly { key: TabKey; gate: Set<string>; icon: string }[] = [
-  { key: "invoices", gate: BILLING_ROLES, icon: "🧾" },
-  { key: "pay", gate: BILLING_ROLES, icon: "💵" },
-  { key: "shifts", gate: BILLING_ROLES, icon: "🪙" },
-  { key: "preauths", gate: INSURANCE_ROLES, icon: "🗂️" },
-  { key: "claims", gate: INSURANCE_ROLES, icon: "📨" },
+const TABS: readonly { key: TabKey; gate: Set<string>; icon: LucideIcon }[] = [
+  { key: "invoices", gate: BILLING_ROLES, icon: ReceiptText },
+  { key: "pay", gate: BILLING_ROLES, icon: Banknote },
+  { key: "shifts", gate: BILLING_ROLES, icon: Coins },
+  { key: "preauths", gate: INSURANCE_ROLES, icon: FileCheck2 },
+  { key: "claims", gate: INSURANCE_ROLES, icon: Send },
 ];
 
 export default function Billing() {
@@ -75,8 +77,8 @@ export default function Billing() {
       <Tabs value={active} onValueChange={(v) => setTab(v as TabKey)}>
         <TabsList className="h-auto w-full flex-wrap justify-start gap-1">
           {tabs.map((key) => (
-            <TabsTrigger key={key} value={key} className="h-9 flex-none px-3">
-              <span aria-hidden>{TABS.find((x) => x.key === key)?.icon}</span>
+            <TabsTrigger key={key} value={key} className="h-9 flex-none gap-1.5 px-3">
+              {(() => { const Icon = TABS.find((x) => x.key === key)?.icon; return Icon ? <Icon aria-hidden className="size-4" /> : null; })()}
               {t(`bc.tab.${key}`)}
             </TabsTrigger>
           ))}

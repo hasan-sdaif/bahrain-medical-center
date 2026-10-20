@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Code128 } from "@/components/shared/barcode";
 import { PatientBanner } from "@/components/shared/patient-banner";
 import { AssuranceDot, Empty, ErrorBox, LoadingRows, errText, getLastPatient, setLastPatient, type ChartData, type SearchResp } from "./emr-shared";
+import { ChartLine, ClipboardList, CornerUpRight, FileSignature, FlaskConical, Inbox, Pill, Stethoscope, TriangleAlert } from "lucide-react";
 import { ChartTab } from "./emr-chart";
 import { EncounterTab } from "./emr-encounter";
 import { OrdersTab } from "./emr-orders";
@@ -31,8 +32,8 @@ export interface EmrTabProps {
 }
 
 const TABS = [
-  ["summary", "📋"], ["encounter", "🩺"], ["orders", "🧪"], ["rx", "💊"],
-  ["vitals", "📈"], ["referral", "↗"], ["consents", "✍"], ["inbox", "📥"],
+  ["summary", ClipboardList], ["encounter", Stethoscope], ["orders", FlaskConical], ["rx", Pill],
+  ["vitals", ChartLine], ["referral", CornerUpRight], ["consents", FileSignature], ["inbox", Inbox],
 ] as const;
 type TabKey = (typeof TABS)[number][0];
 
@@ -121,7 +122,7 @@ export default function Emr() {
         </div>
         {open && resp && (
           <div className="rounded-lg border p-2 grid gap-1.5 max-h-80 overflow-y-auto bmc-scroll" role="listbox">
-            {resp.similar.length > 0 && <div className="text-[11px] text-amber-800 dark:text-amber-200 px-1">⚠️ {t("search.dupwarn")} — {t("rec.similar.note")}</div>}
+            {resp.similar.length > 0 && <div className="text-[11px] text-amber-800 dark:text-amber-200 px-1 flex items-center gap-1.5"><TriangleAlert className="size-3.5 shrink-0" aria-hidden />{t("search.dupwarn")} — {t("rec.similar.note")}</div>}
             {resp.exact.map((p) => <Row key={p.id} p={p} />)}
             {resp.similar.map((p) => <Row key={p.id} p={p} similar />)}
             {!resp.exact.length && !resp.similar.length && <Empty label={t("search.empty")} />}
@@ -139,9 +140,9 @@ export default function Emr() {
       {chart && (
         <Tabs value={tab} onValueChange={(v) => setTab(v as TabKey)} className="gap-3">
           <TabsList className="h-auto w-full flex-wrap justify-start gap-1">
-            {TABS.map(([key, icon]) => (
-              <TabsTrigger key={key} value={key} className="h-9 flex-none px-3 text-xs">
-                <span aria-hidden>{icon}</span> {t(`emr.tab.${key}`)}
+            {TABS.map(([key, Icon]) => (
+              <TabsTrigger key={key} value={key} className="h-9 flex-none gap-1.5 px-3 text-xs">
+                <Icon aria-hidden className="size-4" /> {t(`emr.tab.${key}`)}
               </TabsTrigger>
             ))}
           </TabsList>

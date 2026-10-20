@@ -13,18 +13,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { XCircle } from "lucide-react";
+import { ClipboardList, MapPin, Route, XCircle } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { problemDetail } from "./billing-types";
 import { HomeRequestsTab, type HomeData } from "./home-requests";
 import { HomeRoutesTab } from "./home-routes";
 import { HomeZonesTab } from "./home-zones";
 
-const TABS = [
-  { key: "requests", icon: "📋" },
-  { key: "routes", icon: "🗺️" },
-  { key: "zones", icon: "📍" },
-] as const;
-type TabKey = (typeof TABS)[number]["key"];
+type TabKey = "requests" | "routes" | "zones";
+const TABS: readonly { key: TabKey; icon: LucideIcon }[] = [
+  { key: "requests", icon: ClipboardList },
+  { key: "routes", icon: Route },
+  { key: "zones", icon: MapPin },
+];
 
 export default function HomeCare() {
   const { staff } = useApp();
@@ -62,9 +63,9 @@ export default function HomeCare() {
       ) : (
         <Tabs value={tab} onValueChange={(v) => setTab(v as TabKey)}>
           <TabsList className="h-auto w-full flex-wrap justify-start gap-1">
-            {TABS.map(({ key, icon }) => (
-              <TabsTrigger key={key} value={key} className="h-9 flex-none px-3">
-                <span aria-hidden>{icon}</span>
+            {TABS.map(({ key, icon: Icon }) => (
+              <TabsTrigger key={key} value={key} className="h-9 flex-none gap-1.5 px-3">
+                <Icon aria-hidden className="size-4" />
                 {t(`hc.tab.${key}`)}
               </TabsTrigger>
             ))}

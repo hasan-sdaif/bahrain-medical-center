@@ -38,7 +38,7 @@ export function HomeZonesTab({ data }: { data: HomeData | null }) {
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-muted-foreground">ℹ️ {t("hc.zones.note")}</p>
+      <p className="text-xs text-muted-foreground">{t("hc.zones.note")}</p>
       <div className="grid gap-3 md:grid-cols-2">
         {data.zones.map((z) => {
           const sched = ZONE_SCHEDULE[z.governorate];

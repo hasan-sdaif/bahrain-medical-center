@@ -82,7 +82,7 @@ function SeededPicker() {
           <p className="text-xs text-muted-foreground">{lang === "ar" ? s.noteAr : s.noteEn}</p>
         </div>
       ))}
-      <p className="text-xs text-muted-foreground md:col-span-2">ℹ️ {t("bc.inv.seededHint")}</p>
+      <p className="text-xs text-muted-foreground md:col-span-2">{t("bc.inv.seededHint")}</p>
     </div>
   );
 }

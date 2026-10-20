@@ -36,7 +36,9 @@ export function DomainBar() {
           </button>
           <div className="flex-1" />
           <div role="tablist" aria-label={t("shell.domains.label")} className="flex items-center gap-1 overflow-x-auto">
-            {DOMAINS.map((d) => (
+            {DOMAINS.map((d) => {
+              const Icon = ICONS[d.key];
+              return (
               <Tooltip key={d.key}>
                 <TooltipTrigger asChild>
                   <button
@@ -50,7 +52,7 @@ export function DomainBar() {
                         : "text-muted-foreground hover:text-foreground hover:bg-muted",
                     )}
                   >
-                    <ICONS[d.key] aria-hidden className="me-1 inline size-4" />
+                    <Icon aria-hidden className="me-1 inline size-4" />
                     <span className="hidden md:inline">{t(`shell.domain.${d.key}`)}</span>
                     <span className="md:hidden">{t(`shell.domain.${d.key}`).split(" ")[0]}</span>
                     <span dir="ltr" className="ms-1.5 hidden lg:inline text-[10px] font-mono opacity-70">{d.host}</span>
@@ -58,7 +60,8 @@ export function DomainBar() {
                 </TooltipTrigger>
                 <TooltipContent side="bottom">{d.host} — {t("shell.domain.hint")}</TooltipContent>
               </Tooltip>
-            ))}
+              );
+            })}
           </div>
         </div>
       </nav>

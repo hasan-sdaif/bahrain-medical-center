@@ -5,6 +5,7 @@
  * impression + e-sign checkbox, and a DICOM/PACS speckle-noise image placeholder.
  */
 import { useEffect, useRef, useState } from "react";
+import { Image as ImageIcon, Signature } from "lucide-react";
 import { useI18n } from "@/i18n";
 import { apiPost } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
@@ -50,7 +51,7 @@ function SpeckleImage({ seed }: { seed: string }) {
   return (
     <figure className="grid gap-1.5 justify-items-center">
       <canvas ref={ref} width={288} height={216} role="img" aria-label={t("lab.rad.image")} className="rounded-lg border w-full max-w-72" />
-      <figcaption className="text-[10px] text-muted-foreground font-mono">🖼 {t("lab.rad.image")}</figcaption>
+      <figcaption className="text-[10px] text-muted-foreground font-mono flex items-center gap-1.5"><ImageIcon className="size-3.5 shrink-0" aria-hidden />{t("lab.rad.image")}</figcaption>
     </figure>
   );
 }
@@ -84,7 +85,7 @@ export function ReportDialog({ study, open, onClose, onDone }: { study: StudyRow
         template,
         sign,
       });
-      toast({ title: `✅ ${t("lab.rad.reportOk")}`, description: sign ? `${t("common.sign")}: ${study.code}` : study.code });
+      toast({ title: t("lab.rad.reportOk"), description: sign ? `${t("common.sign")}: ${study.code}` : study.code });
       onDone();
       onClose();
     } catch (e) {
@@ -160,7 +161,7 @@ export function ReportDialog({ study, open, onClose, onDone }: { study: StudyRow
             </div>
             <Label className="flex items-start gap-2.5 font-normal cursor-pointer rounded-lg border p-3 text-sm">
               <Checkbox checked={sign} onCheckedChange={(v) => setSign(v === true)} className="mt-0.5" />
-              <span>✍️ {t("lab.rad.sign")}</span>
+              <span className="inline-flex items-center gap-1.5"><Signature className="size-3.5 shrink-0" aria-hidden />{t("lab.rad.sign")}</span>
             </Label>
           </div>
           <SpeckleImage seed={study.images[0]?.seed ?? study.code} />

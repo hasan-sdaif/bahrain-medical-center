@@ -83,7 +83,7 @@ function Receipt({ inv, result, onClose }: { inv: SessionInvoice; result: PayRes
             <p className="text-[10px] text-muted-foreground max-w-40">{t("bc.pay.verifyQr")}</p>
           </div>
         </div>
-        <p className="text-xs text-center text-muted-foreground border-t pt-3">🔒 {t("bc.pay.notice.cards")}</p>
+        <p className="text-xs text-center text-muted-foreground border-t pt-3">{t("bc.pay.notice.cards")}</p>
       </CardContent>
     </Card>
   );
@@ -124,7 +124,7 @@ export function PayTab({ invoices, preselected, onPaid, onClearPreselected }: {
       setReceipt({ inv: target, result });
       onPaid(target.id, payment, r.invoiceStatus);
       setTarget(null);
-      toast({ title: `✅ ${r.code}`, description: `${t("bc.pay.done")} — ${t("bc.pay.invoiceStatus")}: ${t(`status.${r.invoiceStatus}`)}` });
+      toast({ title: r.code, description: `${t("bc.pay.done")} — ${t("bc.pay.invoiceStatus")}: ${t(`status.${r.invoiceStatus}`)}` });
     } catch (err) {
       const e = err as { status?: number; problem?: Record<string, unknown> };
       if (e.status === 409 && e.problem?.code === "IDEMPOTENT_DUP") {

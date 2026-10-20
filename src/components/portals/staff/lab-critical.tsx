@@ -5,6 +5,7 @@
  * scheduler-driven escalation chain explainer (10 min → on-call → 20 min → heads).
  */
 import { useEffect, useState } from "react";
+import { AlarmClock, ChevronDown, ChevronUp, Siren, Timer } from "lucide-react";
 import { useI18n } from "@/i18n";
 import { apiPost } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
@@ -41,7 +42,7 @@ export default function CriticalTab() {
     setBusy(a.id);
     try {
       await apiPost("/api/staff/lab/ack-critical", { alertId: a.id });
-      toast({ title: `✅ ${t("lab.crit.acked")}`, description: `${a.test} — ${a.patient.nameAr}` });
+      toast({ title: t("lab.crit.acked"), description: `${a.test} — ${a.patient.nameAr}` });
       reload();
     } catch (e) {
       toast({ title: t("common.error"), description: errText(e, lang), variant: "destructive" });
@@ -89,17 +90,17 @@ export default function CriticalTab() {
                     </TableCell>
                     <TableCell><Badge variant="outline" className={cn("border-transparent text-[10px] font-semibold", ST_TONE[a.status] ?? ST_TONE.new)}>{t(ST_KEY[a.status] ?? "lab.crit.st.new")}</Badge></TableCell>
                     <TableCell>
-                      <span className={cn("inline-flex rounded-md px-1.5 py-0.5 font-mono text-[11px] font-bold tabular-nums", late ? "bg-red-100 text-red-900 dark:bg-red-950 dark:text-red-200" : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200")}>
-                        ⏱ {t("lab.crit.since", { n: minutes })}
+                      <span className={cn("inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-mono text-[11px] font-bold tabular-nums", late ? "bg-red-100 text-red-900 dark:bg-red-950 dark:text-red-200" : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200")}>
+                        <Timer className="size-3.5" aria-hidden /> {t("lab.crit.since", { n: minutes })}
                       </span>
                     </TableCell>
                     <TableCell className="text-end">
                       <div className="inline-flex flex-col gap-1 items-end">
                         <Button size="sm" className="h-9 px-3 text-[11px] font-bold bg-red-600 hover:bg-red-700" disabled={busy === a.id} onClick={() => ack(a)}>
-                          {busy === a.id ? "…" : `🚨 ${t("lab.crit.ack")}`}
+                          {busy === a.id ? "…" : (<><Siren className="size-4" aria-hidden />{t("lab.crit.ack")}</>)}
                         </Button>
                         <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px] text-muted-foreground" onClick={() => setOpenLog(openLog === a.id ? null : a.id)}>
-                          {openLog === a.id ? "▲" : "▼"} {t("lab.crit.log")}
+                          {openLog === a.id ? <ChevronUp className="size-3.5" aria-hidden /> : <ChevronDown className="size-3.5" aria-hidden />}{t("lab.crit.log")}
                         </Button>
                       </div>
                     </TableCell>
@@ -128,7 +129,7 @@ export default function CriticalTab() {
 
       <Card className="gap-3 border-red-200 dark:border-red-900">
         <CardHeader className="py-3 px-4">
-          <CardTitle className="text-sm">⏰ {t("lab.crit.esc.title")}</CardTitle>
+          <CardTitle className="text-sm flex items-center gap-2"><AlarmClock className="size-4 text-primary" aria-hidden />{t("lab.crit.esc.title")}</CardTitle>
         </CardHeader>
         <CardContent className="px-4 pb-4 pt-0">
           <ol className="grid gap-2 text-xs">

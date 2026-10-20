@@ -68,7 +68,7 @@ export function ShiftsTab({ payments }: { payments: SessionPayment[] }) {
       const r = await apiPost<{ id: string }>("/api/staff/shifts/open", { openingFils: FILS(opening) });
       save({ id: r.id, openingFils: FILS(opening), openedAt: new Date().toISOString() });
       setResult(null); setOpening("");
-      toast({ title: "✅", description: t("bc.shift.openBtn") });
+      toast({ title: t("common.done"), description: t("bc.shift.openBtn") });
     } catch (err) { toast({ title: t("common.error"), description: problemDetail(err, lang), variant: "destructive" }); }
     finally { setBusy(false); }
   };
@@ -79,7 +79,7 @@ export function ShiftsTab({ payments }: { payments: SessionPayment[] }) {
     try {
       const r = await apiPost<CloseShiftResult>("/api/staff/shifts/close", { shiftId: shift.id, countedFils: FILS(counted) });
       setResult(r); save(null); setCounted("");
-      toast({ title: "✅", description: t("bc.shift.result") });
+      toast({ title: t("common.done"), description: t("bc.shift.result") });
     } catch (err) { toast({ title: t("common.error"), description: problemDetail(err, lang), variant: "destructive" }); }
     finally { setBusy(false); }
   };

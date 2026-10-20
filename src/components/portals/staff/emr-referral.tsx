@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DEPARTMENTS, Section, errText, type ChartData } from "./emr-shared";
+import { Check, CornerUpRight, Timer } from "lucide-react";
 
 interface Props { chart: ChartData; reload: () => void }
 const URGENCIES = [
@@ -48,7 +49,7 @@ export function ReferralTab({ chart }: Props) {
 
   return (
     <div className="grid gap-3 max-w-3xl">
-      <Section title={`↗ ${t("emr.tab.referral")}`}>
+      <Section title={<><CornerUpRight className="size-4 shrink-0" aria-hidden />{t("emr.tab.referral")}</>}>
         <div className="grid gap-3">
           <div className="grid gap-1">
             <Label className="text-xs text-muted-foreground">{t("emr.ref.todept")}</Label>
@@ -86,11 +87,14 @@ export function ReferralTab({ chart }: Props) {
 
       {result && (
         <div className="rounded-xl border-2 border-teal-500 bg-teal-50 dark:bg-teal-950/40 p-4 flex flex-wrap items-center gap-3">
-          <Badge className="bg-teal-600 border-transparent text-white text-sm font-mono">✓ {result.code}</Badge>
+          <Badge className="bg-teal-600 border-transparent text-white text-sm font-mono"><Check aria-hidden />{result.code}</Badge>
           {result.responseDueAt && (
-            <span className="text-sm">
-              ⏱️ {t("emr.ref.due")}: <b className="font-mono">{bhDateString(result.responseDueAt)} · {bhTimeString(result.responseDueAt)}</b>
-              <span className="text-xs text-muted-foreground block">{t("emr.ref.slaNote")}</span>
+            <span className="text-sm inline-flex items-start gap-1.5">
+              <Timer className="size-4 shrink-0 mt-0.5" aria-hidden />
+              <span>
+                {t("emr.ref.due")}: <b className="font-mono">{bhDateString(result.responseDueAt)} · {bhTimeString(result.responseDueAt)}</b>
+                <span className="text-xs text-muted-foreground block">{t("emr.ref.slaNote")}</span>
+              </span>
             </span>
           )}
         </div>

@@ -71,6 +71,28 @@ const routes: RouteTable = {
     await audit({ action: "verify-doc", resource: "document", resourceId: doc.id, after: { code } });
     return json({ valid: true, kind: doc.kind, titleAr: doc.titleAr, titleEn: doc.titleEn, issuedAt: doc.issuedAt.toISOString().slice(0, 10), doctorNameAr: emp?.nameAr ?? "—", doctorLicense: emp?.licenseNo ?? "—", expiresAt: doc.expiryAt?.toISOString().slice(0, 10) ?? null });
   },
+  // Identity Reader Adapter (spec §3.6): local Reader Agent posts a scanned
+  // smart-card CPR; we resolve the patient (blind-index exact match) and return
+  // an identity-assurance summary for file opening at reception/kiosk.
+  "POST reader-scan": async (req) => {
+    const b = jo(await req.json()) as { cpr?: string; readerId?: string };
+    const digits = (b.cpr ?? "").replace(/\D/g, "");
+    if (digits.length !== 9) return problem("ID_INVALID_CPR");
+    const bi = blindIndex("CPR", digits, "BH");
+    const ident = await db.patientIdentifier.findUnique({ where: { blindIndex: bi }, include: { patient: { include: { identifiers: true } } } });
+    if (!ident) {
+      await audit({ action: "reader-scan", resource: "patient", after: { readerId: b.readerId ?? "reader-1", result: "not-found" } });
+      return json({ matched: false, needsRegistration: true, cprMasked: maskCpr(digits) }, 200);
+    }
+    const p = ident.patient;
+    const nameAr = [p.firstNameAr, p.fatherAr, p.familyAr].filter(Boolean).join(" ");
+    const nameEn = [p.firstNameEn, p.familyEn].filter(Boolean).join(" ") || null;
+    await audit({ action: "reader-scan", resource: "patient", resourceId: p.id, after: { readerId: b.readerId ?? "reader-1", result: "matched" } });
+    return json({
+      matched: true, needsRegistration: false,
+      patient: { id: p.id, mrn: p.mrn, nameAr, nameEn, dob: p.dob.toISOString().slice(0, 10), gender: p.gender, cprMasked: maskCpr(digits) },
+    });
+  },
   // Realtime relay status (devices page)
   "GET health": async () => {
     const [patients, appts, tickets, alerts, won, realtimeOk] = await Promise.all([

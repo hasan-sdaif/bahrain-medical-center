@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { MoneyText, StatusBadge } from "@/components/shared/badges";
+import { Check, ClipboardList, FlaskConical, Scan, TriangleAlert } from "lucide-react";
 import { Empty, ErrorBox, IMAGING_CATALOG, LAB_CATALOG, LoadingRows, Section, errText, type ChartData, type OrderRow } from "./emr-shared";
 import { cn } from "@/lib/utils";
 
@@ -89,10 +90,10 @@ export function OrdersTab({ chart }: Props) {
 
   return (
     <div className="grid gap-3">
-      <Section title={`🧪 ${t("emr.ord.lab")}`}>
+      <Section title={<><FlaskConical className="size-4 shrink-0" aria-hidden />{t("emr.ord.lab")}</>}>
         <Chips items={LAB_CATALOG} selected={sel} toggle={toggle} />
       </Section>
-      <Section title={`🩻 ${t("emr.ord.imaging")}`}>
+      <Section title={<><Scan className="size-4 shrink-0" aria-hidden />{t("emr.ord.imaging")}</>}>
         <Chips items={IMAGING_CATALOG} selected={sel} toggle={toggle} />
       </Section>
 
@@ -122,19 +123,19 @@ export function OrdersTab({ chart }: Props) {
         {results.map((r) => (
           <div key={r.code} className="grid gap-1.5">
             <div className="rounded-md border border-teal-300 bg-teal-50/60 dark:bg-teal-950/30 p-2.5 text-sm flex flex-wrap items-center gap-2">
-              <Badge className="bg-teal-600 border-transparent text-white">✓ {t("emr.ord.ok", { code: r.code })}</Badge>
+              <Badge className="bg-teal-600 border-transparent text-white"><Check aria-hidden />{t("emr.ord.ok", { code: r.code })}</Badge>
               <MoneyText fils={r.totalFils} className="font-bold" />
             </div>
             {r.warnings.map((w) => (
-              <div key={w.code} role="alert" className="rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950/40 p-2 text-xs text-amber-900 dark:text-amber-200">
-                ⚠️ {bi(lang, w.ar, w.en)}
+              <div key={w.code} role="alert" className="rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950/40 p-2 text-xs text-amber-900 dark:text-amber-200 flex items-center gap-2">
+                <TriangleAlert className="size-4 shrink-0" aria-hidden />{bi(lang, w.ar, w.en)}
               </div>
             ))}
           </div>
         ))}
       </div>
 
-      <Section title={`📋 ${t("emr.ord.history")}`} actions={<Button size="sm" variant="ghost" className="h-7 text-[11px]" onClick={loadOrders}>{t("common.refresh")}</Button>}>
+      <Section title={<><ClipboardList className="size-4 shrink-0" aria-hidden />{t("emr.ord.history")}</>} actions={<Button size="sm" variant="ghost" className="h-7 text-[11px]" onClick={loadOrders}>{t("common.refresh")}</Button>}>
         {ordersErr && <ErrorBox message={ordersErr} onRetry={loadOrders} />}
         {!orders && !ordersErr && <LoadingRows n={3} />}
         {orders && orders.length === 0 && <Empty label={t("common.empty")} className="py-4" />}

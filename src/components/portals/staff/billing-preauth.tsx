@@ -61,7 +61,7 @@ export function PreauthsTab() {
       const r = await apiPost<{ id: string; code: string }>("/api/staff/preauths/request", {
         patientId: patient.id, payerId: payer || PAYERS[0].code, serviceRef: serviceRef.trim(), amountFils: FILS(amount || "0"),
       });
-      toast({ title: `✅ ${r.code}`, description: t("bc.pa.created", { code: r.code }) });
+      toast({ title: r.code, description: t("bc.pa.created", { code: r.code }) });
       setNewOpen(false); setPatient(null); setPayer(""); setServiceRef(""); setAmount("");
       void load();
     } catch (err) { toast({ title: t("common.error"), description: problemDetail(err, lang), variant: "destructive" }); }
@@ -79,7 +79,7 @@ export function PreauthsTab() {
       await apiPost("/api/staff/preauths/approve", action.kind === "approve"
         ? { preauthId: action.pa.id, approvedRef: refInput.trim() || undefined }
         : { preauthId: action.pa.id, reject: reason.trim() });
-      toast({ title: "✅", description: t(action.kind === "approve" ? "bc.pa.approved" : "bc.pa.rejected") });
+      toast({ title: t("common.done"), description: t(action.kind === "approve" ? "bc.pa.approved" : "bc.pa.rejected") });
       setAction(null); setRefInput(""); setReason("");
       void load();
     } catch (err) { toast({ title: t("common.error"), description: problemDetail(err, lang), variant: "destructive" }); }

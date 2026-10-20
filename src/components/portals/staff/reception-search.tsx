@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Code128 } from "@/components/shared/barcode";
+import { CreditCard, Plus, TriangleAlert } from "lucide-react";
 import { AssuranceDot, Empty, ErrorBox, LoadingRows, PrintStyle, errText, setLastPatient, type CheckinResp, type ReaderResp, type RegisterResp, type SearchResp } from "./emr-shared";
 import { RegisterForm, type RegisterMode } from "./reception-register";
 import { SuccessCard } from "./reception-success";
@@ -93,8 +94,8 @@ export function ReceptionSearch() {
       {resp && (resp.exact.length > 0 || resp.similar.length > 0) && (
         <div className="grid gap-3">
           {resp.similar.length > 0 && (
-            <div role="alert" className="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/40 p-3 text-xs text-amber-900 dark:text-amber-200">
-              ⚠️ {t("search.dupwarn")} — {t("rec.similar.note")}
+            <div role="alert" className="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/40 p-3 text-xs text-amber-900 dark:text-amber-200 flex items-center gap-2">
+              <TriangleAlert className="size-4 shrink-0" aria-hidden />{t("search.dupwarn")} — {t("rec.similar.note")}
             </div>
           )}
           {resp.exact.map((p) => (
@@ -128,7 +129,7 @@ export function ReceptionSearch() {
       {/* smart card reader */}
       <div className="rounded-lg border p-3 grid gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-semibold">🪪 {t("rec.reader.title")}</span>
+          <span className="text-sm font-semibold inline-flex items-center gap-2"><CreditCard className="size-4 shrink-0" aria-hidden />{t("rec.reader.title")}</span>
           <Badge variant="outline" className="text-[10px] bg-teal-50">{t("rec.reader.sim")}</Badge>
           <div className="ms-auto flex items-center gap-2">
             <Select value={cardIdx} onValueChange={setCardIdx}>
@@ -156,7 +157,7 @@ export function ReceptionSearch() {
       {/* manual new registration entry */}
       {!mode && !registered && (
         <Button variant="outline" className="h-10 justify-start" onClick={() => { setMode("manual"); setReader(null); }}>
-          ＋ {t("rec.register.manual")}
+          <Plus className="size-4" aria-hidden />{t("rec.register.manual")}
         </Button>
       )}
 

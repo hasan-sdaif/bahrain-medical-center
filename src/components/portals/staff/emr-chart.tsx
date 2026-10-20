@@ -9,6 +9,7 @@ import { bhDateString } from "@/lib/bahrain";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusBadge } from "@/components/shared/badges";
+import { Bandage, ChartLine, Folders, Lock, Pill, TriangleAlert } from "lucide-react";
 import { Empty, Section, type ChartData } from "./emr-shared";
 
 interface Props { chart: ChartData; reload: () => void }
@@ -20,7 +21,7 @@ export function ChartTab({ chart }: Props) {
   if (!c) {
     return (
       <div role="alert" className="rounded-xl border-2 border-amber-400 bg-amber-50 dark:bg-amber-950/40 p-6 max-w-xl mx-auto grid gap-2 text-center">
-        <div className="text-3xl">🔒</div>
+        <div className="grid place-items-center"><Lock className="size-8" aria-hidden /></div>
         <div className="font-bold text-amber-900 dark:text-amber-100">{t("emr.admin.title")}</div>
         <p className="text-sm text-amber-800 dark:text-amber-200">{chart.adminOnly?.noteAr ?? t("emr.admin.note")}</p>
         {chart.adminOnly && (
@@ -36,7 +37,7 @@ export function ChartTab({ chart }: Props) {
   return (
     <div className="grid gap-3 lg:grid-cols-2">
       {/* allergies — red cards first (patient safety) */}
-      <Section title={`⚠️ ${t("emr.allergies")}`} className="lg:col-span-2">
+      <Section title={<><TriangleAlert className="size-4 shrink-0" aria-hidden />{t("emr.allergies")}</>} className="lg:col-span-2">
         {c.allergies.length === 0 ? <Empty label={t("emr.none.allergies")} className="py-4" /> : (
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {c.allergies.map((a) => (
@@ -51,7 +52,7 @@ export function ChartTab({ chart }: Props) {
       </Section>
 
       {/* problems */}
-      <Section title={`🩹 ${t("emr.problems")}`}>
+      <Section title={<><Bandage className="size-4 shrink-0" aria-hidden />{t("emr.problems")}</>}>
         {c.problems.length === 0 ? <Empty label={t("emr.none.problems")} className="py-4" /> : (
           <ul className="grid gap-1.5">
             {c.problems.map((p) => (
@@ -66,7 +67,7 @@ export function ChartTab({ chart }: Props) {
       </Section>
 
       {/* active meds */}
-      <Section title={`💊 ${t("emr.meds")}`}>
+      <Section title={<><Pill className="size-4 shrink-0" aria-hidden />{t("emr.meds")}</>}>
         {c.meds.length === 0 ? <Empty label={t("emr.none.meds")} className="py-4" /> : (
           <ul className="grid gap-1.5">
             {c.meds.map((m) => (
@@ -81,7 +82,7 @@ export function ChartTab({ chart }: Props) {
       </Section>
 
       {/* vitals — last 5 */}
-      <Section title={`📈 ${t("emr.vitals.last")}`}>
+      <Section title={<><ChartLine className="size-4 shrink-0" aria-hidden />{t("emr.vitals.last")}</>}>
         {c.vitals.length === 0 ? <Empty label={t("emr.none.vitals")} className="py-4" /> : (
           <div className="rounded-md border overflow-x-auto">
             <Table className="text-xs">
@@ -113,7 +114,7 @@ export function ChartTab({ chart }: Props) {
       </Section>
 
       {/* encounters w/ signed status */}
-      <Section title={`🗂️ ${t("emr.encounters")}`}>
+      <Section title={<><Folders className="size-4 shrink-0" aria-hidden />{t("emr.encounters")}</>}>
         {c.encounters.length === 0 ? <Empty label={t("emr.none.encounters")} className="py-4" /> : (
           <ul className="grid gap-1.5 max-h-72 overflow-y-auto bmc-scroll">
             {c.encounters.map((e) => (

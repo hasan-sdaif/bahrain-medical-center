@@ -4,6 +4,7 @@
  * specimen temperature capture and rejection (auto doctor notification).
  */
 import { useState } from "react";
+import { Check, X } from "lucide-react";
 import { useI18n } from "@/i18n";
 import { apiPost } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
@@ -64,8 +65,8 @@ function ReceiveDialog({ row, open, onClose, onDone }: { row: SpecimenRow; open:
             <Select value={reject} onValueChange={setReject}>
               <SelectTrigger className="h-10 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="none" className="text-xs">✅ {t("lab.rx.acceptOpt")}</SelectItem>
-                {REJECT_REASONS.map((r) => <SelectItem key={r.v} value={r.v} className="text-xs">⛔ {t(r.k)}</SelectItem>)}
+                <SelectItem value="none" className="text-xs"><Check className="size-3.5 text-emerald-600" aria-hidden />{t("lab.rx.acceptOpt")}</SelectItem>
+                {REJECT_REASONS.map((r) => <SelectItem key={r.v} value={r.v} className="text-xs"><X className="size-3.5 text-destructive" aria-hidden />{t(r.k)}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>

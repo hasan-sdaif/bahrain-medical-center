@@ -8,6 +8,7 @@ import { useI18n } from "@/i18n";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { TriangleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ── API shapes ─────────────────────────────────────────────────────────────
@@ -197,7 +198,7 @@ export function ErrorBox({ message, onRetry }: { message: string; onRetry?: () =
   const { t } = useI18n();
   return (
     <div role="alert" className="rounded-lg border border-destructive/40 bg-red-50 dark:bg-red-950/40 p-4 text-sm text-red-800 dark:text-red-200 flex items-center gap-3 flex-wrap">
-      <span className="flex-1 min-w-40">⚠️ {message}</span>
+      <span className="flex-1 min-w-40 flex items-center gap-2"><TriangleAlert className="size-4 shrink-0" aria-hidden />{message}</span>
       {onRetry && <Button size="sm" variant="outline" onClick={onRetry}>{t("common.retry")}</Button>}
     </div>
   );
@@ -205,7 +206,7 @@ export function ErrorBox({ message, onRetry }: { message: string; onRetry?: () =
 export function LoadingRows({ n = 4, h = "h-10" }: { n?: number; h?: string }) {
   return <div className="grid gap-2">{Array.from({ length: n }).map((_, i) => <Skeleton key={i} className={cn(h, "w-full")} />)}</div>;
 }
-export function Section({ title, children, actions, className }: { title: string; children: ReactNode; actions?: ReactNode; className?: string }) {
+export function Section({ title, children, actions, className }: { title: ReactNode; children: ReactNode; actions?: ReactNode; className?: string }) {
   return (
     <Card className={cn("gap-3", className)}>
       <CardHeader className="py-3 px-4">

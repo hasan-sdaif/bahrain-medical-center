@@ -4,6 +4,7 @@
  * hook and tiny UI atoms shared across the المختبر والأشعة sub-tabs (2-d / S1).
  */
 import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { TriangleAlert } from "lucide-react";
 import { apiGet } from "@/lib/api-client";
 import { useI18n, type Lang } from "@/i18n";
 import { Badge } from "@/components/ui/badge";
@@ -81,7 +82,7 @@ export function LabPanel({ loading, error, onRetry, isEmpty, children, rows = 4 
   if (loading) return <div className="grid gap-3">{Array.from({ length: rows }).map((_, i) => <Skeleton key={i} className="h-14" />)}</div>;
   if (error) return (
     <div role="alert" className="rounded-lg border border-destructive/40 bg-red-50 dark:bg-red-950/40 p-4 text-sm text-red-800 dark:text-red-200 flex items-center gap-3 flex-wrap">
-      <span className="flex-1 min-w-40">⚠️ {error || t("common.error")}</span>
+      <span className="flex-1 min-w-40 flex items-center gap-2"><TriangleAlert className="size-4 shrink-0" aria-hidden />{error || t("common.error")}</span>
       <Button size="sm" variant="outline" className="h-9" onClick={onRetry}>{t("common.retry")}</Button>
     </div>
   );

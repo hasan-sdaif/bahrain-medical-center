@@ -14,6 +14,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Code128 } from "@/components/shared/barcode";
 import { MoneyText } from "@/components/shared/badges";
+import { CalendarDays, Printer, Ticket, TriangleAlert } from "lucide-react";
 import { bhTimeString } from "@/lib/bahrain";
 import { DEPARTMENTS, errText, printElement, type CheckinResp, type RegisterResp, type SlotRow } from "./emr-shared";
 import { cn } from "@/lib/utils";
@@ -87,7 +88,7 @@ export function SuccessCard({ reg, onCheckinDone, onBookAnother }: { reg: Regist
 
       {reg.duplicateWarnings.length > 0 && (
         <div role="alert" className="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/40 p-3 text-xs text-amber-900 dark:text-amber-200 grid gap-1">
-          <b>⚠️ {t("rec.duplist.title")}</b>
+          <b className="flex items-center gap-2"><TriangleAlert className="size-4 shrink-0" aria-hidden />{t("rec.duplist.title")}</b>
           {reg.duplicateWarnings.map((w) => (
             <div key={w.id} className="font-mono">{w.mrn} — {w.nameAr} ({Math.round(w.score)}%)</div>
           ))}
@@ -96,19 +97,19 @@ export function SuccessCard({ reg, onCheckinDone, onBookAnother }: { reg: Regist
       )}
 
       <div className="flex flex-wrap gap-2 no-print">
-        <Button className="h-10" onClick={() => printElement(printRef.current)}>🖨️ {t("rec.card.print")}</Button>
-        <Button variant="outline" className="h-10" onClick={() => setBookOpen(true)}>📅 {appt ? t("rec.book.another") : t("rec.book.title")}</Button>
+        <Button className="h-10" onClick={() => printElement(printRef.current)}><Printer className="size-4" aria-hidden />{t("rec.card.print")}</Button>
+        <Button variant="outline" className="h-10" onClick={() => setBookOpen(true)}><CalendarDays className="size-4" aria-hidden />{appt ? t("rec.book.another") : t("rec.book.title")}</Button>
         {appt && !ticket && (
           <>
             <Badge variant="outline" className="h-10 px-3 text-xs gap-1 self-center font-mono">{t("rec.book.appt")}: {appt.code} · {bhTimeString(appt.start)}</Badge>
-            <Button variant="secondary" className="h-10" onClick={checkinNow}>🎫 {t("rec.checkin.now")}</Button>
+            <Button variant="secondary" className="h-10" onClick={checkinNow}><Ticket className="size-4" aria-hidden />{t("rec.checkin.now")}</Button>
           </>
         )}
       </div>
 
       {ticket && (
         <div className="rounded-xl border bg-card p-4 max-w-md grid gap-2 no-print">
-          <div className="text-sm font-semibold">🎫 {t("rec.ticket.issued")}</div>
+          <div className="text-sm font-semibold inline-flex items-center gap-2"><Ticket className="size-4 shrink-0" aria-hidden />{t("rec.ticket.issued")}</div>
           <div className="bg-white text-black rounded-md px-2 py-1 w-fit"><Code128 value={ticket.ticket.code} height={40} /></div>
           <div className="text-xs text-muted-foreground">{t("rec.ticket.encounter")}: <span className="font-mono">{ticket.encounter.code}</span> · {t("common.priority")}: {t(`priority.${ticket.ticket.priority}`)}</div>
         </div>

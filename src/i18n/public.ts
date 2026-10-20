@@ -175,6 +175,8 @@ const d: Dict = {
   "public.contact.title": { ar: "تواصل معنا", en: "Contact us" },
   "public.contact.subtitle": { ar: "استفسار أو اقتراح أو شكوى — كل رسالة تتلقى رقم تتبع والتزاماً زمنياً بالرد", en: "Inquiry, suggestion or complaint — every message gets a tracking code and an SLA commitment" },
   "public.contact.category": { ar: "نوع الرسالة", en: "Message category" },
+  "public.contact.name": { ar: "الاسم الكامل", en: "Full name" },
+  "public.contact.phone": { ar: "الهاتف (اختياري)", en: "Phone (optional)" },
   "public.contact.cat.general": { ar: "استفسار عام", en: "General inquiry" },
   "public.contact.cat.waiting": { ar: "الانتظار والازدحام", en: "Waiting & crowding" },
   "public.contact.cat.billing": { ar: "الفواتير والتأمين", en: "Billing & insurance" },

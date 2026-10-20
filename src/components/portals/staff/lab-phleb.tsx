@@ -4,6 +4,7 @@
  * verification checklist, specimen creation + Code 128 label printout.
  */
 import { useRef, useState } from "react";
+import { CheckCircle2, Printer, TriangleAlert } from "lucide-react";
 import { useI18n, bi } from "@/i18n";
 import { apiPost } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
@@ -92,7 +93,7 @@ function DrawDialog({ row, open, onClose, onDone }: { row: PhlebRow; open: boole
           </div>
         </div>
         <DialogFooter className="flex-col gap-2 sm:flex-row">
-          <p className="text-xs text-muted-foreground flex-1">{canSubmit ? "" : `⚠️ ${t("lab.phleb.needVerify")}`}</p>
+          <p className="text-xs text-muted-foreground flex-1">{canSubmit ? "" : (<span className="inline-flex items-center gap-1.5"><TriangleAlert className="size-3.5 shrink-0" aria-hidden />{t("lab.phleb.needVerify")}</span>)}</p>
           <Button variant="outline" onClick={onClose}>{t("common.cancel")}</Button>
           <Button disabled={!canSubmit || busy} onClick={submit}>{busy ? "…" : t("lab.phleb.draw")}</Button>
         </DialogFooter>
@@ -182,7 +183,7 @@ export default function PhlebTab() {
       <Dialog open={!!done} onOpenChange={(o) => !o && setDone(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>✅ {t("lab.phleb.done", { code: done?.resp.code ?? "" })}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2"><CheckCircle2 className="size-5 text-emerald-600" aria-hidden />{t("lab.phleb.done", { code: done?.resp.code ?? "" })}</DialogTitle>
             <DialogDescription>{t("lab.phleb.custody")}</DialogDescription>
           </DialogHeader>
           {done && (
@@ -197,7 +198,7 @@ export default function PhlebTab() {
               </div>
               <DialogFooter className="sm:justify-between">
                 <Button variant="outline" onClick={() => setDone(null)}>{t("common.close")}</Button>
-                <Button onClick={() => printLabel(printRef.current)}>🖨️ {t("lab.phleb.print")}</Button>
+                <Button onClick={() => printLabel(printRef.current)}><Printer className="size-4" aria-hidden />{t("lab.phleb.print")}</Button>
               </DialogFooter>
             </div>
           )}

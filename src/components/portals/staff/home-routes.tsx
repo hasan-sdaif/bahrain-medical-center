@@ -60,7 +60,7 @@ export function HomeRoutesTab({ data, reload }: { data: HomeData | null; reload:
       const r = await apiPost<{ routes: PlannedRoute[]; algorithm: string }>("/api/staff/home/plan-routes", {});
       setRoutes(r.routes);
       await reload();
-      toast({ title: "✅", description: t("hc.routes.algorithm", { name: r.algorithm }) });
+      toast({ title: t("common.done"), description: t("hc.routes.algorithm", { name: r.algorithm }) });
     } catch (err) {
       toast({ title: t("common.error"), description: problemDetail(err, lang), variant: "destructive" });
     } finally { setPlanning(false); }
@@ -71,7 +71,7 @@ export function HomeRoutesTab({ data, reload }: { data: HomeData | null; reload:
     setBusyId(req.id);
     try {
       await apiPost("/api/staff/home/visit-status", { visitId: req.visit.id, status, ...extra });
-      toast({ title: `✅ ${req.code}`, description: t("hc.visit.updated") });
+      toast({ title: req.code, description: t("hc.visit.updated") });
       await reload();
       return true;
     } catch (err) {
@@ -228,7 +228,7 @@ export function HomeRoutesTab({ data, reload }: { data: HomeData | null; reload:
                 <Checkbox id="otp-shown" checked={otp} onCheckedChange={(v) => setOtp(v === true)} className="mt-0.5" />
                 <span className="text-sm">{t("hc.visit.otp")}</span>
               </label>
-              <p className="text-xs text-muted-foreground">🔎 {t("hc.visit.otpHint")}</p>
+              <p className="text-xs text-muted-foreground">{t("hc.visit.otpHint")}</p>
             </div>
           )}
           <DialogFooter>

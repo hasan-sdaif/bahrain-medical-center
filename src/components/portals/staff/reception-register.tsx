@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PAYERS, errText, setLastPatient, type ChipRecord, type RegisterResp } from "./emr-shared";
+import { Lock, OctagonX, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type RegisterMode = "chip" | "manual";
@@ -32,7 +33,7 @@ function Field({ label, locked, children, hint }: { label: string; locked?: bool
     <div className="grid gap-1">
       <Label className="text-xs flex items-center gap-1.5">
         {label}
-        {locked && <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 bg-teal-50 text-teal-800 dark:bg-teal-950 dark:text-teal-200">🔒 {hint}</Badge>}
+        {locked && <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 gap-0.5 bg-teal-50 text-teal-800 dark:bg-teal-950 dark:text-teal-200"><Lock aria-hidden />{hint}</Badge>}
       </Label>
       {children}
     </div>
@@ -103,7 +104,7 @@ export function RegisterForm({ mode, chip, similarCount, onCancel, onRegistered 
         <Button size="sm" variant="ghost" className="ms-auto h-8" onClick={onCancel}>{t("common.cancel")}</Button>
       </div>
 
-      {dupErr && <div role="alert" className="rounded-md border border-red-300 bg-red-50 dark:bg-red-950/40 p-3 text-xs text-red-800 dark:text-red-200">⛔ {dupErr}</div>}
+      {dupErr && <div role="alert" className="rounded-md border border-red-300 bg-red-50 dark:bg-red-950/40 p-3 text-xs text-red-800 dark:text-red-200 flex items-center gap-2"><OctagonX className="size-4 shrink-0" aria-hidden />{dupErr}</div>}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Field label={t("rec.f.firstAr")} locked={locked} hint={t("rec.chip")}>
@@ -166,7 +167,7 @@ export function RegisterForm({ mode, chip, similarCount, onCancel, onRegistered 
 
       {payer && (
         <div className="rounded-md bg-muted/60 border p-2.5 text-xs flex flex-wrap gap-x-4 gap-y-1">
-          <span>🛡️ {bi(lang, payer.ar, payer.en)}</span>
+          <span className="inline-flex items-center gap-1.5"><ShieldCheck className="size-3.5 shrink-0" aria-hidden />{bi(lang, payer.ar, payer.en)}</span>
           <span>{t("rec.f.copay")}: <b className="font-mono">{(payer.copayFils / 1000).toFixed(3)}</b> {t("money.currency")}</span>
           <span>{t("rec.f.coins")}: <b className="font-mono">{payer.coinsPct}%</b></span>
         </div>

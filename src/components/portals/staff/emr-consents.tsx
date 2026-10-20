@@ -17,6 +17,7 @@ import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/shared/badges";
+import { Check, FileSignature, OctagonX, Plus } from "lucide-react";
 import { Empty, ErrorBox, LoadingRows, Section, errText, type ChartData } from "./emr-shared";
 
 interface Props { chart: ChartData; reload: () => void }
@@ -84,7 +85,7 @@ export function ConsentsTab({ chart }: Props) {
     <div className="grid gap-3">
       {hardStops.length > 0 && (
         <div role="alert" className="rounded-xl border-2 border-red-400 bg-red-50 dark:bg-red-950/40 p-4 grid gap-2">
-          <b className="text-sm text-red-900 dark:text-red-200">⛔ {t("emr.con.hardstop")}</b>
+          <b className="text-sm text-red-900 dark:text-red-200 flex items-center gap-2"><OctagonX className="size-4 shrink-0" aria-hidden />{t("emr.con.hardstop")}</b>
           <div className="flex flex-wrap gap-1.5">
             {hardStops.map((k) => <Badge key={k} variant="outline" className="border-red-300 text-red-800 dark:text-red-200 bg-red-100/60 dark:bg-red-950 text-xs">{titleOf(k)}</Badge>)}
           </div>
@@ -92,7 +93,7 @@ export function ConsentsTab({ chart }: Props) {
         </div>
       )}
 
-      <Section title={`✍ ${t("emr.tab.consents")}`} actions={<Button size="sm" className="h-7 text-[11px]" onClick={openCapture}>＋ {t("emr.con.capture")}</Button>}>
+      <Section title={<><FileSignature className="size-4 shrink-0" aria-hidden />{t("emr.tab.consents")}</>} actions={<Button size="sm" className="h-7 text-[11px]" onClick={openCapture}><Plus className="size-3.5" aria-hidden />{t("emr.con.capture")}</Button>}>
         {error && <ErrorBox message={error} onRetry={load} />}
         {!rows && !error && <LoadingRows n={3} />}
         {rows && rows.length === 0 && <Empty label={t("emr.con.none")} className="py-4" />}
@@ -115,7 +116,7 @@ export function ConsentsTab({ chart }: Props) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-sm">✍ {t("emr.con.capture")}</DialogTitle>
+            <DialogTitle className="text-sm flex items-center gap-2"><FileSignature className="size-4 shrink-0" aria-hidden />{t("emr.con.capture")}</DialogTitle>
             <DialogDescription className="text-xs">{t("emr.con.captureDesc")}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-3">
@@ -139,7 +140,7 @@ export function ConsentsTab({ chart }: Props) {
                 <div className="grid gap-1">
                   <div className="flex items-center gap-2 text-xs">
                     <Progress value={progress} className="h-2 flex-1" />
-                    <span className="font-mono tabular-nums" dir="ltr">{remaining > 0 ? `${remaining}s / ${tpl.minReadSec}s` : `✓ ${elapsed}s`}</span>
+                    <span className="font-mono tabular-nums inline-flex items-center gap-1" dir="ltr">{remaining > 0 ? `${remaining}s / ${tpl.minReadSec}s` : <><Check className="size-3.5" aria-hidden />{`${elapsed}s`}</>}</span>
                   </div>
                   <span className="text-[10px] text-muted-foreground">{remaining > 0 ? t("emr.con.reading") : t("emr.con.readok")}</span>
                 </div>

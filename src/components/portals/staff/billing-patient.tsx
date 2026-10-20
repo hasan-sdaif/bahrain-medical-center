@@ -86,7 +86,7 @@ export function PatientPicker({ selected, onSelect, onClear }: { selected: Picke
         />
       </div>
       {fallback && query.trim().length >= 2 && (
-        <p className="text-xs text-muted-foreground">ℹ️ {t("bc.patient.directory")}</p>
+        <p className="text-xs text-muted-foreground">{t("bc.patient.directory")}</p>
       )}
       {busy && <div className="space-y-2">{Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>}
       {!busy && list.length > 0 && (

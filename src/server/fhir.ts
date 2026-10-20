@@ -223,8 +223,8 @@ function bundle(resources: unknown[]) {
 function notFound() { return json({ resourceType: "OperationOutcome", issue: [{ severity: "error", code: "not-found" }] }, 404); }
 
 const routes: RouteTable = {
-  "GET fhir/metadata": async () => json(CAPABILITY),
-  "GET fhir/Patient": async (req, url) => {
+  "GET metadata": async () => json(CAPABILITY),
+  "GET Patient": async (req, url) => {
     const pid = url.searchParams.get("patient") ?? undefined;
     const id = url.searchParams.get("_id") ?? undefined;
     if (id) { const p = await patientResource(id); return p ? json(bundle([p])) : notFound(); }
@@ -233,20 +233,20 @@ const routes: RouteTable = {
     for (const p of rows) { const r = await patientResource(p.id); if (r) out.push(r); }
     return json(bundle(out));
   },
-  "GET fhir/Patient/*": async (req, url) => {
+  "GET Patient/*": async (req, url) => {
     const id = url.pathname.split("/").pop() ?? "";
     const p = await patientResource(id);
     return p ? json(p) : notFound();
   },
-  "GET fhir/Encounter": async (req, url) => json(bundle(await encounterResources(url.searchParams.get("patient") ?? undefined))),
-  "GET fhir/Observation": async (req, url) => json(bundle(await observationResources(url.searchParams.get("patient") ?? undefined))),
-  "GET fhir/ServiceRequest": async (req, url) => json(bundle(await serviceRequestResources(url.searchParams.get("patient") ?? undefined))),
-  "GET fhir/DiagnosticReport": async (req, url) => json(bundle(await diagnosticReportResources(url.searchParams.get("patient") ?? undefined))),
-  "GET fhir/MedicationRequest": async (req, url) => json(bundle(await medicationRequestResources(url.searchParams.get("patient") ?? undefined))),
-  "GET fhir/Immunization": async (req, url) => json(bundle(await immunizationResources(url.searchParams.get("patient") ?? undefined))),
-  "GET fhir/Consent": async (req, url) => json(bundle(await consentResources(url.searchParams.get("patient") ?? undefined))),
-  "GET fhir/DocumentReference": async (req, url) => json(bundle(await documentResources(url.searchParams.get("patient") ?? undefined))),
-  "GET fhir/bridge-status": async () => {
+  "GET Encounter": async (req, url) => json(bundle(await encounterResources(url.searchParams.get("patient") ?? undefined))),
+  "GET Observation": async (req, url) => json(bundle(await observationResources(url.searchParams.get("patient") ?? undefined))),
+  "GET ServiceRequest": async (req, url) => json(bundle(await serviceRequestResources(url.searchParams.get("patient") ?? undefined))),
+  "GET DiagnosticReport": async (req, url) => json(bundle(await diagnosticReportResources(url.searchParams.get("patient") ?? undefined))),
+  "GET MedicationRequest": async (req, url) => json(bundle(await medicationRequestResources(url.searchParams.get("patient") ?? undefined))),
+  "GET Immunization": async (req, url) => json(bundle(await immunizationResources(url.searchParams.get("patient") ?? undefined))),
+  "GET Consent": async (req, url) => json(bundle(await consentResources(url.searchParams.get("patient") ?? undefined))),
+  "GET DocumentReference": async (req, url) => json(bundle(await documentResources(url.searchParams.get("patient") ?? undefined))),
+  "GET bridge-status": async () => {
     const forks = ["openemr", "openmrs-core", "bahmni-core", "openhospital", "care", "medplum", "foomedical", "OpenELIS-Global-2", "Viewers", "healthcare"];
     return json({
       strategy: "clone-and-bridge",

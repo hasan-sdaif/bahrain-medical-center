@@ -165,3 +165,74 @@ Work Log:
 Stage Summary:
 - VERIFY: bunx tsc --noEmit → 0 errors in all 10 S1 files (whole project reached 0 during window; one transient emr-consents error from 2-c's mid-write resolved itself). bunx eslint on lab.tsx + lab-*.tsx + staff-b.ts → 0 problems (fixed one react-hooks/set-state-in-effect by moving error-clear into async .then). All files ≤250 lines (max 250). DB probe validated demo data: 2 active lab orders (STAT first, items collected: Lipid panel + Vitamin D w/ labTestId), 2 specimens received, 3 pendingResults (K 6.9 CRIT + GLU 9.8 H + TSH 6.4 H), 1 critical alert "new" (45min — escalation-relevant), 3 QC runs (K/HGB/GLU-F incl. 2-2s warned), 1 signed BI-RADS 4a study, QC-form test codes exist.
 - Dev server port 3000 was down during S1 window (system-managed; unrelated patient-portal import crash earlier) — runtime smoke deferred to integration QA; all endpoint contracts cross-checked against server source + live DB. Full phleb→receive→result→verify/critical chain works end-to-end via API contracts; new lab orders from the EMR module feed the draw worklist.
+
+---
+Task ID: E3
+Agent: emoji-cleanup agent E3 (Z.ai Code)
+Task: Removed every emoji from the 12 billing + home-draw staff files (billing*.tsx ×8, home*.tsx ×4), replacing tab-label emoji strings with lucide-react icons and stripping decorative emoji prefixes from toasts/hints — zero-emoji professional UI per operator directive.
+
+Work Log:
+- Read worklog header constraints + last 2 sections (S1 lab agent) and the established icon conventions in ops.tsx/lab.tsx/index.tsx (LucideIcon typing, `<Icon className="size-4" aria-hidden />` in TabsTrigger with gap-1.5).
+- Scanned all 12 scope files with the mandated emoji regex → 27 emoji occurrences across 12 files.
+- billing.tsx: TABS array retyped `icon: string` → `icon: LucideIcon` (import type); 🧾→ReceiptText, 💵→Banknote, 🪙→Coins, 🗂️→FileCheck2 (matches preauth header), 📨→Send; TabsTrigger now renders `<Icon aria-hidden className="size-4" />` via the ops.tsx IIFE-find pattern with gap-1.5 added to trigger.
+- home.tsx: TABS retyped to `{ key: TabKey; icon: LucideIcon }[]` (TabKey union declared explicitly, `as const` dropped); 📋→ClipboardList, 🗺️→Route (matches routes-tab header icon), 📍→MapPin (matches zones cards); trigger renders icon + gap-1.5.
+- Toast titles (string-only, cannot hold JSX): deleted `✅ ` prefix keeping the meaningful code (inv.code / last.code / r.code / claim.code / req.code / confirming.code in billing-new, billing-pay, billing-preauth, billing-claims, home-requests, home-routes); bare `title: "✅"` toasts (shift open/close, preauth approve/reject, plan-routes) → `title: t("common.done")` — existing core i18n key (منجز/Done), no new keys invented.
+- Decorative plain-text emoji prefixes deleted, text kept: ℹ️ (billing-invoices seededHint, billing-new noPatientPolicy, billing-patient directory, billing-claims selectInvoice, home-zones note), 🔒 (billing-pay receipt footer notice.cards — also prints cleaner), 🔎 (home-routes otpHint).
+- Untouched per constraints: all t()/bi() keys, API calls, state/props, role gates, ZONE_SCHEDULE, SEEDED_INVOICES, component logic/exports, "use client", RTL logical props.
+- Verified: mandated rg emoji scan on the 12 files → 0 matches; broader unicode sweep (2000-3300, 1F000-1FBFF, VS16, ZWJ) → only em-dash/arrow typography in comments and "—" null placeholders (established codebase style, not emojis); wc -l all 12 files ≤250 (max billing-claims 248).
+
+Stage Summary:
+- Files changed: 12/12 in scope (billing.tsx, billing-invoices, billing-new, billing-patient, billing-pay, billing-preauth, billing-shifts, billing-claims, home.tsx, home-requests, home-routes, home-zones). 27 emojis removed total (8 tab-array emoji strings converted to 8 LucideIcon refs: ReceiptText, Banknote, Coins, FileCheck2, Send, ClipboardList, Route, MapPin; 19 decorative prefixes stripped from toasts/hints).
+- bunx tsc --noEmit: 0 errors in all 12 E3 files. PRE-EXISTING (NOT in E3 scope, not fixed, reported): src/components/shell/domain-bar.tsx:53 — TS1003/TS1382 on invalid JSX `<ICONS[d.key] … />` (dynamic member expression as component tag; likely mid-write by a parallel shell-cleanup agent — needs `const Icon = ICONS[d.key]` extraction).
+- bunx eslint on the 12 files: 0 problems.
+- Remaining emojis in E3 scope = 0.
+
+---
+Task ID: E2
+Agent: emoji-cleanup agent E2 (Z.ai Code)
+Task: Remove every emoji from the 9 lab/imaging + fault-report files (lab-shared, lab-phleb, lab-worklist, lab-results, lab-critical, lab-qc, lab-radiology, lab-radreport, ops-fault) — replace with lucide-react icons or plain professional text, following the conventions already established in ops.tsx/lab.tsx/staff index (E1).
+
+Work Log:
+- Read worklog header constraints + S1/S3 sections (built these files), then read all 9 scope files and audited emojis with the mandated rg unicode-range regex: 25 regex hits + 3 extra typographic symbols (▲/▼ expand toggles, ＋ fullwidth plus) = 28 occurrences.
+- Icon mapping applied (all verified present in installed lucide-react 0.525): ⚠️→TriangleAlert · ✅(title)→CheckCircle2 · 🖨️→Printer · ✅/⛔(SelectItems)→Check(emerald)/X(destructive) · 🤖→Bot · 🔬→FlaskConical · ⚙️→Cog · 🧾→ClipboardList · ⏱→Timer · 🚨→Siren · ⏰→AlarmClock · 📈→ChartLine · 🧪→TestTube · ℹ️→Info · 🩻→Scan · 🖼→Image (aliased ImageIcon) · ✍️→Signature · 📷→Camera · ＋→Plus · ▲/▼→ChevronUp/ChevronDown.
+- Plain-text deletions per convention rule 4 (toast titles can't carry icons): `✅ ${t("lab.crit.acked")}` and `✅ ${t("lab.rad.reportOk")}` → bare t(); decorative 🤰 pregnancy label emoji deleted (no lucide equivalent, checkbox already provides the affordance). Print label (.print-area) content kept pure text — no icons in print templates.
+- Conventions honored: named lucide-react imports; `<Icon className="size-4 shrink-0" aria-hidden />` (size-3.5 inline notes, size-5 dialog titles, size-4 in Buttons, text-primary on Card/DialogTitle icons); RTL untouched; no t() keys, bi(), logic, API calls, state, props, exports, role gates, REF_RANGES or randInRef changed — purely visual swap.
+- Incident + fix: MultiEdit silently wrote `...text-zinc-200")">` (missing `}`) on lab-critical.tsx's long cn() line 93 despite showing the correct diff — caught by bunx tsc (17 cascade JSX errors), repaired byte-exact via python replace to `")}>`, re-verified.
+- lab-results.tsx grew to 251 lines (icon import +1 on a file already at the 250 cap) → inlined both CardHeader wrappers (formatting only) → 247 lines. All 9 files ≤250 lines, "use client" intact.
+
+Stage Summary:
+- Files changed: 9/9 in scope (lab-shared, lab-phleb, lab-worklist, lab-results, lab-critical, lab-qc, lab-radiology, lab-radreport, ops-fault). Emojis removed: 28 (25 in the mandated regex ranges + ▲/▼ + ＋). Icons added: 24 new lucide named imports (~28 render usages). Line counts: 151/209/151/247/148/179/201/176/114.
+- VERIFY 1: rg emoji-range scan over the 9 files → zero output (exit 1, no matches). Broadened sweep (1F000-1FAFF, 2000-2BFF, FE00-FE0F, FF00-FFEF, 3000-303F) → only box-drawing `──` comment dividers remain (not emoji).
+- VERIFY 2: bunx tsc --noEmit → 0 errors in all 9 scope files. Only remaining project errors: src/components/shell/domain-bar.tsx(53,27 & 53,79) — `<ICONS[d.key]` missing JSX braces (out of E2 scope, likely concurrent agent mid-write; reported, not fixed per instructions).
+- VERIFY 3: bunx eslint on the 9 files → 0 problems (exit 0).
+- Known out-of-scope observation: billing-new.tsx still contains one `ℹ️` (line ~186) — belongs to whichever agent owns billing files, not E2 scope.
+
+---
+Task ID: E1
+Agent: emoji-cleanup agent E1 (Z.ai Code)
+Task: Remove every emoji from the 14 EMR + reception staff files (emr, emr-chart, emr-encounter, emr-orders, emr-rx, emr-vitals, emr-referral, emr-consents, emr-inbox, emr-shared, reception-queue, reception-search, reception-register, reception-success) — replace with lucide-react icons or plain professional text, following the conventions established in ops.tsx/lab.tsx/staff index.
+
+Work Log:
+- Read worklog header constraints + last sections, then the reference conventions in ops.tsx/lab.tsx/staff index.tsx (LucideIcon typing, `<Icon aria-hidden className="size-4" />` in TabsTrigger + gap-1.5) and all 14 scope files; audited with the mandated rg unicode-range regex + extended sweep: 72 decorative glyphs (67 in mandated ranges incl. ✓✕✍⏰⏱ dingbats/technical + 4 fullwidth ＋ + 1 ● live-dot).
+- emr-shared.tsx (enabler): Section `title: string` → `title: ReactNode` (type-widen only, all callers in scope) so section headers can render icons inside the existing flex CardTitle; ErrorBox ⚠️ → TriangleAlert size-4 in flex span.
+- emr.tsx: TABS emoji strings → LucideIcon components (`as const` kept, `type TabKey = (typeof TABS)[number][0]` still derives): 📋→ClipboardList, 🩺→Stethoscope, 🧪→FlaskConical, 💊→Pill, 📈→ChartLine, ↗→CornerUpRight, ✍→FileSignature, 📥→Inbox; TabsTrigger renders `<Icon aria-hidden className="size-4" />` + gap-1.5; finder dupwarn ⚠️ → TriangleAlert size-3.5.
+- emr-chart.tsx: 🔒 admin notice → Lock size-8 centered; section titles → TriangleAlert/Bandage/Pill/ChartLine/Folders size-4 ReactNode fragments.
+- emr-encounter.tsx: 🩺×2 → Stethoscope; SelectItem `✅` signed marker → existing key t("status.signed") (plain professional text, no new keys); ＋/✍️/🏁 buttons → Plus/FileSignature/Flag size-4; checks Badge ✓ → Check (Badge auto-sizes svg via [&>svg]:size-3); 🔒 locked save button → Lock inside flex span; AlertDialogAction ✍️ → FileSignature; finish DialogTitle 🏁 → Flag + flex; checklist circle ✓ → Check size-3.
+- emr-orders.tsx: 🧪→FlaskConical, 🩻→Scan (matches lab.tsx rad tab), 📋→ClipboardList; success Badge ✓ → Check; amber warning rows ⚠️ → TriangleAlert + flex items-center gap-2.
+- emr-rx.tsx: 💊×2 → Pill; 🛡️ report → ShieldCheck; ＋ add-row → Plus size-3.5; ✕ remove-row → X (icon-only, aria-label kept); ⛔ blocked title → OctagonX in flex <b>; ✓ ok banner → Check; ⚠️ warnings → TriangleAlert; toast description `N ⛔ · M ⚠️` → JSX span w/ OctagonX/TriangleAlert size-3.5 (toast description is ReactNode; preserves error/warning count semantics).
+- emr-vitals.tsx: 📈×2 → ChartLine; 🕘 history → History.
+- emr-referral.tsx: ↗ → CornerUpRight; result Badge ✓ → Check; ⏱️ SLA due → Timer (stacked layout preserved via items-start + inner span so slaNote stays on its own line).
+- emr-consents.tsx: ⛔ hard-stop → OctagonX in flex <b>; ✍ section + capture DialogTitle → FileSignature; ＋ capture → Plus size-3.5; read-timer `✓ Ns` → Check size-3.5 inline-flex in mono span.
+- emr-inbox.tsx: ✅ tasks → CheckCircle2; ⏰ dueAt → AlarmClock size-3.5 inline; ✓ complete button → Check size-3.5; 🔔 notifs → Bell; 💬 threads + thread DialogTitle → MessageSquare.
+- reception-queue.tsx: 🔊 call-next → Volume2 size-4; 🚪 room Badge → DoorOpen (auto size-3); 🖥️ display header → Monitor; ● live dot → CSS dot (`size-2 rounded-full bg-teal-600` span) — zero glyph, same meaning.
+- reception-search.tsx: ⚠️ dupwarn banner → TriangleAlert + flex; 🪪 smart-card reader → CreditCard; ＋ manual registration → Plus.
+- reception-register.tsx: 🔒 chip-locked hint Badge → Lock (tiny h-4 badge, auto size-3); ⛔ duplicate alert → OctagonX + flex; 🛡️ payer banner → ShieldCheck size-3.5.
+- reception-success.tsx: ⚠️ duplist title → TriangleAlert in flex <b>; 🖨️/📅/🎫 buttons → Printer/CalendarDays/Ticket size-4; 🎫 ticket-issued header → Ticket.
+- Untouched per constraints: all t()/bi() keys (one added usage of EXISTING key status.signed), API calls, state, props, logic, exports, role gates, catalogs; "use client" intact; RTL logical props preserved; 30+ distinct lucide icons verified present in lucide-react 0.525.0 before use.
+
+Stage Summary:
+- Files changed: 14/14 in scope. Emojis removed: 72 decorative glyphs (67 in mandated unicode emoji/dingbat/technical ranges incl. FE0F sequences + 4 fullwidth ＋ + 1 ●). Icons added: 32 distinct lucide-react named imports (~60 render usages). Line counts all ≤250 (max emr-shared 230).
+- VERIFY 1: rg mandated emoji scan over the 14 files → zero output (exit 1). Extended sweep (2190-21FF arrows, 2500-25FF, FF00-FFEF fullwidth, 2000-206F) → only legit typography remains (em-dash separators, "…" loading ellipsis, "—" null placeholders, box-drawing comment dividers, SpO₂ subscript, → in code comments only).
+- VERIFY 2: bunx tsc --noEmit → 0 errors in all 14 E1 files. PRE-EXISTING project error (NOT in E1 scope, not fixed, reported): src/components/shell/domain-bar.tsx:53 TS1003/TS1382 invalid JSX `<ICONS[d.key] … />` — same known issue E2/E3 reported (needs `const Icon = ICONS[d.key]` extraction; owner = shell-domain agent).
+- VERIFY 3: bunx eslint on the 14 files → 0 problems (exit 0).
+- Project-wide emoji status: rg over ALL of src/ → 0 matches (E1+E2+E3 complete; src tree fully emoji-free). Non-UI remnants outside src/ (out of all E-agents' scope): prisma/seed.ts:141 `✔`, prisma/seed-part2.ts:782 `✔`, scripts/sync-github.sh:13 `✓` — terminal console output only, never rendered in UI.

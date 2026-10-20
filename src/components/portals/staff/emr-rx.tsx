@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Check, OctagonX, Pill, Plus, ShieldCheck, TriangleAlert, X } from "lucide-react";
 import { DRUG_CATALOG, RX_ROLES, Section, errText, type ChartData } from "./emr-shared";
 
 interface Props { chart: ChartData; reload: () => void }
@@ -53,7 +54,7 @@ export function RxTab({ chart }: Props) {
       setOverride("");
       toast({
         title: r.blocked ? t("emr.rx.blocked", { code: r.code }) : t("emr.rx.ok", { code: r.code }),
-        description: `${r.errors.length} ⛔ · ${r.warnings.length} ⚠️`,
+        description: <span className="flex items-center gap-2"><span className="flex items-center gap-1">{r.errors.length}<OctagonX className="size-3.5" aria-hidden /></span>·<span className="flex items-center gap-1">{r.warnings.length}<TriangleAlert className="size-3.5" aria-hidden /></span></span>,
         variant: r.blocked ? "destructive" : undefined,
       });
     } catch (e) {
@@ -61,11 +62,11 @@ export function RxTab({ chart }: Props) {
     } finally { setBusy(false); }
   };
 
-  if (!canRx) return <Section title={`💊 ${t("emr.tab.rx")}`}><p className="text-sm text-muted-foreground p-2">{t("emr.rx.norole")}</p></Section>;
+  if (!canRx) return <Section title={<><Pill className="size-4 shrink-0" aria-hidden />{t("emr.tab.rx")}</>}><p className="text-sm text-muted-foreground p-2">{t("emr.rx.norole")}</p></Section>;
 
   return (
     <div className="grid gap-3">
-      <Section title={`💊 ${t("emr.rx.title")}`} actions={<Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={() => setRows((rs) => [...rs, emptyRow()])}>＋ {t("emr.rx.addrow")}</Button>}>
+      <Section title={<><Pill className="size-4 shrink-0" aria-hidden />{t("emr.rx.title")}</>} actions={<Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={() => setRows((rs) => [...rs, emptyRow()])}><Plus className="size-3.5" aria-hidden />{t("emr.rx.addrow")}</Button>}>
         <div className="grid gap-2">
           {rows.map((r, i) => (
             <div key={i} className="grid grid-cols-2 md:grid-cols-12 gap-2 items-end rounded-md border p-2">
@@ -101,7 +102,7 @@ export function RxTab({ chart }: Props) {
                 <Label className="text-[11px] text-muted-foreground">{t("common.quantity")}</Label>
                 <Input type="number" min={1} value={r.qty} onChange={(e) => upd(i, "qty", e.target.value)} className="h-9 font-mono" dir="ltr" aria-label={t("common.quantity")} />
               </div>
-              <Button variant="ghost" size="sm" className="h-9 text-rose-600 md:col-span-1" onClick={() => setRows((rs) => rs.filter((_, j) => j !== i))} disabled={rows.length === 1} aria-label={t("common.remove")}>✕</Button>
+              <Button variant="ghost" size="sm" className="h-9 text-rose-600 md:col-span-1" onClick={() => setRows((rs) => rs.filter((_, j) => j !== i))} disabled={rows.length === 1} aria-label={t("common.remove")}><X className="size-4" aria-hidden /></Button>
             </div>
           ))}
           <Button className="h-10 self-start px-6" disabled={busy} onClick={() => submit(false)}>{busy ? t("common.loading") : t("emr.rx.check")}</Button>
@@ -109,11 +110,11 @@ export function RxTab({ chart }: Props) {
       </Section>
 
       {resp && (
-        <Section title={`🛡️ ${t("emr.rx.report")}`} actions={<Badge variant="outline" className="font-mono text-[10px]">{resp.code}</Badge>}>
+        <Section title={<><ShieldCheck className="size-4 shrink-0" aria-hidden />{t("emr.rx.report")}</>} actions={<Badge variant="outline" className="font-mono text-[10px]">{resp.code}</Badge>}>
           <div className="grid gap-2">
             {resp.blocked && (
               <div role="alert" className="rounded-lg border-2 border-red-400 bg-red-50 dark:bg-red-950/40 p-3 grid gap-2">
-                <b className="text-sm text-red-900 dark:text-red-200">⛔ {t("emr.rx.blockedTitle")}</b>
+                <b className="text-sm text-red-900 dark:text-red-200 flex items-center gap-2"><OctagonX className="size-4 shrink-0" aria-hidden />{t("emr.rx.blockedTitle")}</b>
                 <ul className="grid gap-1 text-xs text-red-800 dark:text-red-300">
                   {resp.errors.map((m) => <li key={m.code} className="font-mono">· {bi(lang, m.ar, m.en)} <span className="opacity-60">[{m.code}]</span></li>)}
                 </ul>
@@ -124,9 +125,9 @@ export function RxTab({ chart }: Props) {
                 <Button variant="destructive" className="h-9 self-start" disabled={busy || !override.trim()} onClick={() => submit(true)}>{t("emr.rx.overrideGo")}</Button>
               </div>
             )}
-            {!resp.blocked && <div className="rounded-md border border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 p-2.5 text-sm text-emerald-900 dark:text-emerald-200">✓ {t("emr.rx.ok", { code: resp.code })}</div>}
+            {!resp.blocked && <div className="rounded-md border border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 p-2.5 text-sm text-emerald-900 dark:text-emerald-200 flex items-center gap-2"><Check className="size-4 shrink-0" aria-hidden />{t("emr.rx.ok", { code: resp.code })}</div>}
             {resp.warnings.map((w) => (
-              <div key={w.code} className="rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950/40 p-2 text-xs text-amber-900 dark:text-amber-200">⚠️ {bi(lang, w.ar, w.en)}</div>
+              <div key={w.code} className="rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950/40 p-2 text-xs text-amber-900 dark:text-amber-200 flex items-center gap-2"><TriangleAlert className="size-4 shrink-0" aria-hidden />{bi(lang, w.ar, w.en)}</div>
             ))}
             {resp.doseHelpers.length > 0 && (
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">

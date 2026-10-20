@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { StatusBadge } from "@/components/shared/badges";
+import { AlarmClock, Bell, Check, CheckCircle2, MessageSquare } from "lucide-react";
 import { Empty, ErrorBox, LoadingRows, Section, errText, type InboxData } from "./emr-shared";
 import { cn } from "@/lib/utils";
 
@@ -70,7 +71,7 @@ export function InboxTab() {
   return (
     <div className="grid gap-3 lg:grid-cols-3">
       {/* tasks */}
-      <Section title={`✅ ${t("emr.in.tasks")}`} actions={<Badge variant="outline" className="text-[10px]">{data.tasks.length}</Badge>}>
+      <Section title={<><CheckCircle2 className="size-4 shrink-0" aria-hidden />{t("emr.in.tasks")}</>} actions={<Badge variant="outline" className="text-[10px]">{data.tasks.length}</Badge>}>
         {data.tasks.length === 0 ? <Empty label={t("common.empty")} className="py-4" /> : (
           <ul className="grid gap-1.5 max-h-80 overflow-y-auto bmc-scroll">
             {data.tasks.map((k) => (
@@ -81,8 +82,8 @@ export function InboxTab() {
                 </div>
                 <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                   {k.patient && <span className="font-mono">{k.patient.mrn} · {k.patient.nameAr}</span>}
-                  {k.dueAt && <span>⏰ {bhDateString(k.dueAt)} {bhTimeString(k.dueAt)}</span>}
-                  <Button size="sm" className="ms-auto h-6 px-2 text-[10px]" disabled={busy === k.id} onClick={() => complete(k.id)}>✓ {t("emr.in.complete")}</Button>
+                  {k.dueAt && <span className="inline-flex items-center gap-1"><AlarmClock className="size-3.5 shrink-0" aria-hidden />{bhDateString(k.dueAt)} {bhTimeString(k.dueAt)}</span>}
+                  <Button size="sm" className="ms-auto h-6 px-2 text-[10px]" disabled={busy === k.id} onClick={() => complete(k.id)}><Check className="size-3.5" aria-hidden />{t("emr.in.complete")}</Button>
                 </div>
               </li>
             ))}
@@ -91,7 +92,7 @@ export function InboxTab() {
       </Section>
 
       {/* notifications */}
-      <Section title={`🔔 ${t("emr.in.notifs")}`}>
+      <Section title={<><Bell className="size-4 shrink-0" aria-hidden />{t("emr.in.notifs")}</>}>
         {data.notifications.length === 0 ? <Empty label={t("common.empty")} className="py-4" /> : (
           <ul className="grid gap-1.5 max-h-80 overflow-y-auto bmc-scroll">
             {data.notifications.map((n) => (
@@ -108,7 +109,7 @@ export function InboxTab() {
       </Section>
 
       {/* message threads */}
-      <Section title={`💬 ${t("emr.in.threads")}`}>
+      <Section title={<><MessageSquare className="size-4 shrink-0" aria-hidden />{t("emr.in.threads")}</>}>
         {data.threads.length === 0 ? <Empty label={t("common.empty")} className="py-4" /> : (
           <ul className="grid gap-1.5 max-h-80 overflow-y-auto bmc-scroll">
             {data.threads.map((th) => (
@@ -130,7 +131,7 @@ export function InboxTab() {
       <Dialog open={!!openThread} onOpenChange={(v) => { if (!v) setOpenThread(null); }}>
         <DialogContent className="max-w-xl">
           <DialogHeader>
-            <DialogTitle className="text-sm">💬 {openThread?.subjectAr}</DialogTitle>
+            <DialogTitle className="text-sm flex items-center gap-2"><MessageSquare className="size-4 shrink-0" aria-hidden />{openThread?.subjectAr}</DialogTitle>
             <DialogDescription className="text-xs font-mono">{openThread?.category}</DialogDescription>
           </DialogHeader>
           <ScrollArea className="h-72 rounded-md border p-2">
