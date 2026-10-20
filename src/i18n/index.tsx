@@ -6,14 +6,17 @@ import { createContext, useContext, useMemo, type ReactNode } from "react";
 import core from "./core";
 import publicSite from "./public";
 import patient from "./patient";
-import staff from "./staff";
+import staffA from "./staff-a";
+import staffB from "./staff-b";
+import staffC from "./staff-c";
+import staffD from "./staff-d";
 import admin from "./admin";
 import devices from "./devices";
 
 export type Dict = Record<string, { ar: string; en: string }>;
 
 export const dictionaries: Record<string, Dict> = {
-  core, public: publicSite, patient, staff, admin, devices,
+  core, public: publicSite, patient, staffA, staffB, staffC, staffD, admin, devices,
 };
 
 const flat: Dict = (() => {

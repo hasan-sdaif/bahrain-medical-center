@@ -71,10 +71,11 @@ const routes: RouteTable = {
     if (inv.status === "paid") return problem("STATE_INVALID", { detail: "already paid" });
     const method = b.method ?? "cash";
     // Benefit: simulate provider webhook signature verification
+    let benefitRef: string | undefined;
     if (method === "benefit") {
       const ref = b.benefitRef ?? `BNF-${Math.floor(Math.random() * 90000 + 10000)}`;
       await db.paymentWebhook.create({ data: { provider: "benefit-sim", signature: `sha1=${sha256(ref).slice(0, 20)}`, payload: { invoice: inv.code, ref }, processed: true } });
-      var benefitRef: string | undefined = ref;
+      benefitRef = ref;
     }
     const amount = Math.trunc(Number(b.amountFils ?? inv.totalFils));
     const code = await nextPayCode();

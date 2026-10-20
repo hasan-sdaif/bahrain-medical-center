@@ -43,3 +43,22 @@ Stage Summary:
 - tsc --noEmit: 0 errors. db push ✓, seed ✓ (12 patients, 32 staff, 10 depts, K6.9 alert, active WO chat).
 - Fix notes: JSON literal defaults unsupported on SQLite (use Json? + app defaults); money = Int fils; patient relations added late (schema recovered after self-assignment bug — dedup PrescriptionItem.prescription).
 - Pending: app shell UI (page.tsx), 8 parallel UI domain agents, QA loop, verify harness, docs.
+
+---
+Task ID: 9 (shell)
+Agent: main (Z.ai Code)
+Task: App shell at / — domain architecture, design system, shared components
+
+Work Log:
+- src/app/layout.tsx: Cairo (Arabic) + Geist fonts, RTL default, next-themes, metadata.
+- globals.css: medical teal identity (--primary oklch teal), custom scrollbars, print styles.
+- src/app/page.tsx: SystemShell — lazy portals per domain, sticky footer (min-h-dvh flex-col, mt-auto), Suspense skeletons.
+- src/components/shell: domain-bar (7 domains w/ hosts), lang-theme bar, direction-sync.
+- src/components/shared: barcode (Code128 jsbarcode + QR qrcode), badges (StatusBadge/FlagBadges/MoneyText), patient-banner (MRN barcode, assurance level, flags).
+- src/lib/api-client.ts: actor header injection, problem+json error surfacing.
+- Added endpoints: staff login-options, patient login-options, settings/list, audit/chain.
+- i18n staff split → staff-a/b/c/d (one per staff UI agent, zero conflicts).
+- docs/API.md: complete API contract for all agents.
+
+Stage Summary:
+- tsc 0 errors, eslint clean, GET / 200. Ready for parallel UI agents (tasks 2-a..2-h).

@@ -22,6 +22,10 @@ function notPatient(): Response {
 }
 
 const routes: RouteTable = {
+  "GET login-options": async () => {
+    const rows = await db.patient.findMany({ take: 6, orderBy: { createdAt: "asc" } });
+    return json(rows.map((p) => ({ id: p.id, mrn: p.mrn, nameAr: `${p.firstNameAr} ${p.familyAr}`, nameEn: `${p.firstNameEn ?? ""} ${p.familyEn ?? ""}`.trim(), phone: p.phone })));
+  },
   "GET overview": async (req) => {
     const s = patientActor(req); if (!s) return notPatient();
     const p = await db.patient.findUnique({ where: { id: s.pid }, include: { identifiers: true, flags: true, policies: { include: { payer: true } } } });

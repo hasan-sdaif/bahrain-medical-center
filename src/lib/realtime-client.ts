@@ -24,18 +24,19 @@ export function getSocket(): Socket {
 export function useRealtime(event: string, handler: (payload: unknown) => void, deps: unknown[] = []): boolean {
   const [connected, setConnected] = useState(false);
   const ref = useRef(handler);
-  ref.current = handler;
+  useEffect(() => {
+    ref.current = handler;
+  }, [handler]);
   useEffect(() => {
     const s = getSocket();
     const on = (p: unknown) => ref.current(p);
     s.on(event, on);
     s.on("connect", () => setConnected(true));
     s.on("disconnect", () => setConnected(false));
-    if (s.connected) setConnected(true);
+    queueMicrotask(() => setConnected(s.connected));
     return () => {
       s.off(event, on);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event, ...deps]);
   return connected;
 }

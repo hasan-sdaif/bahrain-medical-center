@@ -29,6 +29,13 @@ const SIM_CARDS = [
 ];
 
 const routes: RouteTable = {
+  // ── Demo login options (no auth) ────────────────────────────────────────
+  "GET login-options": async () => {
+    const emps = await db.employee.findMany({ where: { active: true }, include: { department: true } });
+    return json(emps.filter((e) => ["reception","callcenter","nurse","doctor","dentist","surgeon","oncologist","psychiatrist","nutritionist","pediatrician","lab-tech","phlebotomist","radiologist","pharmacist","cashier","insurance","collector","inventory","maintenance-tech","maintenance-sup","hr","quality","dpo","auditor","sysadmin","center-manager","med-director"].includes(e.role)).map((e) => ({
+      id: e.id, role: e.role, nameAr: e.nameAr, nameEn: e.nameEn, deptCode: e.department?.code ?? null, deptAr: e.department?.nameAr ?? null,
+    })));
+  },
   // ── Reader (Identity Reader Adapter — simulator fills real SDK slot) ─────
   "GET reader/status": async (req) => {
     const actor = actorFrom(req);

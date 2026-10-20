@@ -323,6 +323,28 @@ const routes: RouteTable = {
       facilityLicenses: licenses.map((l) => ({ kind: l.kind, nameAr: l.nameAr, number: l.number, expiresAt: l.expiresAt.toISOString().slice(0, 10), daysLeft: Math.round((l.expiresAt.getTime() - Date.now()) / 86400000) })),
     });
   },
+  "GET settings/list": async (req) => {
+    const actor = actorFrom(req);
+    if (!actor || !["sysadmin", "med-director", "dpo", "center-manager"].includes(actor.role)) return problem("FORBIDDEN");
+    const [settings, flags, seqs, licenses] = await Promise.all([
+      db.setting.findMany({ orderBy: { key: "asc" } }),
+      db.featureFlag.findMany(),
+      db.numberSequence.findMany({ orderBy: { key: "asc" } }),
+      db.facilityLicense.findMany(),
+    ]);
+    return json({
+      settings: settings.map((s) => ({ key: s.key, value: s.value, group: s.group, version: s.version })),
+      flags: flags.map((f) => ({ key: f.key, enabled: f.enabled, description: f.description })),
+      sequences: seqs.map((q) => ({ key: q.key, next: q.next })),
+      licenses: licenses.map((l) => ({ kind: l.kind, nameAr: l.nameAr, number: l.number, expiresAt: l.expiresAt.toISOString().slice(0, 10), daysLeft: Math.round((l.expiresAt.getTime() - Date.now()) / 86400000) })),
+    });
+  },
+  "GET audit/chain": async (req) => {
+    const actor = actorFrom(req);
+    if (!actor || !["sysadmin", "dpo", "auditor", "med-director"].includes(actor.role)) return problem("FORBIDDEN");
+    const { verifyAuditChain } = await import("@/lib/audit");
+    return json(await verifyAuditChain(500));
+  },
   "GET me/modules": async (req) => {
     const actor = actorFrom(req);
     if (!actor) return problem("UNAUTHORIZED");

@@ -24,7 +24,6 @@ const wipe = [
 
 async function reset(): Promise<void> {
   for (const t of wipe) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (db as any)[t.charAt(0).toUpperCase() + t.slice(1)].deleteMany();
   }
   await db.numberSequence.deleteMany();
