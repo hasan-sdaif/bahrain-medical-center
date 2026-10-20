@@ -1,59 +1,94 @@
 "use client";
 /**
- * FAQ section — accordion from /api/public/catalog faqs (bilingual Q/A),
- * plus the insurance-partners strip (insurers list with kind badges).
+ * FAQ section — Shamel guide `faq.html` accordion (`.acc-item/.acc-head/.acc-body`)
+ * built from the catalog FAQs, plus the insurance-partners strip as guide
+ * `.partner-chip` tiles with colored monogram tiles.
  */
-import { CircleHelp, ShieldCheck } from "lucide-react";
+import { useState } from "react";
+import { ChevronDown, CircleHelp, ShieldCheck } from "lucide-react";
 import { useI18n, bi } from "@/i18n";
-import { Badge } from "@/components/ui/badge";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Section, SectionHeader, SectionSkeleton } from "../section-shell";
+import { cn } from "@/lib/utils";
+import { Section, SectionHeader, SectionSkeleton, Container } from "../section-shell";
 import { usePublicData } from "../data";
+
+const PT_COLORS = ["var(--navy-700)", "var(--sky-600)", "var(--teal-600)", "var(--gold-600)", "var(--violet-600)", "var(--green-600)", "var(--rose-600)", "var(--amber-700)"];
+
+function Insurers() {
+  const { t, lang } = useI18n();
+  const { data } = usePublicData();
+  if (data.insurers.length === 0) return null;
+  return (
+    <div className="mt-14 md:mt-20">
+      <SectionHeader
+        icon={ShieldCheck}
+        eyebrow={t("public.insurers.eyebrow")}
+        title={t("public.insurers.title")}
+        subtitle={t("public.insurers.subtitle")}
+      />
+      <div className="grid auto-200">
+        {data.insurers.map((ins, i) => {
+          const name = bi(lang, ins.nameAr, ins.nameEn);
+          return (
+            <div key={i} className="partner-chip">
+              <span className="pt-ic" style={{ background: PT_COLORS[i % PT_COLORS.length] }} aria-hidden>
+                {name.trim().charAt(0)}
+              </span>
+              <span className="flex min-w-0 flex-col text-start">
+                <span className="truncate">{name}</span>
+                <span className="text-xs font-medium text-ink-3">
+                  {t(`public.insurers.kind.${ins.kind === "corporate" ? "corporate" : "insurance"}`)}
+                </span>
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 export function Faq() {
   const { t, lang } = useI18n();
   const { data, loading } = usePublicData();
+  const [open, setOpen] = useState<number | null>(0);
 
   return (
     <Section id="faq">
-      <div className="mx-auto max-w-[1600px] px-4 md:px-6">
-        <SectionHeader icon={CircleHelp} title={t("public.faq.title")} subtitle={t("public.faq.subtitle")} />
+      <Container>
+        <SectionHeader
+          icon={CircleHelp}
+          eyebrow={t("public.faq.eyebrow")}
+          title={t("public.faq.title")}
+          subtitle={t("public.faq.subtitle")}
+        />
         {loading ? (
           <div className="mx-auto max-w-3xl"><SectionSkeleton cards={4} /></div>
         ) : (
           <div className="mx-auto max-w-3xl">
-            <Accordion type="single" collapsible className="rounded-2xl border bg-card px-4 md:px-6 divide-y divide-border">
-              {data.faqs.map((f, i) => (
-                <AccordionItem key={i} value={`q-${i}`} className="border-0">
-                  <AccordionTrigger className="text-start text-sm md:text-base font-semibold py-4 hover:no-underline">
-                    {bi(lang, f.qAr, f.qEn)}
-                  </AccordionTrigger>
-                  <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
-                    {bi(lang, f.aAr, f.aEn)}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </div>
-        )}
-
-        {data.insurers.length > 0 && (
-          <div className="mt-12 md:mt-16">
-            <SectionHeader icon={ShieldCheck} title={t("public.insurers.title")} subtitle={t("public.insurers.subtitle")} />
-            <div className="mx-auto grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-              {data.insurers.map((ins, i) => (
-                <div key={i} className="flex flex-col items-center gap-2 rounded-xl border bg-card p-4 text-center">
-                  <ShieldCheck className="size-6 text-primary" aria-hidden />
-                  <span className="text-sm font-semibold leading-tight">{bi(lang, ins.nameAr, ins.nameEn)}</span>
-                  <Badge variant="outline" className="font-normal text-muted-foreground">
-                    {t(`public.insurers.kind.${ins.kind === "corporate" ? "corporate" : "insurance"}`)}
-                  </Badge>
+            {data.faqs.map((f, i) => {
+              const isOpen = open === i;
+              return (
+                <div key={i} className={cn("acc-item", isOpen && "open")}>
+                  <button
+                    className="acc-head"
+                    aria-expanded={isOpen}
+                    aria-controls={`faq-panel-${i}`}
+                    onClick={() => setOpen(isOpen ? null : i)}
+                  >
+                    <span className="ah-ic"><CircleHelp className="size-4" aria-hidden /></span>
+                    <span className="flex-1 text-start">{bi(lang, f.qAr, f.qEn)}</span>
+                    <ChevronDown className="ah-caret size-4" aria-hidden />
+                  </button>
+                  <div className="acc-body" id={`faq-panel-${i}`} role="region">
+                    <p className="pb-1">{bi(lang, f.aAr, f.aEn)}</p>
+                  </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
         )}
-      </div>
+        <Insurers />
+      </Container>
     </Section>
   );
 }

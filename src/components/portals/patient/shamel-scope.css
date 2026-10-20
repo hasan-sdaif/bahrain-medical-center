@@ -1,0 +1,81 @@
+/* ============================================================
+   Patient portal — Shamel spacing/border restore (scoped .smc).
+   WHY: Tailwind v4 preflight (`* { margin:0; padding:0; border:0 }`)
+   lives in the `base` layer which was declared AFTER the `shamel`
+   layer (globals.css), so every margin/padding/border rule in the 8
+   Shamel files is currently neutralised. These re-assertions join the
+   SAME `base` layer with higher specificity (.smc prefix ⇒ they beat
+   the `*` reset regardless of bundle order) while remaining BELOW the
+   `utilities` layer — so Tailwind utility fine-tuning (p-0, py-2, my-0,
+   border-0 …) still overrides them, exactly like the guide contract.
+   Values mirror src/app/shamel/03,04,05 (see each block).
+   ============================================================ */
+@layer base {
+  /* ── 03-layout: sidebar / topbar / content / page-head / auth ── */
+  .smc .sidebar-brand { padding: 18px 20px; border-bottom: 1px solid var(--border); }
+  .smc .sidebar-scroll { padding: 14px 14px 20px; }
+  .smc .nav-group { margin-bottom: 6px; }
+  .smc .nav-group-title { padding: 14px 12px 6px; }
+  .smc .nav-item { padding: 10px 12px; margin-bottom: 2px; }
+  .smc .nav-badge { padding: 2px 7px; }
+  .smc .sidebar-foot { border-top: 1px solid var(--border); padding: 12px 14px; }
+  .smc .app-main { margin-inline-start: var(--sidebar-w); }
+  .smc .topbar { padding-inline: 22px; border-bottom: 1px solid var(--border); }
+  .smc .subdomain-chip { padding: 5px 12px; border: 1px solid var(--border); }
+  .smc .clock-chip { padding: 6px 14px; border: 1px solid var(--border); }
+  .smc .content { padding: 26px 26px 60px; }
+  .smc .page-head { margin-bottom: 24px; }
+  .smc .page-head .page-sub { margin-top: 4px; }
+  .smc .page-head-actions { gap: 10px; }
+  .smc .auth-shell { padding: 40px 20px; }
+  .smc .auth-card { padding: 40px 38px 34px; }
+  .smc .auth-brand { margin-bottom: 26px; }
+  .smc .auth-brand .brand-mark { margin: 0 auto 14px; }
+  .smc .auth-title { margin-bottom: 6px; }
+  .smc .auth-sub { margin-bottom: 26px; }
+  .smc .auth-foot { margin-top: 22px; padding-top: 20px; border-top: 1px dashed var(--border-2); }
+
+  /* ── 04-buttons-forms: fields / chips / slots ── */
+  .smc .field { margin-bottom: 18px; }
+  .smc .field-label { margin-bottom: 8px; }
+  .smc .input { padding: 0 14px; border: 1.5px solid var(--border-2); }
+  .smc .input-icon .input { padding-inline-start: 42px; }
+  .smc .field-help { margin-top: 6px; }
+  .smc .chip { padding: 7px 15px; border: 1.5px solid var(--border-2); }
+  .smc .slot { padding: 6px 10px; border: 1px dashed var(--border-2); }
+
+  /* ── 05-cards-tables: card / stat / table / badge / alert / list ── */
+  .smc .card { border: 1px solid var(--border); }
+  .smc .card-head { padding: 16px 20px; border-bottom: 1px solid var(--border); }
+  .smc .card-body { padding: 20px; }
+  .smc .card-foot { padding: 14px 20px; border-top: 1px solid var(--border); }
+  .smc .stat-card { padding: 18px 20px; }
+  .smc .stat-card .sc-top { margin-bottom: 14px; }
+  .smc .stat-card .sc-foot { margin-top: 10px; }
+  .smc .delta { padding: 3px 9px; }
+  .smc .table th { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .smc .table td { padding: 13px 16px; border-bottom: 1px solid var(--border); }
+  .smc .table.sm td, .smc .table.sm th { padding: 9px 12px; }
+  .smc .badge { padding: 4px 11px; }
+  .smc .badge.sm { padding: 2px 8px; }
+  .smc .badge.lg { padding: 6px 14px; }
+  .smc .alert { padding: 15px 18px; border: 1px solid transparent; }
+  .smc .alert .al-title { margin-bottom: 3px; }
+  .smc .list-item { padding: 13px 18px; border-bottom: 1px solid var(--border); }
+  .smc .list-item .li-sub { margin-top: 2px; }
+  .smc .divider { margin: 20px 0; }
+  .smc .empty-state { padding: 54px 24px; }
+  .smc .empty-state .es-ic { margin: 0 auto 20px; }
+  .smc .empty-state p { margin: 0 auto 18px; }
+  .smc .tag { padding: 3px 10px; }
+
+  /* ── responsive mirrors (03-layout) ── */
+  @media (max-width: 1180px) {
+    .smc .app-main { margin-inline-start: 0 !important; }
+  }
+  @media (max-width: 760px) {
+    .smc .content { padding: 18px 16px 44px; }
+    .smc .auth-card { padding: 30px 22px 26px; }
+    .smc .topbar { padding-inline: 14px; }
+  }
+}

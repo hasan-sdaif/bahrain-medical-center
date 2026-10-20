@@ -1,10 +1,10 @@
 "use client";
-/** Booking steps 4-6 — guest details + OTP confirmation + success with barcode. */
+/** Booking steps 4-6 — guest details + OTP confirmation + success with barcode.
+ *  Buttons restyled to Shamel `.btn` classes (agent 2-a); flow unchanged. */
 import { useState } from "react";
 import { BadgeCheck, CalendarClock, CheckCircle2, Loader2, ScanBarcode } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Label } from "@/components/ui/label";
@@ -52,17 +52,17 @@ export function DetailsStep({ slot, deptCode, onBack, onSent }: {
 
   return (
     <div>
-      <div className="rounded-xl border bg-muted/40 p-4 space-y-2 text-sm">
-        <p className="font-semibold text-muted-foreground">{t("public.booking.summary")}</p>
+      <div className="space-y-2 rounded-xl border border-line bg-surface-2 p-4 text-sm">
+        <p className="font-bold text-ink-3">{t("public.booking.summary")}</p>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-          {dept ? <span className="font-medium">{bi(lang, dept.nameAr, dept.nameEn)}</span> : null}
+          {dept ? <span className="font-semibold">{bi(lang, dept.nameAr, dept.nameEn)}</span> : null}
           <span>{bi(lang, slot.doctorAr, slot.doctorEn)}</span>
         </div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-ink-3">
           <span className="flex items-center gap-1.5"><CalendarClock className="size-4" aria-hidden />
-            <span dir="ltr" className="tabular-nums">{bhDateString(slot.at)} · {bhTimeString(slot.at)}</span>
+            <span dir="ltr" className="num">{bhDateString(slot.at)} · {bhTimeString(slot.at)}</span>
           </span>
-          <span>{t("public.booking.price")}: <MoneyText fils={slot.priceFils} className="font-semibold text-foreground" /></span>
+          <span>{t("public.booking.price")}: <MoneyText fils={slot.priceFils} className="font-bold text-ink" /></span>
         </div>
       </div>
 
@@ -83,11 +83,13 @@ export function DetailsStep({ slot, deptCode, onBack, onSent }: {
       </div>
 
       <div className="mt-5 flex items-center justify-between gap-3">
-        <Button variant="ghost" onClick={onBack} disabled={busy} className="h-11 px-5"><DirArrow back /> {t("common.back")}</Button>
-        <Button onClick={submit} disabled={busy} className="h-11 px-6">
+        <button onClick={onBack} disabled={busy} className="btn btn-ghost h-11 px-5">
+          <DirArrow back /> {t("common.back")}
+        </button>
+        <button onClick={submit} disabled={busy} className="btn btn-primary h-11 px-6">
           {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
           {busy ? t("public.booking.requesting") : t("public.booking.request")} <DirArrow />
-        </Button>
+        </button>
       </div>
     </div>
   );
@@ -140,10 +142,10 @@ export function OtpStep({ request, onVerified }: { request: BookingRequestRes; o
       </div>
 
       <div className="flex justify-center">
-        <Button onClick={() => void verify(otp)} disabled={busy || otp.length < 4} className="h-11 min-w-40">
+        <button onClick={() => void verify(otp)} disabled={busy || otp.length < 4} className="btn btn-primary h-11 min-w-40">
           {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <BadgeCheck aria-hidden />}
           {busy ? t("public.booking.otp.verifying") : t("public.booking.otp.verify")}
-        </Button>
+        </button>
       </div>
     </div>
   );
@@ -154,30 +156,30 @@ export function SuccessStep({ result, onClose }: { result: BookingVerifyRes; onC
   const setDomain = useApp((s) => s.setDomain);
   return (
     <div className="space-y-5 text-center">
-      <span className="mx-auto grid size-14 place-items-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+      <span className="mx-auto grid size-14 place-items-center rounded-full bg-primary/10 text-primary">
         <CheckCircle2 className="size-8" aria-hidden />
       </span>
 
-      <div className="rounded-xl border bg-muted/40 p-4 space-y-3">
+      <div className="space-y-3 rounded-xl border border-line bg-surface-2 p-4">
         <div>
-          <p className="text-xs text-muted-foreground">{t("public.booking.success.appt")}</p>
-          <p className="mt-1 text-xl font-bold font-mono tracking-wider" dir="ltr">{result.appointment.code}</p>
+          <p className="text-xs text-ink-3">{t("public.booking.success.appt")}</p>
+          <p className="num mt-1 text-xl font-bold tracking-wider">{result.appointment.code}</p>
         </div>
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-sm text-muted-foreground">
-          <span>{t("public.booking.success.at")}: <span dir="ltr" className="font-medium text-foreground tabular-nums">{bhDateString(result.appointment.start)} · {bhTimeString(result.appointment.start)}</span></span>
-          <span>{t("public.booking.success.mrn")}: <span dir="ltr" className="font-mono font-medium text-foreground">{result.patient.mrn}</span></span>
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-sm text-ink-3">
+          <span>{t("public.booking.success.at")}: <span dir="ltr" className="num font-semibold text-ink">{bhDateString(result.appointment.start)} · {bhTimeString(result.appointment.start)}</span></span>
+          <span>{t("public.booking.success.mrn")}: <span dir="ltr" className="num font-semibold text-ink">{result.patient.mrn}</span></span>
         </div>
-        <div className="rounded-lg bg-white dark:bg-background p-3 border">
+        <div className="rounded-lg border border-line bg-surface p-3">
           <Code128 value={result.appointment.code} height={52} className="mx-auto" />
-          <p className="mt-1 flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground"><ScanBarcode className="size-3.5" aria-hidden /> {t("public.booking.success.barcode.hint")}</p>
+          <p className="mt-1 flex items-center justify-center gap-1.5 text-[11px] text-ink-3"><ScanBarcode className="size-3.5" aria-hidden /> {t("public.booking.success.barcode.hint")}</p>
         </div>
       </div>
 
       <p className="text-sm text-muted-foreground">{bi(lang, result.noteAr, result.noteEn) || t("public.booking.success.note")}</p>
 
       <div className="flex flex-wrap justify-center gap-3">
-        <Button onClick={() => { onClose(); setDomain("patient"); }} className="h-11 px-6">{t("public.booking.success.portal")}</Button>
-        <Button variant="outline" onClick={onClose} className="h-11 px-6">{t("common.close")}</Button>
+        <button onClick={() => { onClose(); setDomain("patient"); }} className="btn btn-primary h-11 px-6">{t("public.booking.success.portal")}</button>
+        <button onClick={onClose} className="btn btn-outline h-11 px-6">{t("common.close")}</button>
       </div>
       <Badge variant="outline" className="font-normal text-muted-foreground">{result.patient.nameAr}</Badge>
     </div>

@@ -1,14 +1,13 @@
 "use client";
 /**
  * AI assistant — floating chat widget on the public site (POST /api/ai/chat).
- * z-ai-web-dev-sdk runs server-side only; this component is pure client.
+ * Restyled to the Shamel `.fab` launcher + card surface; z-ai-web-dev-sdk
+ * runs server-side only, this component is pure client.
  */
 import { useEffect, useRef, useState } from "react";
 import { Bot, Loader2, MessageCircle, Send, X } from "lucide-react";
 import { useI18n } from "@/i18n";
 import { apiPost } from "@/lib/api-client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 interface Msg { role: "user" | "ai"; text: string }
@@ -44,31 +43,36 @@ export function AiAssistant() {
 
   return (
     <>
-      <Button
+      <button
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="no-print fixed bottom-5 end-5 z-50 size-14 rounded-full shadow-lg shadow-teal-900/25 p-0"
+        className="fab no-print fixed bottom-5 end-5 z-50 outline-none focus-visible:ring-2 focus-visible:ring-ring"
         aria-label={t("public.ai.bot")}
       >
         {open ? <X className="size-6" aria-hidden /> : <MessageCircle className="size-6" aria-hidden />}
-      </Button>
+      </button>
 
       {open && (
-        <div className="no-print fixed bottom-22 end-5 z-50 flex max-h-[70vh] w-[calc(100vw-2.5rem)] max-w-sm flex-col overflow-hidden rounded-2xl border bg-card shadow-2xl">
-          <div className="flex items-center gap-2 border-b bg-primary/5 px-4 py-3">
-            <span className="grid size-8 place-items-center rounded-full bg-primary text-primary-foreground"><Bot className="size-4" aria-hidden /></span>
+        <div className="card no-print fixed bottom-[92px] end-5 z-50 flex max-h-[70vh] w-[calc(100vw-2.5rem)] max-w-sm flex-col overflow-hidden rounded-2xl !shadow-2xl">
+          <div className="flex items-center gap-2.5 border-b border-line bg-primary/5 px-4 py-3">
+            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
+              <Bot className="size-4.5" aria-hidden />
+            </span>
             <div className="min-w-0">
-              <p className="truncate text-sm font-bold">{t("public.ai.bot")}</p>
-              <p className="text-[11px] text-muted-foreground">{busy ? t("public.ai.thinking") : "online"}</p>
+              <p className="truncate text-sm font-bold" style={{ fontFamily: "var(--font-cairo)" }}>{t("public.ai.bot")}</p>
+              <p className="flex items-center gap-1.5 text-[11px] text-ink-3">
+                <span className="size-1.5 rounded-full bg-emerald-500" aria-hidden />
+                {busy ? t("public.ai.thinking") : "online"}
+              </p>
             </div>
           </div>
 
-          <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto p-4">
+          <div ref={listRef} className="bmc-scroll flex-1 space-y-3 overflow-y-auto p-4">
             {msgs.length === 0 && (
               <div className="grid gap-2">
                 {suggestions.map((s, i) => (
                   <button key={i} onClick={() => send(s)}
-                    className="rounded-xl border bg-background px-3 py-2 text-start text-xs hover:bg-muted min-h-11">
+                    className="min-h-11 rounded-xl border border-line bg-surface-2 px-3 py-2 text-start text-xs font-medium transition-colors hover:border-primary hover:text-primary">
                     {s}
                   </button>
                 ))}
@@ -78,24 +82,30 @@ export function AiAssistant() {
               <div key={i} className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}>
                 <div className={cn(
                   "max-w-[85%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed",
-                  m.role === "user" ? "bg-primary text-primary-foreground rounded-ee-sm" : "bg-muted rounded-es-sm",
+                  m.role === "user" ? "bg-primary text-primary-foreground rounded-ee-sm" : "bg-surface-3 text-ink-2 rounded-es-sm",
                 )}>
                   {m.text}
                 </div>
               </div>
             ))}
             {busy && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2 text-xs text-ink-3">
                 <Loader2 className="size-3.5 animate-spin" aria-hidden /> {t("public.ai.thinking")}
               </div>
             )}
           </div>
 
-          <form className="flex items-center gap-2 border-t p-3" onSubmit={(e) => { e.preventDefault(); send(input); }}>
-            <Input value={input} onChange={(e) => setInput(e.target.value)} className="h-11" placeholder={t("public.ai.send")} aria-label={t("public.ai.send")} />
-            <Button type="submit" size="icon" className="size-11 shrink-0" disabled={busy || !input.trim()} aria-label={t("public.ai.send")}>
+          <form className="flex items-center gap-2 border-t border-line p-3" onSubmit={(e) => { e.preventDefault(); send(input); }}>
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              className="input h-11 flex-1 rounded-full bg-surface"
+              placeholder={t("public.ai.send")}
+              aria-label={t("public.ai.send")}
+            />
+            <button type="submit" className="btn btn-primary btn-icon shrink-0" disabled={busy || !input.trim()} aria-label={t("public.ai.send")}>
               <Send className="size-4" aria-hidden />
-            </Button>
+            </button>
           </form>
         </div>
       )}

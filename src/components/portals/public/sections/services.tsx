@@ -1,48 +1,50 @@
 "use client";
-/** Services & packages catalog — tabbed: priced services (fasting/duration/prep)
- *  and packages with an items list (currently an empty state until seeded). */
-import { Boxes, Clock, Info, PackageOpen, Video } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+/** Services & packages catalog — tabbed. Services as Shamel cards with badge
+ *  chips; packages as the guide `.package-card` (gradient pk-head + price,
+ *  check-list pk-features, bookable pk-foot). Booking prefill preserved. */
+import { Boxes, Check, Clock, Info, PackageOpen, Video } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MoneyText } from "@/components/shared/badges";
+import { MoneyText, } from "@/components/shared/badges";
+import { BHD3 } from "@/lib/money";
 import { bi, useI18n } from "@/i18n";
 import { usePublicData, type PkgDto, type ServiceDto } from "../data";
 import { useBooking } from "./booking";
-import { EmptyState, ErrorRetry, Section, SectionHeader, SectionSkeleton } from "../section-shell";
+import { Container, EmptyState, ErrorRetry, Section, SectionHeader, SectionSkeleton } from "../section-shell";
+
+const PKG_GRADS = ["var(--grad-teal)", "var(--grad-navy)", "var(--grad-gold)", "var(--grad-violet)"];
 
 function ServiceCard({ svc }: { svc: ServiceDto }) {
   const { lang, t } = useI18n();
   const openBooking = useBooking((c) => c.openBooking);
   return (
-    <Card className="flex flex-col">
-      <CardContent className="p-4 md:p-5 flex-1">
+    <article className="card hoverable">
+      <div className="card-body flex-1">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="font-semibold leading-snug">{bi(lang, svc.nameAr, svc.nameEn)}</h3>
-          <MoneyText fils={svc.priceFils} className="font-bold text-primary shrink-0" />
+          <h3 className="card-title leading-snug">{bi(lang, svc.nameAr, svc.nameEn)}</h3>
+          <MoneyText fils={svc.priceFils} className="shrink-0 text-base font-extrabold text-primary" />
         </div>
-        <p className="mt-1 text-xs text-muted-foreground">{svc.deptAr}</p>
+        <p className="card-desc mt-1">{svc.deptAr}</p>
         <div className="mt-3 flex flex-wrap gap-1.5">
-          <Badge variant="outline" className="gap-1 font-normal">
-            <Clock className="size-3" aria-hidden /> {t("public.services.duration", { n: svc.durationMin })}
-          </Badge>
-          {svc.fasting ? <Badge className="bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200 border-transparent">{t("public.services.fasting")}</Badge> : null}
-          {svc.isVideo ? <Badge variant="outline" className="gap-1 font-normal"><Video className="size-3" aria-hidden /> {t("public.services.video")}</Badge> : null}
+          <span className="badge b-slate"><Clock className="size-3" aria-hidden /> {t("public.services.duration", { n: svc.durationMin })}</span>
+          {svc.fasting ? <span className="badge b-amber">{t("public.services.fasting")}</span> : null}
+          {svc.isVideo ? <span className="badge b-teal"><Video className="size-3" aria-hidden /> {t("public.services.video")}</span> : null}
         </div>
         {bi(lang, svc.prepAr, svc.prepEn) ? (
-          <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-muted/60 p-2.5 text-xs text-muted-foreground leading-relaxed">
-            <Info className="size-3.5 shrink-0 mt-0.5" aria-hidden />
-            <span><span className="font-semibold text-foreground">{t("public.services.prep")}: </span>{bi(lang, svc.prepAr, svc.prepEn)}</span>
+          <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-surface-2 p-2.5 text-xs leading-relaxed text-ink-3">
+            <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+            <span><span className="font-bold text-ink-2">{t("public.services.prep")}: </span>{bi(lang, svc.prepAr, svc.prepEn)}</span>
           </p>
         ) : null}
-      </CardContent>
-      <CardFooter className="p-4 md:p-5 pt-0">
-        <Button variant="outline" size="sm" className="h-9 w-full" onClick={() => openBooking({ deptCode: svc.deptCode })}>
+      </div>
+      <div className="card-foot">
+        <button
+          className="btn btn-outline btn-sm ms-auto h-9"
+          onClick={() => openBooking({ deptCode: svc.deptCode })}
+        >
           {t("public.services.book")}
-        </Button>
-      </CardFooter>
-    </Card>
+        </button>
+      </div>
+    </article>
   );
 }
 
@@ -54,25 +56,33 @@ function PkgItem({ raw, idx }: { raw: unknown; idx: number }) {
     const o = raw as { nameAr?: string; nameEn?: string; serviceCode?: string };
     label = bi(lang, o.nameAr, o.nameEn) || o.serviceCode || label;
   }
-  return <li className="rounded-md bg-muted/60 px-2.5 py-1.5 text-sm">{label}</li>;
+  return <li><span className="pf-check"><Check className="size-3.5" aria-hidden /></span>{label}</li>;
 }
 
-function PackageCard({ pkg }: { pkg: PkgDto }) {
+function PackageCard({ pkg, idx }: { pkg: PkgDto; idx: number }) {
   const { lang, t } = useI18n();
+  const openBooking = useBooking((c) => c.openBooking);
   return (
-    <Card>
-      <CardContent className="p-4 md:p-5">
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="font-semibold leading-snug">{bi(lang, pkg.nameAr, pkg.nameEn)}</h3>
-          <MoneyText fils={pkg.priceFils} className="font-bold text-primary shrink-0" />
+    <article className="card package-card">
+      <div className="pk-head" style={{ background: PKG_GRADS[idx % PKG_GRADS.length] }}>
+        <h4 className="font-bold">{bi(lang, pkg.nameAr, pkg.nameEn)}</h4>
+        <div className="pk-price">
+          <span className="val">{BHD3(pkg.priceFils)}</span> <small className="text-white/85">{t("money.currency")}</small>
         </div>
-        {bi(lang, pkg.descAr, pkg.descEn) ? <p className="mt-2 text-sm text-muted-foreground">{bi(lang, pkg.descAr, pkg.descEn)}</p> : null}
-        <p className="mt-4 mb-2 text-xs font-semibold text-muted-foreground">{t("public.services.pkg.includes")}</p>
-        <ul className="flex flex-wrap gap-1.5">
-          {(pkg.items ?? []).map((it, i) => <PkgItem key={i} raw={it} idx={i} />)}
-        </ul>
-      </CardContent>
-    </Card>
+      </div>
+      <ul className="pk-features">
+        {(pkg.items ?? []).length > 0
+          ? (pkg.items ?? []).map((it, i) => <PkgItem key={i} raw={it} idx={i} />)
+          : bi(lang, pkg.descAr, pkg.descEn)
+            ? <li><span className="pf-check"><Check className="size-3.5" aria-hidden /></span>{bi(lang, pkg.descAr, pkg.descEn)}</li>
+            : null}
+      </ul>
+      <div className="pk-foot">
+        <button className="btn btn-primary btn-block h-11" onClick={() => openBooking()}>
+          {t("public.services.pkg.book")}
+        </button>
+      </div>
+    </article>
   );
 }
 
@@ -82,11 +92,16 @@ export function ServicesSection() {
 
   return (
     <Section id="services">
-      <div className="mx-auto max-w-[1600px] px-4 md:px-6">
-        <SectionHeader icon={Boxes} title={t("public.services.title")} subtitle={t("public.services.subtitle")} />
+      <Container>
+        <SectionHeader
+          icon={Boxes}
+          eyebrow={t("public.services.eyebrow")}
+          title={t("public.services.title")}
+          subtitle={t("public.services.subtitle")}
+        />
         {error ? <ErrorRetry onRetry={reload} /> : loading ? <SectionSkeleton cards={6} /> : (
           <Tabs defaultValue="services" className="w-full">
-            <TabsList className="mx-auto mb-6 h-11">
+            <TabsList className="mb-6 h-11">
               <TabsTrigger value="services" className="px-6 text-sm">{t("public.services.tab.services")}</TabsTrigger>
               <TabsTrigger value="packages" className="px-6 text-sm">{t("public.services.tab.packages")}</TabsTrigger>
             </TabsList>
@@ -94,7 +109,7 @@ export function ServicesSection() {
               {data.services.length === 0 ? (
                 <EmptyState icon={Boxes} title={t("public.services.empty")} />
               ) : (
-                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                <div className="grid auto-280">
                   {data.services.map((s) => <ServiceCard key={s.code} svc={s} />)}
                 </div>
               )}
@@ -103,14 +118,14 @@ export function ServicesSection() {
               {data.packages.length === 0 ? (
                 <EmptyState icon={PackageOpen} title={t("public.services.pkg.empty.title")} desc={t("public.services.pkg.empty.desc")} />
               ) : (
-                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-                  {data.packages.map((p) => <PackageCard key={p.code} pkg={p} />)}
+                <div className="grid auto-320">
+                  {data.packages.map((p, i) => <PackageCard key={p.code} pkg={p} idx={i} />)}
                 </div>
               )}
             </TabsContent>
           </Tabs>
         )}
-      </div>
+      </Container>
     </Section>
   );
 }

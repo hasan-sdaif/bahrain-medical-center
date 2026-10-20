@@ -1,24 +1,23 @@
 "use client";
 /**
- * Privacy center — (a) "who accessed my record" audit table (view-chart /
- * break-glass / reader-read), (b) PDPL data-subject rights cards + DPO note,
- * (c) notification settings (static switches managed centrally).
+ * Privacy center — (a) "who accessed my record" audit table (`.table` Shamel
+ * classes), (b) PDPL data-subject rights cards + DPO note, (c) notification
+ * settings (static switches managed centrally).
  */
 import { useI18n } from "@/i18n";
 import { apiGet } from "@/lib/api-client";
 import { bhDateString, bhTimeString } from "@/lib/bahrain";
-import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { EmptyState, ErrorBox, LoadingRows, SectionCard } from "./parts";
+import { PageHead } from "./shell-ui";
 import { useFetch, type AccessLogRow } from "./lib";
 import { Eye, FilePen, FilePlus, Lock, Scale, ShieldCheck, ShieldOff, type LucideIcon } from "lucide-react";
 
 const ACTION_TONE: Record<string, string> = {
-  "view-chart": "bg-teal-100 text-teal-900 dark:bg-teal-950 dark:text-teal-200",
-  "break-glass": "bg-red-100 text-red-900 dark:bg-red-950 dark:text-red-200",
-  "reader-read": "bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
+  "view-chart": "b-teal",
+  "break-glass": "b-red",
+  "reader-read": "b-slate",
 };
 
 const RIGHTS: { key: string; icon: LucideIcon }[] = [
@@ -31,11 +30,13 @@ const RIGHTS: { key: string; icon: LucideIcon }[] = [
 function RightsCard({ k, icon: Icon }: { k: string; icon: LucideIcon }) {
   const { t } = useI18n();
   return (
-    <div className="flex items-start gap-3 rounded-xl border p-3">
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary" aria-hidden><Icon className="size-4" /></span>
-      <div className="min-w-0">
-        <p className="text-sm font-semibold">{t(`pp.priv.rights.${k}`)}</p>
-        <p className="mt-0.5 text-xs text-muted-foreground">{t(`pp.priv.rights.${k}Desc`)}</p>
+    <div className="card p-3">
+      <div className="flex items-start gap-3">
+        <span className="ch-ic ic-teal shrink-0" aria-hidden><Icon className="size-4" /></span>
+        <div className="min-w-0">
+          <p className="text-sm font-bold">{t(`pp.priv.rights.${k}`)}</p>
+          <p className="mt-0.5 text-xs text-ink-3">{t(`pp.priv.rights.${k}Desc`)}</p>
+        </div>
       </div>
     </div>
   );
@@ -44,7 +45,7 @@ function RightsCard({ k, icon: Icon }: { k: string; icon: LucideIcon }) {
 function NotifRow({ labelKey }: { labelKey: string }) {
   const { t } = useI18n();
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border p-3">
+    <div className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-line p-3">
       <span className="text-sm font-medium">{t(labelKey)}</span>
       <Tooltip>
         <TooltipTrigger asChild>
@@ -64,37 +65,37 @@ export default function PrivacyScreen() {
   return (
     <TooltipProvider delayDuration={100}>
       <div className="grid gap-4">
-        <h1 className="flex items-center gap-2 text-xl font-bold"><ShieldCheck className="size-5 text-primary" aria-hidden />{t("pp.priv.title")}</h1>
+        <PageHead icon={ShieldCheck} title={t("pp.priv.title")} sub={t("pp.priv.sub")} />
 
         {log.loading ? <LoadingRows n={3} h="h-16" /> : log.error ? <ErrorBox error={log.error} onRetry={log.reload} /> : (
           <SectionCard title={t("pp.priv.who")} icon={Eye}>
-            <p className="mb-3 text-xs text-muted-foreground">{t("pp.priv.whoNote")}</p>
+            <p className="mb-3 text-xs text-ink-3">{t("pp.priv.whoNote")}</p>
             {rows.length ? (
-              <div className="overflow-x-auto rounded-xl border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-xs">{t("pp.priv.time")}</TableHead>
-                      <TableHead className="text-xs">{t("pp.priv.action")}</TableHead>
-                      <TableHead className="text-xs">{t("pp.priv.by")}</TableHead>
-                      <TableHead className="text-xs">{t("pp.priv.role")}</TableHead>
-                      <TableHead className="text-xs">{t("pp.priv.reason")}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+              <div className="table-wrap border border-line rounded-lg">
+                <table className="table sm">
+                  <thead>
+                    <tr>
+                      <th>{t("pp.priv.time")}</th>
+                      <th>{t("pp.priv.action")}</th>
+                      <th>{t("pp.priv.by")}</th>
+                      <th>{t("pp.priv.role")}</th>
+                      <th>{t("pp.priv.reason")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
                     {rows.map((r) => (
-                      <TableRow key={r.id}>
-                        <TableCell className="whitespace-nowrap font-mono text-xs" dir="ltr">{bhDateString(r.at)} · {bhTimeString(r.at)}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={`border-transparent text-[11px] ${ACTION_TONE[r.action] ?? ACTION_TONE["reader-read"]}`}>{t(`al.${r.action}`)}</Badge>
-                        </TableCell>
-                        <TableCell className="text-sm">{r.by}</TableCell>
-                        <TableCell className="text-xs text-muted-foreground">{r.role}</TableCell>
-                        <TableCell className="max-w-[220px] truncate text-xs text-muted-foreground" title={r.reason ?? ""}>{r.reason ?? "—"}</TableCell>
-                      </TableRow>
+                      <tr key={r.id}>
+                        <td className="num-cell whitespace-nowrap text-xs">{bhDateString(r.at)} · {bhTimeString(r.at)}</td>
+                        <td>
+                          <span className={`badge ${ACTION_TONE[r.action] ?? ACTION_TONE["reader-read"]}`}>{t(`al.${r.action}`)}</span>
+                        </td>
+                        <td className="cell-main">{r.by}</td>
+                        <td className="text-xs">{r.role}</td>
+                        <td className="max-w-[220px] truncate text-xs" title={r.reason ?? ""}>{r.reason ?? "—"}</td>
+                      </tr>
                     ))}
-                  </TableBody>
-                </Table>
+                  </tbody>
+                </table>
               </div>
             ) : <EmptyState icon={Eye} text={t("pp.priv.whoEmpty")} />}
           </SectionCard>
@@ -102,7 +103,7 @@ export default function PrivacyScreen() {
 
         <SectionCard title={t("pp.priv.rightsTitle")} icon={Scale}>
           <div className="grid gap-2 sm:grid-cols-2">{RIGHTS.map((r) => <RightsCard key={r.key} k={r.key} icon={r.icon} />)}</div>
-          <p className="mt-3 rounded-xl bg-muted/50 p-2.5 text-xs text-muted-foreground">{t("pp.priv.dpo")}</p>
+          <p className="alert alert-info mt-3 p-2.5 text-xs">{t("pp.priv.dpo")}</p>
         </SectionCard>
 
         <SectionCard title={t("pp.priv.notifTitle")} icon={ShieldCheck}>

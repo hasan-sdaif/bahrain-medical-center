@@ -1,31 +1,26 @@
 "use client";
 /**
- * Tab 3 — الإعدادات: GET /api/staff/settings/list — settings grouped by group
- * (key / JSON preview / version), read-only feature flags (changes require the
- * admin API with dual authorization), number sequences (never reused) and
- * facility licenses with countdown badges.
+ * Section 3 — الإعدادات (Shamel guide admin pattern): GET
+ * /api/staff/settings/list — settings grouped by group (key / JSON preview /
+ * version), read-only feature flags (changes require the admin API with dual
+ * authorization), number sequences (never reused) and facility licenses with
+ * countdown badges. Shamel .card / .table styling.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useI18n } from "@/i18n";
 import { apiGet } from "@/lib/api-client";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { Award, BadgeCheck, Flag, Hash, Settings2 } from "lucide-react";
-import { ErrCard, Section, jsonPreview, type SettingsResp } from "./bits";
+import { ErrCard, jsonPreview, type SettingsResp } from "./bits";
 
 function DaysBadge({ days }: { days: number }) {
   const { t } = useI18n();
-  const tone = days > 90
-    ? "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200"
-    : days > 30
-      ? "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200"
-      : "bg-red-100 text-red-900 dark:bg-red-950 dark:text-red-200";
-  return <Badge className={cn("border-transparent tabular-nums", tone)}>{t("admin.settings.licenses.days", { n: days })}</Badge>;
+  const tone = days > 90 ? "b-green" : days > 30 ? "b-amber" : "b-red";
+  return <Badge className={cn("tabular-nums", tone)}>{t("admin.settings.licenses.days", { n: days })}</Badge>;
 }
 
 export default function AdminSettings() {
@@ -54,140 +49,154 @@ export default function AdminSettings() {
     return [...g.entries()];
   }, [data]);
 
-  if (err && !data) return <Section title={t("admin.tab.settings")}><ErrCard err={err} onRetry={() => void load()} /></Section>;
+  if (err && !data) return <ErrCard err={err} onRetry={() => void load()} />;
   if (!data) {
     return (
-      <Section title={t("admin.tab.settings")}>
-        <Skeleton className="h-16" />
-        <Skeleton className="h-64" />
-        <div className="grid gap-4 md:grid-cols-2"><Skeleton className="h-48" /><Skeleton className="h-48" /></div>
-      </Section>
+      <div className="grid gap-5">
+        <Skeleton className="h-16 rounded-xl" />
+        <Skeleton className="h-64 rounded-2xl" />
+        <div className="grid gap-4 lg:grid-cols-2"><Skeleton className="h-48 rounded-2xl" /><Skeleton className="h-48 rounded-2xl" /></div>
+      </div>
     );
   }
 
   return (
-    <Section title={t("admin.tab.settings")} sub={t("admin.settings.sub")}>
-      <TooltipProvider delayDuration={100}>
-        <Card className="p-0">
-          <CardHeader className="py-3 px-4 bg-muted/50">
-            <CardTitle className="text-sm flex items-center gap-2"><Settings2 className="size-4 text-primary" aria-hidden /> {t("admin.settings.col.key")} / {t("admin.settings.col.value")}</CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 grid gap-5">
+    <TooltipProvider delayDuration={100}>
+      <div className="stack-sm">
+        <div className="card p-0">
+          <div className="card-head">
+            <span className="ch-title">
+              <span className="ch-ic"><Settings2 className="size-4" aria-hidden /></span>
+              {t("admin.settings.col.key")} / {t("admin.settings.col.value")}
+            </span>
+          </div>
+          <div className="card-body grid gap-5">
             {groups.map(([group, items]) => (
               <div key={group}>
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge variant="outline" className="font-mono text-[10px]">{group}</Badge>
-                  <span className="text-xs text-muted-foreground">{t("common.total")}: {items.length}</span>
+                <div className="mb-2 flex items-center gap-2">
+                  <Badge variant="outline" className="mono text-[10px]">{group}</Badge>
+                  <span className="text-xs text-ink-3">{t("common.total")}: {items.length}</span>
                 </div>
-                <div className="rounded-lg border max-h-64 overflow-y-auto">
-                  <Table>
-                    <TableHeader className="sticky top-0 bg-background z-10">
-                      <TableRow>
-                        <TableHead className="text-start">{t("admin.settings.col.key")}</TableHead>
-                        <TableHead className="text-start">{t("admin.settings.col.value")}</TableHead>
-                        <TableHead className="text-start">{t("admin.settings.col.version")}</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
+                <div className="table-wrap max-h-64 overflow-y-auto rounded-lg border">
+                  <table className="table sm">
+                    <thead>
+                      <tr>
+                        <th>{t("admin.settings.col.key")}</th>
+                        <th>{t("admin.settings.col.value")}</th>
+                        <th>{t("admin.settings.col.version")}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
                       {items.map((s) => (
-                        <TableRow key={s.key}>
-                          <TableCell className="font-mono text-xs" dir="ltr">{s.key}</TableCell>
-                          <TableCell className="font-mono text-xs max-w-64" dir="ltr" title={typeof s.value === "string" ? s.value : JSON.stringify(s.value)}>
+                        <tr key={s.key}>
+                          <td className="mono text-xs" dir="ltr">{s.key}</td>
+                          <td className="mono max-w-64 text-xs" dir="ltr" title={typeof s.value === "string" ? s.value : JSON.stringify(s.value)}>
                             <div className="truncate">{jsonPreview(s.value)}</div>
-                          </TableCell>
-                          <TableCell className="text-xs text-muted-foreground tabular-nums">v{s.version}</TableCell>
-                        </TableRow>
+                          </td>
+                          <td className="num-cell text-xs text-ink-3">v{s.version}</td>
+                        </tr>
                       ))}
-                    </TableBody>
-                  </Table>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             ))}
-          </CardContent>
-        </Card>
-
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card className="p-0">
-            <CardHeader className="py-3 px-4 bg-muted/50">
-              <CardTitle className="text-sm flex items-center gap-2"><Flag className="size-4 text-primary" aria-hidden /> {t("admin.settings.flags")}</CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 grid gap-3 max-h-96 overflow-y-auto">
-              {data.flags.map((f) => (
-                <div key={f.key} className="flex items-center gap-3 rounded-lg border p-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="font-mono text-xs" dir="ltr">{f.key}</div>
-                    <div className="text-xs text-muted-foreground truncate">{f.description ?? "—"}</div>
-                  </div>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="flex items-center gap-2">
-                        <span className="text-[10px] text-muted-foreground hidden sm:block">{f.enabled ? t("admin.settings.flags.on") : t("admin.settings.flags.off")}</span>
-                        <Switch checked={f.enabled} disabled aria-label={f.key} />
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">{t("admin.settings.flags.hint")}</TooltipContent>
-                  </Tooltip>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          <Card className="p-0">
-            <CardHeader className="py-3 px-4 bg-muted/50">
-              <CardTitle className="text-sm flex items-center gap-2"><Hash className="size-4 text-primary" aria-hidden /> {t("admin.settings.sequences")}</CardTitle>
-            </CardHeader>
-            <CardContent className="p-4">
-              <Badge variant="outline" className="mb-3 bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200 border-transparent">{t("admin.settings.sequences.note")}</Badge>
-              <div className="max-h-64 overflow-y-auto rounded-lg border">
-                <Table>
-                  <TableHeader className="sticky top-0 bg-background z-10">
-                    <TableRow>
-                      <TableHead className="text-start">{t("admin.settings.col.key")}</TableHead>
-                      <TableHead className="text-start">{t("admin.settings.sequences.next")}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {data.sequences.map((s) => (
-                      <TableRow key={s.key}>
-                        <TableCell className="font-mono text-xs" dir="ltr">{s.key}</TableCell>
-                        <TableCell className="font-mono text-xs tabular-nums" dir="ltr">{s.next}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+          </div>
         </div>
 
-        <Card className="p-0">
-          <CardHeader className="py-3 px-4 bg-muted/50">
-            <CardTitle className="text-sm flex items-center gap-2"><Award className="size-4 text-primary" aria-hidden /> {t("admin.settings.licenses")}</CardTitle>
-          </CardHeader>
-          <CardContent className="p-4">
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="card p-0">
+            <div className="card-head">
+              <span className="ch-title">
+                <span className="ch-ic"><Flag className="size-4" aria-hidden /></span>
+                {t("admin.settings.flags")}
+              </span>
+            </div>
+            <div className="list-group max-h-96 overflow-y-auto">
+              {data.flags.map((f) => (
+                <div key={f.key} className="list-item">
+                  <div className="li-body">
+                    <div className="mono li-title text-xs" dir="ltr">{f.key}</div>
+                    <div className="li-sub truncate">{f.description ?? "—"}</div>
+                  </div>
+                  <span className="li-end flex items-center gap-2">
+                    <span className="hidden text-[10px] text-ink-3 sm:block">{f.enabled ? t("admin.settings.flags.on") : t("admin.settings.flags.off")}</span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="flex">
+                          <Switch checked={f.enabled} disabled aria-label={f.key} />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">{t("admin.settings.flags.hint")}</TooltipContent>
+                    </Tooltip>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="card p-0">
+            <div className="card-head">
+              <span className="ch-title">
+                <span className="ch-ic"><Hash className="size-4" aria-hidden /></span>
+                {t("admin.settings.sequences")}
+              </span>
+            </div>
+            <div className="card-body grid gap-3">
+              <Badge variant="outline" className="w-fit b-amber">{t("admin.settings.sequences.note")}</Badge>
+              <div className="table-wrap max-h-64 overflow-y-auto rounded-lg border">
+                <table className="table sm">
+                  <thead>
+                    <tr>
+                      <th>{t("admin.settings.col.key")}</th>
+                      <th>{t("admin.settings.sequences.next")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.sequences.map((s) => (
+                      <tr key={s.key}>
+                        <td className="mono text-xs" dir="ltr">{s.key}</td>
+                        <td className="mono num-cell text-xs">{s.next}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="card p-0">
+          <div className="card-head">
+            <span className="ch-title">
+              <span className="ch-ic"><Award className="size-4" aria-hidden /></span>
+              {t("admin.settings.licenses")}
+            </span>
+          </div>
+          <div className="card-body">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {data.licenses.map((l) => (
-                <div key={l.number} className="rounded-lg border p-3 flex flex-col gap-2">
+                <div key={l.number} className="rounded-xl border border-line bg-surface-2 p-3 flex flex-col gap-2">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <div className="text-sm font-medium truncate">{l.nameAr}</div>
-                      <div className="font-mono text-[10px] text-muted-foreground" dir="ltr">{l.number}</div>
+                      <div className="truncate text-sm font-semibold">{l.nameAr}</div>
+                      <div className="mono text-[10px] text-ink-3" dir="ltr">{l.number}</div>
                     </div>
-                    <Badge variant="outline" className="font-mono text-[9px] shrink-0">{l.kind}</Badge>
+                    <Badge variant="outline" className="mono shrink-0 text-[9px]">{l.kind}</Badge>
                   </div>
-                  <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                    <span className="font-mono" dir="ltr"><span className="sr-only">{t("admin.settings.licenses.expires")}: </span>{l.expiresAt}</span>
+                  <div className="flex items-center justify-between gap-2 text-xs text-ink-3">
+                    <span className="mono" dir="ltr"><span className="sr-only">{t("admin.settings.licenses.expires")}: </span>{l.expiresAt}</span>
                     <DaysBadge days={l.daysLeft} />
                   </div>
                 </div>
               ))}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-3 flex items-center gap-1.5">
+            <p className="mt-3 flex items-center gap-1.5 text-[11px] text-ink-3">
               <BadgeCheck className="size-3.5 shrink-0" aria-hidden /> {t("admin.sec.nhra.desc")}
             </p>
-          </CardContent>
-        </Card>
-      </TooltipProvider>
-    </Section>
+          </div>
+        </div>
+      </div>
+    </TooltipProvider>
   );
 }

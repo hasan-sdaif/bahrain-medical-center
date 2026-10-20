@@ -7,17 +7,17 @@
 import { useI18n } from "@/i18n";
 import { apiGet } from "@/lib/api-client";
 import { bhDateString } from "@/lib/bahrain";
-import { Badge } from "@/components/ui/badge";
 import { EmptyState, ErrorBox, LoadingRows, SectionCard } from "./parts";
+import { PageHead } from "./shell-ui";
 import { useFetch, type Dependant, type GrowthChild, type GrowthRecord } from "./lib";
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Baby, Users } from "lucide-react";
 
 const FLAG_TONE: Record<string, string> = {
-  "very-low": "bg-red-100 text-red-900 dark:bg-red-950 dark:text-red-200",
-  "very-high": "bg-red-100 text-red-900 dark:bg-red-950 dark:text-red-200",
-  "out-of-range": "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
-  normal: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
+  "very-low": "b-red",
+  "very-high": "b-red",
+  "out-of-range": "b-amber",
+  normal: "b-green",
 };
 
 function flagTone(flag: string | null): string {
@@ -36,10 +36,10 @@ function MetricChips({ records, metric, labelKey }: { records: GrowthRecord[]; m
   if (!r) return null;
   return (
     <div className="flex flex-wrap items-center gap-1.5 text-xs">
-      <span className="font-semibold">{t(labelKey)}: <span className="font-mono">{r.value}</span></span>
-      <Badge variant="outline" className="text-[10px]">{t("pp.grw.percentile")}: <span className="font-mono">{r.percentile ?? "—"}</span></Badge>
-      <Badge variant="outline" className="text-[10px]">{t("pp.grw.z")}: <span className="font-mono">{r.z ?? "—"}</span></Badge>
-      <Badge variant="outline" className={`border-transparent text-[10px] ${flagTone(r.flag)}`}>{t(`pp.grw.flag.${r.flag ?? "normal"}`)}</Badge>
+      <span className="font-semibold">{t(labelKey)}: <span className="mono">{r.value}</span></span>
+      <span className="badge b-slate">{t("pp.grw.percentile")}: <span className="mono">{r.percentile ?? "—"}</span></span>
+      <span className="badge b-slate">{t("pp.grw.z")}: <span className="mono">{r.z ?? "—"}</span></span>
+      <span className={`badge ${flagTone(r.flag)}`}>{t(`pp.grw.flag.${r.flag ?? "normal"}`)}</span>
     </div>
   );
 }
@@ -55,10 +55,10 @@ function ChildGrowth({ g }: { g: GrowthChild }) {
   }
   const data = [...byAge.values()].sort((a, b) => a.ageMonths - b.ageMonths);
   return (
-    <div className="grid gap-3 rounded-2xl border p-4">
+    <div className="card p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="font-semibold">{g.child.nameAr}</p>
-        <span className="font-mono text-xs text-muted-foreground" dir="ltr">{bhDateString(g.child.dob ?? "")}</span>
+        <p className="font-bold">{g.child.nameAr}</p>
+        <span className="mono text-xs text-ink-3">{bhDateString(g.child.dob ?? "")}</span>
       </div>
       <ResponsiveContainer width="100%" height={220}>
         <LineChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
@@ -87,8 +87,8 @@ function FlagLegend() {
   return (
     <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
       <span className="font-semibold">{t("pp.grw.legend")}:</span>
-      {["normal", "out-of-range", "very-low"].map((f) => (
-        <Badge key={f} variant="outline" className={`border-transparent ${flagTone(f)}`}>{t(`pp.grw.flag.${f}`)}</Badge>
+      {(["normal", "out-of-range", "very-low"] as const).map((f) => (
+        <span key={f} className={`badge ${flagTone(f)}`}>{t(`pp.grw.flag.${f}`)}</span>
       ))}
     </div>
   );
@@ -103,25 +103,25 @@ export default function FamilyScreen() {
 
   return (
     <div className="grid gap-4">
-      <h1 className="flex items-center gap-2 text-xl font-bold"><Users className="size-5 text-primary" aria-hidden />{t("pp.fam.title")}</h1>
+      <PageHead icon={Users} title={t("pp.fam.title")} sub={t("pp.fam.sub")} />
 
       {fam.loading ? <LoadingRows n={2} h="h-24" /> : fam.error ? <ErrorBox error={fam.error} onRetry={fam.reload} /> : (
-        <SectionCard title={t("pp.fam.dependants")} icon={Users}>
+        <SectionCard title={t("pp.fam.dependants")} icon={Users} contentClassName="p-0">
           {kids.length ? (
-            <ul className="grid gap-2 sm:grid-cols-2" role="list">
-              {kids.map((k) => (
-                <li key={k.id} className="flex items-center gap-3 rounded-xl border p-3">
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary" aria-hidden><Baby className="size-4" /></span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold">{k.nameAr}</p>
-                    <p className="font-mono text-xs text-muted-foreground" dir="ltr">{k.mrn} · {bhDateString(k.dob)}</p>
-                  </div>
-                  <Badge variant="secondary" className="shrink-0 text-xs">{k.relation}</Badge>
+            <ul className="list-group" role="list">
+              {kids.map((k, i) => (
+                <li key={k.id} className="list-item">
+                  <span className={`avatar av-${(i % 8) + 3}`} aria-hidden><Baby className="size-4" /></span>
+                  <span className="li-body">
+                    <span className="li-title">{k.nameAr}</span>
+                    <span className="li-sub mono">{k.mrn} · {bhDateString(k.dob)}</span>
+                  </span>
+                  <span className="li-end"><span className="badge b-slate">{k.relation}</span></span>
                 </li>
               ))}
             </ul>
           ) : <EmptyState icon={Users} text={t("pp.fam.empty")} />}
-          <p className="mt-3 text-xs text-muted-foreground">{t("pp.fam.note")}</p>
+          <p className="border-t border-line px-4 py-3 text-xs text-ink-3">{t("pp.fam.note")}</p>
         </SectionCard>
       )}
 

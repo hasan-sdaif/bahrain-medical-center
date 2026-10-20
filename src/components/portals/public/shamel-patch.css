@@ -1,0 +1,146 @@
+/* ============================================================
+   Shamel cascade patch — public portal (agent 2-a)
+   ------------------------------------------------------------
+   WHY: globals.css declares `@layer shamel` BEFORE the Tailwind
+   import, so Tailwind preflight (@layer base, later layer) wins
+   over Shamel class rules regardless of specificity: `* {margin:0;
+   padding:0; border:0 solid}`, `button,input… {border-radius:0;
+   background-color:transparent; font:inherit}` and
+   `h1..h6 {font-size:inherit; font-weight:inherit}` erase the
+   guide's spacing, borders, button surfaces and heading type.
+   globals.css + shamel/* are owned by the foundation agent, so
+   this patch re-asserts ONLY the affected declarations, verbatim
+   from src/app/shamel/*.css, as UNLAYERED rules (unlayered beats
+   every layer) scoped to `body:has(.pubshell)` — i.e. they apply
+   only while the public portal is mounted (Radix dialogs included,
+   other portals untouched).
+   NOTE: do not try to fine-tune these exact properties on these
+   selectors with Tailwind utilities — unlayered rules win. Adjust
+   here instead.
+   ============================================================ */
+
+/* ── buttons / burger / fab / input (form-control resets) ── */
+body:has(.pubshell) .btn {
+  font-family: var(--font-display); font-weight: 700; font-size: var(--fs-base);
+  padding: 0 20px; border: 1px solid var(--btn-bd); border-radius: var(--r-sm);
+  background: var(--btn-bg);
+}
+body:has(.pubshell) .btn-sm { padding: 0 14px; font-size: var(--fs-sm); border-radius: var(--r-xs); }
+body:has(.pubshell) .btn-lg { padding: 0 28px; font-size: var(--fs-md); border-radius: var(--r-md); }
+body:has(.pubshell) .btn-xl { padding: 0 36px; font-size: var(--fs-lg); border-radius: var(--r-md); }
+body:has(.pubshell) .burger {
+  border: 1px solid var(--border); background: var(--surface);
+  border-radius: var(--r-md); color: var(--text);
+}
+body:has(.pubshell) .fab { background: var(--primary); border-radius: var(--r-lg); color: #fff; }
+body:has(.pubshell) .input {
+  border: 1.5px solid var(--border-2); border-radius: var(--r-sm);
+  padding: 0 14px; background: var(--surface); color: var(--text); font-family: inherit;
+}
+
+/* ── site top strip + header + nav ── */
+body:has(.pubshell) .site-top-inner { padding: 8px 24px; }
+body:has(.pubshell) .site-top a { color: rgba(255, 255, 255, .85); text-decoration: none; }
+body:has(.pubshell) .site-top a:hover { color: #fff; }
+body:has(.pubshell) .site-top .st-cta { padding: 3px 12px; }
+body:has(.pubshell) .site-header { border-bottom: 1px solid var(--border); }
+body:has(.pubshell) .site-header-inner { padding: 0 24px; }
+body:has(.pubshell) .main-nav .nav-link { padding: 10px 15px; }
+body:has(.pubshell) .main-nav .drop { padding: 10px; border: 1px solid var(--border); }
+body:has(.pubshell) .drop-item { padding: 10px 12px; }
+body:has(.pubshell) .drop-title { padding: 8px 12px 4px; }
+
+/* ── hero ── */
+body:has(.pubshell) .hero-inner { padding: 84px 24px 90px; }
+body:has(.pubshell) .hero .h-eyebrow {
+  padding: 7px 16px; margin-bottom: 22px;
+  border: 1px solid rgba(255, 255, 255, .22);
+}
+body:has(.pubshell) .hero h1 {
+  font-size: var(--fs-6xl); font-weight: 800; margin-bottom: 18px; line-height: 1.28;
+}
+body:has(.pubshell) .hero-actions { margin-top: 30px; }
+body:has(.pubshell) .hero-stats {
+  margin-top: 52px; padding-top: 30px;
+  border-top: 1px solid rgba(255, 255, 255, .16);
+}
+body:has(.pubshell) .hero-strip-inner { padding: 13px 24px; }
+body:has(.pubshell) .hero-strip .hs-num { padding: 2px 12px; }
+@media (max-width: 760px) {
+  body:has(.pubshell) .hero-inner { padding: 56px 20px 60px; }
+  body:has(.pubshell) .hero h1 { font-size: var(--fs-4xl); }
+}
+@media (max-width: 480px) {
+  body:has(.pubshell) .hero h1 { font-size: var(--fs-3xl); }
+}
+
+/* ── sections / container ── */
+body:has(.pubshell) .section { padding: 64px 0; }
+body:has(.pubshell) .section.alt { border-block: 1px solid var(--border); }
+body:has(.pubshell) .container { padding-inline: 24px; }
+body:has(.pubshell) .section-head { margin-bottom: 28px; }
+body:has(.pubshell) .section-title { font-size: var(--fs-2xl); font-weight: 800; margin-bottom: 6px; }
+
+/* ── cards ── */
+body:has(.pubshell) .card { border: 1px solid var(--border); }
+body:has(.pubshell) .card-head { padding: 16px 20px; border-bottom: 1px solid var(--border); }
+body:has(.pubshell) .card-body { padding: 20px; }
+body:has(.pubshell) .card-foot { padding: 14px 20px; border-top: 1px solid var(--border); }
+body:has(.pubshell) .card-title { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-md); }
+body:has(.pubshell) .badge { padding: 4px 11px; }
+
+/* ── marketing cards ── */
+body:has(.pubshell) .dept-card .dc-body,
+body:has(.pubshell) .doctor-card .dc-body,
+body:has(.pubshell) .article-card .ac-body { padding: 16px 18px 18px; }
+body:has(.pubshell) .dept-card h4 { font-size: var(--fs-md); font-weight: 700; margin-bottom: 6px; }
+body:has(.pubshell) .dept-card .dc-desc { margin: 8px 0 14px; }
+body:has(.pubshell) .doctor-card h4 { font-size: var(--fs-xl); font-weight: 700; margin-bottom: 3px; }
+body:has(.pubshell) .doctor-card .dc-spec { margin-bottom: 8px; }
+body:has(.pubshell) .doctor-card .dc-meta { margin-bottom: 14px; }
+body:has(.pubshell) .doctor-card .dc-rating { padding: 3px 9px; }
+body:has(.pubshell) .article-card h4 { font-size: var(--fs-md); line-height: 1.55; margin-bottom: 8px; }
+body:has(.pubshell) .article-card .ac-cat { margin-bottom: 8px; }
+body:has(.pubshell) .article-card .ac-excerpt { margin-bottom: 14px; }
+body:has(.pubshell) .article-card .ac-meta { padding-top: 12px; border-top: 1px solid var(--border); }
+body:has(.pubshell) .feature-card { padding: 26px 24px; }
+body:has(.pubshell) .feature-card .fc-ic { margin-bottom: 16px; }
+body:has(.pubshell) .feature-card h4 { font-size: var(--fs-xl); font-weight: 700; margin-bottom: 9px; }
+body:has(.pubshell) .package-card .pk-head { padding: 22px 24px 18px; }
+body:has(.pubshell) .package-card .pk-features { padding: 18px 24px 8px; }
+body:has(.pubshell) .package-card .pk-features li { margin-bottom: 11px; }
+body:has(.pubshell) .package-card .pk-foot { padding: 16px 24px 22px; }
+body:has(.pubshell) .partner-chip { padding: 16px 22px; border: 1px solid var(--border); }
+
+/* ── accordion + lists ── */
+body:has(.pubshell) .acc-item { border: 1px solid var(--border); margin-bottom: 10px; }
+body:has(.pubshell) .acc-head {
+  padding: 15px 18px; font-weight: 700; font-size: var(--fs-sm);
+  font-family: var(--font-display); text-align: start;
+}
+body:has(.pubshell) .acc-head .ah-caret { margin-inline-start: auto; }
+body:has(.pubshell) .acc-item.open .acc-body { padding: 0 18px 18px 67px; }
+[dir="ltr"] body:has(.pubshell) .acc-item.open .acc-body { padding: 0 67px 18px 18px; }
+body:has(.pubshell) .list-item { padding: 13px 18px; border-bottom: 1px solid var(--border); }
+
+/* ── empty state ── */
+body:has(.pubshell) .empty-state { padding: 54px 24px; }
+body:has(.pubshell) .empty-state .es-ic { margin: 0 auto 20px; }
+body:has(.pubshell) .empty-state h4 { font-size: var(--fs-xl); font-weight: 700; margin-bottom: 8px; }
+body:has(.pubshell) .empty-state p { margin: 0 auto 18px; }
+
+/* ── footer ── */
+body:has(.pubshell) .site-footer { margin-top: auto; }
+body:has(.pubshell) .site-footer-inner { padding: 56px 24px 0; }
+body:has(.pubshell) .footer-grid { padding-bottom: 44px; }
+body:has(.pubshell) .footer-brand .brand-mark { margin-bottom: 16px; }
+body:has(.pubshell) .site-footer h5 {
+  font-size: var(--fs-md); font-weight: 700; margin-bottom: 18px; color: #fff;
+}
+body:has(.pubshell) .footer-links a { color: var(--slate-400); text-decoration: none; }
+body:has(.pubshell) .footer-links a:hover { color: #fff; }
+body:has(.pubshell) .footer-contact li { margin-bottom: 13px; }
+body:has(.pubshell) .footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, .09); padding: 20px 0 26px;
+}
+body.nav-open:has(.pubshell) .main-nav { padding: 14px 20px 20px; }

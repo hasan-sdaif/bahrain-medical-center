@@ -10,12 +10,11 @@ import { useState } from "react";
 import { useI18n, bi } from "@/i18n";
 import { apiGet, apiPost } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
-import { StatusBadge } from "@/components/shared/badges";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { EmptyState, ErrorBox, LoadingRows, SectionCard } from "./parts";
+import { PageHead, StBadge } from "./shell-ui";
 import ConsentDialog, { CONSENT_ID_MAP } from "./consent-dialog";
 import { errText, useFetch, type ConsentTemplate, type SignedConsent } from "./lib";
 import { FileSignature, FileText, PenLine, Undo2 } from "lucide-react";
@@ -55,25 +54,25 @@ export default function ConsentsScreen() {
 
   return (
     <div className="grid gap-4">
-      <h1 className="flex items-center gap-2 text-xl font-bold"><FileSignature className="size-5 text-primary" aria-hidden />{t("pp.con.title")}</h1>
+      <PageHead icon={FileSignature} title={t("pp.con.title")} sub={t("pp.con.sub")} />
 
       {data.loading ? <LoadingRows n={3} h="h-24" /> : data.error ? <ErrorBox error={data.error} onRetry={data.reload} /> : (
         <>
-          <SectionCard title={t("pp.con.signed")} icon={FileText}>
+          <SectionCard title={t("pp.con.signed")} icon={FileText} contentClassName="p-0">
             {(data.data?.signed ?? []).length ? (
-              <ul className="grid gap-2" role="list">
+              <ul className="list-group" role="list">
                 {(data.data?.signed ?? []).map((c) => (
-                  <li key={c.code} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border p-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold">{titleOf(c.templateKey)}</p>
-                      <p className="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
-                        <span className="font-mono" dir="ltr">{c.code}</span>
+                  <li key={c.code} className="list-item">
+                    <span className="li-body min-w-0">
+                      <span className="li-title truncate">{titleOf(c.templateKey)}</span>
+                      <span className="li-sub flex flex-wrap items-center gap-x-2">
+                        <span className="mono">{c.code}</span>
                         <span>· {t("pp.con.signedAt")} {c.signedAt}</span>
                         <span>· {t("pp.con.method")}: {c.method}</span>
-                      </p>
-                    </div>
-                    <span className="flex items-center gap-2">
-                      <StatusBadge status={c.status} />
+                      </span>
+                    </span>
+                    <span className="li-end flex-wrap">
+                      <StBadge status={c.status} />
                       {c.status === "active" ? (
                         <Button variant="outline" size="sm" className="min-h-11 text-destructive" onClick={() => setWithdrawTarget(c)}>
                           <Undo2 className="size-4" aria-hidden />{t("pp.con.withdraw")}
@@ -93,11 +92,11 @@ export default function ConsentsScreen() {
                   <AccordionTrigger className="min-h-11 py-3 text-start text-sm font-semibold">
                     <span className="flex flex-wrap items-center gap-2">
                       {bi(lang, tpl.titleAr, tpl.titleEn)}
-                      <Badge variant="secondary" className="text-[10px]">{t("pp.con.minRead", { sec: tpl.minReadSec })}</Badge>
+                      <span className="badge b-slate">{t("pp.con.minRead", { sec: tpl.minReadSec })}</span>
                     </span>
                   </AccordionTrigger>
                   <AccordionContent>
-                    <p className="whitespace-pre-line rounded-lg bg-muted/50 p-3 text-xs leading-6">{bi(lang, tpl.bodyAr, tpl.bodyEn)}</p>
+                    <p className="whitespace-pre-line rounded-lg bg-surface-2 p-3 text-xs leading-6">{bi(lang, tpl.bodyAr, tpl.bodyEn)}</p>
                     <Button size="sm" className="mt-2 min-h-11" onClick={() => setSignTarget(tpl)}>
                       <PenLine className="size-4" aria-hidden />{t("pp.con.sign")}
                     </Button>

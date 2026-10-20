@@ -100,5 +100,32 @@ const d: Dict = {
     ar: "رمز QR للمستندات الورقية فقط: امسحه بكاميرا هاتفك للوصول إلى هذه الصفحة فوراً. أما باركود Code 128 فمخصص للمسح التشغيلي داخل المركز (الحضور، العينات، الأصول، الأدوية).",
     en: "QR is for paper documents only: scan it with your phone camera to reach this page instantly. Code 128 barcodes are for in-center operational scanning (check-in, samples, assets, medications).",
   },
+  "verify.details": { ar: "تفاصيل المستند", en: "Document details" },
+  "verify.print": { ar: "طباعة", en: "Print" },
+  "verify.errTitle": { ar: "تعذر التحقق", en: "Verification failed" },
+
+  // ── Shamel kiosk shell additions (guide: kiosk-welcome/scan/cpr/confirm) ──
+  "kiosk.welcomeTitle": { ar: "أهلاً بك في شامل", en: "Welcome to Shamel" },
+  "kiosk.welcomeSub": {
+    ar: "سجّل حضورك في أقل من 10 ثوانٍ — اختر طريقتك المفضلة",
+    en: "Check in in under 10 seconds — pick your preferred way",
+  },
+  "kiosk.scanTileSub": { ar: "من هاتفك أو ورقة الموعد", en: "From your phone or appointment slip" },
+  "kiosk.a11yWheel": { ar: "تحتاج كرسياً متحركاً؟ اطلب مساعدة من الممرض", en: "Need a wheelchair? Ask the nurse for assistance" },
+  "kiosk.a11yEr": { ar: "الطوارئ؟ ادخل من الباب الأيسر مباشرة", en: "Emergency? Use the left door directly" },
+  "kiosk.back": { ar: "رجوع", en: "Back" },
+  "kiosk.footPrivacy": { ar: "لن تظهر بياناتك الطبية على الكشك — الرقم والوقت فقط", en: "No medical data is shown on the kiosk — number and time only" },
+  "kiosk.footLeave": { ar: "اترك الشاشة — ستنتهي الجلسة تلقائياً", en: "Step away — the session ends automatically" },
+
+  // ── Shamel queue screen additions (guide: reception/screen) ──
+  "queue.title": { ar: "شاشة الانتظار", en: "Waiting room screen" },
+  "queue.entering": { ar: "يدخل الآن", en: "NOW ENTERING" },
+  "queue.nextUp": { ar: "التذاكر الحالية", en: "Current tickets" },
+  "queue.totalWaiting": { ar: "إجمالي المنتظرين", en: "Total waiting" },
+  "queue.pointsCount": { ar: "نقاط خدمة", en: "Service points" },
 };
+
+// ── appended: kiosk shell extras ──
+d["kiosk.confirm"] = { ar: "تأكيد", en: "Confirm" };
+
 export default d;

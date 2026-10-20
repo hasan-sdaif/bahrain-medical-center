@@ -215,5 +215,55 @@ const d: Dict = {
   "public.ai.suggest2": { ar: "هل أحتاج صياماً لفحص السكر؟", en: "Do I need to fast for glucose?" },
   "public.ai.suggest3": { ar: "ما مناطق السحب المنزلي؟", en: "What areas does home draw cover?" },
   "public.ai.send": { ar: "إرسال", en: "Send" },
+
+  // ── Shamel re-skin: site top strip + main header nav (agent 2-a) ──
+  "public.top.hours": { ar: "سبت–خميس 8ص–10م", en: "Sat–Thu 8AM–10PM" },
+  "public.top.appointments": { ar: "المواعيد", en: "Appointments" },
+  "public.top.prices": { ar: "الأسعار", en: "Prices" },
+  "public.nav.home": { ar: "الرئيسية", en: "Home" },
+  "public.nav.center": { ar: "المركز", en: "The Center" },
+  "public.nav.center.about": { ar: "عن المركز", en: "About the center" },
+  "public.nav.center.news": { ar: "الأخبار والمقالات", en: "News & articles" },
+  "public.nav.center.careers": { ar: "الوظائف", en: "Careers" },
+  "public.nav.center.policies": { ar: "السياسات والحقوق", en: "Policies & rights" },
+  "public.nav.depts.mega.title": { ar: "الأقسام السريرية", en: "Clinical departments" },
+  "public.nav.depts.all": { ar: "عرض كل الأقسام", en: "View all departments" },
+  "public.nav.menu": { ar: "القائمة", en: "Menu" },
+  "public.nav.jump": { ar: "انتقال سريع", en: "Jump to" },
+  "public.nav.portal": { ar: "بوابة المريض", en: "Patient portal" },
+
+  // ── hero (Shamel pattern) ──
+  "public.hero.nhra": { ar: "مرخص من الهيئة الوطنية لتنظيم المهن الصحية", en: "Licensed by NHRA — Kingdom of Bahrain" },
+  "public.hero.cta.record": { ar: "السجل الطبي", en: "Medical record" },
+  "public.hero.stat.service": { ar: "خدمة طوارئ على مدار الساعة", en: "round-the-clock emergency care" },
+  "public.hero.stat.visits": { ar: "زيارة منذ الافتتاح", en: "visits since opening" },
+
+  // ── section eyebrows (guide .eyebrow) ──
+  "public.depts.eyebrow": { ar: "أقسامنا", en: "Departments" },
+  "public.docs.eyebrow": { ar: "نخبة الأطباء", en: "Our physicians" },
+  "public.services.eyebrow": { ar: "الخدمات والأسعار", en: "Services & pricing" },
+  "public.booking.eyebrow": { ar: "الحجز الإلكتروني", en: "Online booking" },
+  "public.homecare.eyebrow": { ar: "رعاية في بيتك", en: "Care at your home" },
+  "public.articles.eyebrow": { ar: "المكتبة الصحية", en: "Health library" },
+  "public.faq.eyebrow": { ar: "مركز المساعدة", en: "Help center" },
+  "public.insurers.eyebrow": { ar: "شركاء التأمين", en: "Insurance partners" },
+  "public.contact.eyebrow": { ar: "نحن نسمعك", en: "We listen" },
+  "public.depts.discover": { ar: "اكتشف القسم", en: "Discover" },
+  "public.services.pkg.book": { ar: "احجز الباقة", en: "Book package" },
+
+  // ── Shamel site footer ──
+  "public.footer.tagline": {
+    ar: "رعاية طبية شاملة بقلب بحريني — جودة عالمية، وملف طبي موحد يتبعك في كل زيارة.",
+    en: "Compassionate care with a Bahraini heart — global quality and one unified medical record across every visit.",
+  },
+  "public.footer.depts": { ar: "الأقسام الطبية", en: "Medical departments" },
+  "public.footer.contact": { ar: "بيانات التواصل", en: "Contact details" },
+  "public.footer.social.x": { ar: "منصة إكس", en: "X (Twitter)" },
+  "public.footer.social.instagram": { ar: "انستغرام", en: "Instagram" },
+  "public.footer.social.youtube": { ar: "يوتيوب", en: "YouTube" },
+  "public.footer.social.whatsapp": { ar: "واتساب", en: "WhatsApp" },
+
+  // ── merged system chrome bar (domain switcher) ──
+  "shell.system.name": { ar: "نظام شامل المتكامل", en: "Shamel Integrated System" },
 };
 export default d;

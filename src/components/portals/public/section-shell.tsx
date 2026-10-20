@@ -1,7 +1,10 @@
 "use client";
 /**
- * Shared building blocks for the public site sections — consistent spacing,
- * headers, loading/error/empty states, and RTL-aware arrows.
+ * Shared building blocks for the public site sections — restyled to the Shamel
+ * guide patterns (agent 2-a): `.section` / `.container` rhythm, `.section-head`
+ * with `.eyebrow` + `.section-title` + `.section-desc`, Shamel empty state,
+ * loading skeletons and RTL-aware arrows. All existing exports keep their
+ * signatures so section files compile unchanged where not restyled.
  */
 import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
@@ -12,28 +15,46 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/i18n";
 
+/** Section wrapper — Shamel `.section` vertical rhythm + anchor scroll offset
+ *  (chrome when scrolled: domain bar 44 + header 76 [+ subnav 44 on md+],
+ *  compounded with the html scroll-padding of 90px). */
 export function Section({ id, children, className }: { id: string; children: React.ReactNode; className?: string }) {
   return (
-    <section id={id} className={cn("scroll-mt-28 py-10 md:py-14", className)}>
+    <section id={id} className={cn("section scroll-mt-10 md:scroll-mt-20", className)}>
       {children}
     </section>
   );
 }
 
-export function SectionHeader({ icon: Icon, title, subtitle, light }: { icon: LucideIcon; title: string; subtitle?: string; light?: boolean }) {
+/** Shamel `.container` (max-width 1200, inline padding 24). */
+export function Container({ className, children }: { className?: string; children: React.ReactNode }) {
+  return <div className={cn("container", className)}>{children}</div>;
+}
+
+/** Guide section head: gold-dash eyebrow (with optional icon) + title + desc. */
+export function SectionHeader({
+  icon: Icon, eyebrow, title, subtitle, light,
+}: {
+  icon?: LucideIcon; eyebrow?: string; title: string; subtitle?: string; light?: boolean;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.35, ease: "easeOut" }}
-      className="mx-auto mb-8 md:mb-10 max-w-3xl text-center"
+      className="section-head"
     >
-      <span className={cn("mx-auto mb-3 grid size-11 place-items-center rounded-xl", light ? "bg-white/15 text-white" : "bg-primary/10 text-primary")}>
-        <Icon className="size-5" aria-hidden />
-      </span>
-      <h2 className={cn("text-2xl md:text-3xl font-bold tracking-tight", light && "text-white")}>{title}</h2>
-      {subtitle ? <p className={cn("mt-2 text-sm md:text-base text-muted-foreground", light && "text-white/80")}>{subtitle}</p> : null}
+      {eyebrow ? (
+        <span className={cn("eyebrow", light && "text-white/90")}>
+          {Icon ? <Icon className="size-4" aria-hidden /> : null}
+          {eyebrow}
+        </span>
+      ) : null}
+      <h2 className={cn("section-title", light && "text-white")}>{title}</h2>
+      {subtitle ? (
+        <p className={cn("section-desc", light && "text-white/75")}>{subtitle}</p>
+      ) : null}
     </motion.div>
   );
 }
@@ -70,12 +91,15 @@ export function SectionSkeleton({ cards = 8, className }: { cards?: number; clas
   );
 }
 
+/** Shamel `.empty-state` pattern (88px icon tile + title + hint). */
 export function EmptyState({ icon: Icon, title, desc }: { icon: LucideIcon; title: string; desc?: string }) {
   return (
-    <div className="rounded-xl border border-dashed p-8 text-center text-muted-foreground">
-      <Icon className="mx-auto mb-2 size-8 opacity-60" aria-hidden />
-      <p className="font-medium">{title}</p>
-      {desc ? <p className="mt-1 text-sm">{desc}</p> : null}
+    <div className="empty-state">
+      <div className="es-ic">
+        <Icon className="size-9" aria-hidden />
+      </div>
+      <h4 className="text-base font-bold">{title}</h4>
+      {desc ? <p>{desc}</p> : null}
     </div>
   );
 }

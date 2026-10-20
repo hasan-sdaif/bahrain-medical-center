@@ -119,7 +119,10 @@ export default function BookDialog({ open, onOpenChange, onBooked }: { open: boo
         ) : step === 2 ? (
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
             {DAYS.map((d) => (
-              <Button key={d} variant={day === d ? "default" : "outline"} className="min-h-11" onClick={() => { setDay(d); setSlot(null); setStep(3); }}>{dayLabel(d)}</Button>
+              <button key={d} type="button" onClick={() => { setDay(d); setSlot(null); setStep(3); }}
+                className={`slot min-h-11 py-2 ${day === d ? "selected" : ""}`} aria-pressed={day === d}>
+                {dayLabel(d)}
+              </button>
             ))}
           </div>
         ) : (
@@ -130,7 +133,10 @@ export default function BookDialog({ open, onOpenChange, onBooked }: { open: boo
                   <p className="mb-1.5 text-xs font-semibold text-muted-foreground">{bi(lang, ss[0].doctorAr, ss[0].doctorEn)}</p>
                   <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                     {ss.map((s) => (
-                      <Button key={s.at} variant={slot?.at === s.at ? "default" : "outline"} size="sm" className="min-h-11 font-mono" dir="ltr" onClick={() => setSlot(s)}>{bhTimeString(s.at)}</Button>
+                      <button key={s.at} type="button" onClick={() => setSlot(s)} aria-pressed={slot?.at === s.at}
+                        className={`slot min-h-11 py-2 font-bold ${slot?.at === s.at ? "selected" : ""}`}>
+                        <span className="num" dir="ltr">{bhTimeString(s.at)}</span>
+                      </button>
                     ))}
                   </div>
                 </div>

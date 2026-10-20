@@ -114,5 +114,10 @@ const d: Dict = {
   "admin.sec.nhra.desc": { ar: "المنشأة والمختبر والأشعة مرخصة مع إيقاف تلقائي عند الانتهاء [تحقق]", en: "Facility, lab & radiology licensed with auto-suspension on expiry [verify]" },
   "admin.sec.residency.title": { ar: "إقامة البيانات", en: "Data residency" },
   "admin.sec.residency.desc": { ar: "استضافة البيانات داخل مملكة البحرين — قيد التنفيذ مع مزود السحابة [تحقق]", en: "Data hosted inside the Kingdom of Bahrain — in progress with the cloud provider [verify]" },
+
+  // ── appended: Shamel staff-shell (sidebar/topbar/page-head) ──
+  "admin.brand.sub": { ar: "لوحة الإدارة والامتثال", en: "Admin & compliance" },
+  "admin.nav.group": { ar: "أقسام اللوحة", en: "Console sections" },
+  "admin.shell.menu": { ar: "القائمة", en: "Menu" },
 };
 export default d;

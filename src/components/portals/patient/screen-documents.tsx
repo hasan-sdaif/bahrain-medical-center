@@ -11,8 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { bhDateString } from "@/lib/bahrain";
 import { QrCode } from "@/components/shared/barcode";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { EmptyState, ErrorBox, LoadingRows, SectionCard } from "./parts";
+import { PageHead } from "./shell-ui";
 import { useFetch, type DocItem, type OverviewPayload } from "./lib";
 import {
   Award, Copy, CreditCard, ExternalLink, FileText, Pill, Receipt, Send, type LucideIcon,
@@ -23,35 +23,40 @@ const KIND_ICON: Record<string, LucideIcon> = {
   "prescription-print": Pill, "invoice-print": Receipt,
 };
 
+const KIND_TONE: Record<string, string> = {
+  report: "ic-teal", certificate: "ic-gold", referral: "ic-sky", "implant-card": "ic-rose",
+  "prescription-print": "ic-violet", "invoice-print": "ic-amber",
+};
+
 function DocCard({ d, onCopy }: { d: DocItem; onCopy: (code: string) => void }) {
   const { t, lang } = useI18n();
   const Icon = KIND_ICON[d.kind] ?? FileText;
   return (
-    <li className="grid gap-3 rounded-2xl border p-4">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex min-w-0 items-start gap-2.5">
-          <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary" aria-hidden>
-            <Icon className="size-4.5" />
+    <li className="card">
+      <div className="card-head">
+        <div className="ch-title">
+          <span className={`ch-ic ${KIND_TONE[d.kind] ?? "ic-teal"}`} aria-hidden><Icon className="size-4" /></span>
+          <span className="min-w-0">
+            <span className="block truncate">{bi(lang, d.titleAr, d.titleEn)}</span>
+            <span className="ch-sub block">{t("pp.doc.issuedAt")}: <span className="mono">{bhDateString(d.issuedAt)}</span></span>
           </span>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold">{bi(lang, d.titleAr, d.titleEn)}</p>
-            <p className="text-xs text-muted-foreground">{t("pp.doc.issuedAt")}: <span className="font-mono" dir="ltr">{bhDateString(d.issuedAt)}</span></p>
-          </div>
         </div>
-        <Badge variant="outline" className="shrink-0 text-[10px] text-muted-foreground">{t(`pp.doc.kind.${d.kind}`)}</Badge>
+        <div className="ch-tools"><span className="tag shrink-0">{t(`pp.doc.kind.${d.kind}`)}</span></div>
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-muted/30 p-3">
-        <div className="min-w-0">
-          <p className="text-xs font-medium text-muted-foreground">{t("pp.doc.code")}</p>
-          <p className="mt-0.5 break-all font-mono text-xs font-semibold" dir="ltr">{d.verifyCode}</p>
-          <Button
-            variant="outline" size="sm" className="mt-2 min-h-11"
-            onClick={() => onCopy(d.verifyCode)} aria-label={t("pp.doc.copy")}
-          >
-            <Copy className="size-4" aria-hidden />{t("pp.doc.copy")}
-          </Button>
+      <div className="card-body grid gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-surface-2 p-3">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold text-ink-3">{t("pp.doc.code")}</p>
+            <p className="mono mt-0.5 break-all text-xs font-bold">{d.verifyCode}</p>
+            <Button
+              variant="outline" size="sm" className="mt-2 min-h-11"
+              onClick={() => onCopy(d.verifyCode)} aria-label={t("pp.doc.copy")}
+            >
+              <Copy className="size-4" aria-hidden />{t("pp.doc.copy")}
+            </Button>
+          </div>
+          <QrCode value={d.verifyCode} size={92} className="rounded-lg border border-line bg-white p-1" />
         </div>
-        <QrCode value={d.verifyCode} size={92} className="border" />
       </div>
     </li>
   );
@@ -76,13 +81,13 @@ export default function DocumentsScreen() {
 
   return (
     <div className="grid gap-4">
-      <h1 className="flex items-center gap-2 text-xl font-bold"><FileText className="size-5 text-primary" aria-hidden />{t("pp.doc.title")}</h1>
+      <PageHead icon={FileText} title={t("pp.doc.title")} sub={t("pp.doc.sub")} />
 
       {data.loading ? <LoadingRows n={3} h="h-48" /> : data.error ? <ErrorBox error={data.error} onRetry={data.reload} /> : (
         <>
-          <SectionCard>
+          <SectionCard contentClassName="p-0">
             {docs.length ? (
-              <ul className="grid gap-3 lg:grid-cols-2" role="list">
+              <ul className="list-group gap-3 p-4 lg:grid lg:grid-cols-2" role="list">
                 {docs.map((d) => <DocCard key={d.id} d={d} onCopy={copy} />)}
               </ul>
             ) : <EmptyState icon={FileText} text={t("pp.doc.empty")} />}

@@ -1,14 +1,15 @@
 "use client";
 /**
- * kiosk.website.bh — كشك الحضور الذاتي (full-screen self check-in).
- * Flow: input (barcode scan | CPR keypad) → POST /api/kiosk/check-in →
- * full-screen ticket celebration (auto-reset 15s) | friendly error card.
+ * kiosk.website.bh — Shamel guide full-screen self check-in kiosk:
+ * teal-navy .kiosk-shell (brand head + BH clock + language) → welcome tiles →
+ * scan/CPR → .entry-ticket celebration (auto-reset 15s) | friendly glass error.
  */
 import { useCallback, useEffect, useState } from "react";
-import { Building2, CircleAlert, Clock, Languages, LifeBuoy } from "lucide-react";
+import { CircleAlert, Clock, Languages, LifeBuoy } from "lucide-react";
 import { useI18n } from "@/i18n";
 import { apiGet, apiPost } from "@/lib/api-client";
-import { Button } from "@/components/ui/button";
+import { ShamelAccent, ShamelMark } from "@/components/shell/brand";
+import { bhTimeString } from "@/lib/bahrain";
 import { Skeleton } from "@/components/ui/skeleton";
 import CheckinForm, { type CheckinPayload } from "./checkin-form";
 import CheckinSuccess from "./success";
@@ -33,11 +34,17 @@ export default function KioskPortal() {
   const [busy, setBusy] = useState(false);
   const [demos, setDemos] = useState<DemoOption[] | null>(null);
   const [formKey, setFormKey] = useState(0);
+  const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
     apiGet<DemoOption[]>("/api/patient/login-options")
       .then((rows) => setDemos(rows.slice(0, 3)))
       .catch(() => setDemos([]));
+  }, []);
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
   }, []);
 
   const submit = useCallback(async (payload: CheckinPayload) => {
@@ -69,73 +76,77 @@ export default function KioskPortal() {
   const bi = (o: DemoOption) => (lang === "ar" ? o.nameAr : o.nameEn);
 
   return (
-    <div className="min-h-[calc(100dvh-11rem)] flex flex-col bg-gradient-to-b from-primary/10 via-background to-emerald-500/10">
-      {/* kiosk chrome: center identity + big bilingual toggle */}
-      <header className="flex items-center gap-4 px-6 md:px-10 pt-6">
-        <div className="grid size-14 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-lg">
-          <Building2 className="size-7" aria-hidden />
-        </div>
+    <div className="kiosk-shell min-h-[calc(100dvh-10.5rem)] rounded-none">
+      <ShamelAccent />
+
+      <header className="kiosk-head py-5">
+        <ShamelMark size={44} />
         <div className="min-w-0">
-          <h1 className="text-2xl md:text-3xl font-bold leading-tight truncate">{t("shell.app.name")}</h1>
-          <p className="text-sm md:text-base text-muted-foreground">{t("kiosk.title")} · {t("kiosk.welcome")}</p>
+          <p className="font-[family-name:var(--font-cairo)] text-lg font-extrabold leading-tight text-white md:text-xl">
+            {t("shell.app.name")}
+          </p>
+          <p className="text-sm text-white/70">{t("kiosk.title")}</p>
         </div>
-        <Button
-          variant="outline"
-          className="ms-auto h-14 px-6 text-lg font-semibold gap-2 rounded-2xl"
+        <span dir="ltr" className="num ms-auto text-xl font-bold md:text-2xl" aria-label={t("admin.header.clock")}>
+          {bhTimeString(now)}
+        </span>
+        <button
+          type="button"
           onClick={() => setLang(lang === "ar" ? "en" : "ar")}
           aria-label={t("common.language")}
+          className="inline-flex h-11 min-w-11 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 text-sm font-bold text-white transition hover:bg-white/20"
         >
           <Languages className="size-5" aria-hidden />
-          {t("shell.session.lang")}
-        </Button>
+          <span className="hidden sm:inline">{t("shell.session.lang")}</span>
+        </button>
       </header>
 
-      {result ? (
-        <CheckinSuccess result={result} onDone={reset} />
-      ) : (
-        <>
-          <CheckinForm
-            key={formKey}
-            busy={busy}
-            error={error}
-            onSubmit={submit}
-          />
+      <div className="kiosk-body">
+        {result ? (
+          <CheckinSuccess result={result} onDone={reset} />
+        ) : (
+          <div className="grid w-full max-w-2xl justify-items-center gap-5">
+            <CheckinForm key={formKey} busy={busy} error={error} onSubmit={submit} />
 
-          {/* friendly error banner (below the active card, large type) */}
-          {error && (
-            <div
-              role="alert"
-              aria-live="assertive"
-              className="mx-auto w-full max-w-3xl px-6 md:px-10 pb-2"
-            >
-              <div className="flex items-start gap-4 rounded-3xl border-2 border-amber-400/70 bg-amber-50 dark:bg-amber-950/40 p-5 md:p-6 text-amber-900 dark:text-amber-100 shadow-lg animate-in fade-in slide-in-from-bottom-2">
-                {error === "TOO_EARLY" ? <Clock className="size-10 shrink-0" aria-hidden /> : <CircleAlert className="size-10 shrink-0" aria-hidden />}
-                <div>
-                  <p className="text-xl md:text-2xl font-bold">{t("kiosk.errTitle")}</p>
-                  <p className="text-lg md:text-xl leading-relaxed mt-1">
-                    {error === "TOO_EARLY" ? t("kiosk.errTooEarly")
-                      : error === "NOT_FOUND" ? t("kiosk.errNotFound")
-                        : error === "CPR" ? t("kiosk.errCpr")
-                          : t("kiosk.errGeneric")}
-                  </p>
+            {/* friendly error banner (glass card below the active card) */}
+            {error && (
+              <div
+                role="alert"
+                aria-live="assertive"
+                className="w-full rounded-2xl border border-amber-300/50 bg-amber-400/15 p-5 text-start text-white animate-in fade-in slide-in-from-bottom-2"
+              >
+                <div className="flex items-start gap-4">
+                  {error === "TOO_EARLY"
+                    ? <Clock className="size-9 shrink-0 text-amber-200" aria-hidden />
+                    : <CircleAlert className="size-9 shrink-0 text-amber-200" aria-hidden />}
+                  <div>
+                    <p className="text-lg font-extrabold">{t("kiosk.errTitle")}</p>
+                    <p className="mt-1 text-base leading-relaxed text-white/85">
+                      {error === "TOO_EARLY" ? t("kiosk.errTooEarly")
+                        : error === "NOT_FOUND" ? t("kiosk.errNotFound")
+                          : error === "CPR" ? t("kiosk.errCpr")
+                            : t("kiosk.errGeneric")}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* demo helper chips — clearly labelled */}
-          <section aria-label={t("kiosk.demo")} className="mx-auto w-full max-w-3xl px-6 md:px-10 pb-8 mt-auto pt-4">
-            <div className="rounded-3xl border-2 border-dashed border-emerald-500/60 bg-emerald-50/60 dark:bg-emerald-950/30 p-4 md:p-5">
-              <p className="text-sm font-bold text-emerald-700 dark:text-emerald-300 mb-3 flex items-center gap-2">
+            {/* demo helper chips — clearly labelled */}
+            <section
+              aria-label={t("kiosk.demo")}
+              className="w-full rounded-2xl border border-dashed border-teal-300/50 bg-white/[.06] p-4"
+            >
+              <p className="mb-3 flex items-center gap-2 text-sm font-bold text-teal-200">
                 <LifeBuoy className="size-4" aria-hidden />
                 {t("kiosk.demo")}
               </p>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-2.5">
                 <button
                   type="button"
                   disabled={busy}
                   onClick={() => submit({ cpr: DEMO_CPR })}
-                  className="min-h-11 rounded-xl border border-emerald-500/50 bg-background px-4 py-2 text-base font-semibold shadow-sm transition hover:scale-[1.02] active:scale-95 disabled:opacity-50"
+                  className="min-h-11 rounded-xl border border-teal-200/40 bg-white/10 px-4 py-2 text-sm font-bold text-white transition hover:bg-white/20 active:scale-95 disabled:opacity-50"
                 >
                   {t("kiosk.demoCpr")}
                 </button>
@@ -145,18 +156,23 @@ export default function KioskPortal() {
                     type="button"
                     disabled={busy}
                     onClick={() => submit({ mrn: o.mrn })}
-                    className="min-h-11 rounded-xl border border-emerald-500/50 bg-background px-4 py-2 text-base font-semibold shadow-sm transition hover:scale-[1.02] active:scale-95 disabled:opacity-50"
+                    className="min-h-11 rounded-xl border border-teal-200/40 bg-white/10 px-4 py-2 text-sm font-bold text-white transition hover:bg-white/20 active:scale-95 disabled:opacity-50"
                   >
                     {t("kiosk.demoMrn", { mrn: o.mrn, name: bi(o) })}
                   </button>
                 ))}
-                {demos === null && <Skeleton className="h-11 w-56 rounded-xl" />}
+                {demos === null && <Skeleton className="h-11 w-56 rounded-xl bg-white/10" />}
               </div>
-              <p className="mt-3 text-sm text-muted-foreground" dir="auto">{t("kiosk.demoBarcodeNote")}</p>
-            </div>
-          </section>
-        </>
-      )}
+              <p className="mt-3 text-xs leading-relaxed text-white/60" dir="auto">{t("kiosk.demoBarcodeNote")}</p>
+            </section>
+          </div>
+        )}
+      </div>
+
+      <footer className="kiosk-foot">
+        <span>{t("kiosk.footPrivacy")}</span>
+        <span dir="ltr" className="num">KIOSK-01 · v1.0</span>
+      </footer>
     </div>
   );
 }

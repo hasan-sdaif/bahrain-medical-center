@@ -1,14 +1,14 @@
 "use client";
-/** Guest booking — zustand trigger + multi-step dialog shell + CTA section.
- *  Step bodies live in booking-steps.tsx (choose) and booking-final.tsx (confirm). */
+/** Guest booking — zustand trigger + multi-step dialog shell + the Shamel
+ *  guide CTA panel (grad-hero rounded card + hero-pattern) as the marketing
+ *  section. Step bodies live in booking-steps.tsx / booking-final.tsx. */
 import { useState } from "react";
 import { create } from "zustand";
 import { CalendarPlus, Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useI18n } from "@/i18n";
 import { cn } from "@/lib/utils";
-import { Section } from "../section-shell";
+import { Container, Section, SectionHeader } from "../section-shell";
 import { DeptStep, DoctorStep, SlotStep } from "./booking-steps";
 import { DetailsStep, OtpStep, SuccessStep } from "./booking-final";
 
@@ -32,14 +32,13 @@ const STEP_KEYS = ["public.booking.step.dept", "public.booking.step.doctor", "pu
 function Stepper({ step }: { step: number }) {
   const { t } = useI18n();
   return (
-    <div className="flex items-center justify-center gap-1.5 flex-wrap" aria-label={t("public.booking.step.of", { n: step + 1, m: 4 })}>
+    <div className="flex flex-wrap items-center justify-center gap-1.5" aria-label={t("public.booking.step.of", { n: step + 1, m: 4 })}>
       {STEP_KEYS.map((k, i) => (
         <span key={k} className={cn(
-          "flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium",
-          i === step ? "border-primary bg-primary/10 text-primary"
-            : i < step ? "border-primary/40 bg-primary/5 text-primary/80" : "border-border text-muted-foreground",
+          "badge gap-1.5",
+          i === step ? "solid-teal" : i < step ? "b-teal" : "b-slate",
         )}>
-          {i < step ? <Check className="size-3" aria-hidden /> : <span aria-hidden>{i + 1}</span>}
+          {i < step ? <Check className="size-3" aria-hidden /> : <span aria-hidden className="num">{i + 1}</span>}
           {t(k)}
         </span>
       ))}
@@ -94,26 +93,36 @@ export function BookingDialog() {
   );
 }
 
-/** the marketing CTA panel for the booking flow */
+/** the marketing CTA panel for the booking flow — guide CTA pattern */
 export function BookingSection() {
   const { t } = useI18n();
   const openBooking = useBooking((s) => s.openBooking);
   return (
-    <Section id="booking" className="bg-muted/40">
-      <div className="mx-auto max-w-[1600px] px-4 md:px-6">
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-l from-teal-700 via-teal-600 to-emerald-600 p-6 md:p-12 text-center text-white shadow-xl shadow-teal-900/10">
-          <div aria-hidden className="pointer-events-none absolute -top-20 -end-20 size-72 rounded-full bg-emerald-300/20 blur-3xl" />
-          <div aria-hidden className="pointer-events-none absolute -bottom-24 -start-16 size-72 rounded-full bg-cyan-200/15 blur-3xl" />
-          <h2 className="relative text-2xl md:text-4xl font-bold tracking-tight">{t("public.booking.section.title")}</h2>
-          <p className="relative mx-auto mt-3 max-w-2xl text-sm md:text-base text-white/85">{t("public.booking.section.subtitle")}</p>
-          <div className="relative mt-6">
-            <Button size="lg" onClick={() => openBooking()} className="h-12 px-8 bg-white text-teal-800 hover:bg-white/90 shadow-lg shadow-teal-900/30">
-              <CalendarPlus aria-hidden /> {t("public.booking.section.cta")}
-            </Button>
+    <Section id="booking" className="alt">
+      <Container>
+        <div
+          className="relative overflow-hidden rounded-[28px] p-8 text-white shadow-xl md:p-14"
+          style={{ background: "var(--grad-hero)" }}
+        >
+          <div className="hero-pattern" aria-hidden />
+          <div className="relative z-[1] flex flex-wrap items-center gap-8">
+            <div className="min-w-[280px] flex-1">
+              <SectionHeader
+                eyebrow={t("public.booking.eyebrow")}
+                title={t("public.booking.section.title")}
+                subtitle={t("public.booking.section.subtitle")}
+                light
+              />
+            </div>
+            <div className="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:items-center">
+              <button className="btn btn-gold btn-xl" onClick={() => openBooking()}>
+                <CalendarPlus className="size-5" aria-hidden /> {t("public.booking.section.cta")}
+              </button>
+              <p className="text-xs text-white/75">{t("public.booking.section.note")}</p>
+            </div>
           </div>
-          <p className="relative mt-3 text-xs text-white/75">{t("public.booking.section.note")}</p>
         </div>
-      </div>
+      </Container>
     </Section>
   );
 }

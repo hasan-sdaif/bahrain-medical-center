@@ -1,21 +1,19 @@
 "use client";
 /**
- * Tab 4 — الوصول والصلاحيات: static role×module matrix mirroring the
- * documented §5.3 RBAC (src/server/perm.ts — view-only here, the server
- * enforces every endpoint) + live active-account counts per role from
- * GET /api/staff/login-options.
+ * Section 4 — الوصول والصلاحيات (Shamel guide admin pattern): static
+ * role×module matrix mirroring the documented §5.3 RBAC (src/server/perm.ts —
+ * view-only here, the server enforces every endpoint) + live active-account
+ * counts per role from GET /api/staff/login-options. Shamel .card / .table.
  */
 import { useEffect, useMemo, useState } from "react";
 import { useApp } from "@/store/app";
 import { useI18n } from "@/i18n";
 import { apiGet } from "@/lib/api-client";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { Check, ClipboardCheck, LayoutGrid, Minus, Users } from "lucide-react";
-import { Section, type LoginOption } from "./bits";
+import type { LoginOption } from "./bits";
 
 /** §5.3 matrix — mirror of src/server/perm.ts (kept in sync by review) */
 const MATRIX: Record<string, string[]> = {
@@ -68,74 +66,86 @@ export default function AdminAccess() {
   }, [options]);
 
   return (
-    <Section title={t("admin.tab.access")} sub={t("admin.access.sub")}>
-      <div className="rounded-xl border bg-primary/5 p-4 flex items-start gap-3">
-        <ClipboardCheck className="size-5 text-primary shrink-0 mt-0.5" aria-hidden />
-        <p className="text-sm">{t("admin.access.note")}</p>
+    <div className="stack-sm">
+      <div className="alert alert-info">
+        <span className="al-ic"><ClipboardCheck className="size-5" aria-hidden /></span>
+        <div>{t("admin.access.note")}</div>
       </div>
 
-      <Card className="p-0">
-        <CardHeader className="py-3 px-4 bg-muted/50">
-          <CardTitle className="text-sm flex items-center gap-2"><Users className="size-4 text-primary" aria-hidden /> {t("admin.access.accounts")}</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4">
+      <div className="card p-0">
+        <div className="card-head">
+          <span className="ch-title">
+            <span className="ch-ic"><Users className="size-4" aria-hidden /></span>
+            {t("admin.access.accounts")}
+          </span>
+        </div>
+        <div className="card-body">
           {err ? (
-            <p className="text-sm text-muted-foreground">{t("admin.access.accounts.err")}</p>
+            <p className="text-sm text-ink-3">{t("admin.access.accounts.err")}</p>
           ) : !options ? (
-            <div className="flex flex-wrap gap-2">{Array.from({ length: 10 }).map((_, i) => <Skeleton key={i} className="h-8 w-28" />)}</div>
+            <div className="flex flex-wrap gap-2">{Array.from({ length: 10 }).map((_, i) => <Skeleton key={i} className="h-9 w-28 rounded-lg" />)}</div>
           ) : (
             <div className="flex flex-wrap gap-2">
               {counts.map(([role, n]) => (
-                <span key={role} className={cn("inline-flex items-center gap-1.5 rounded-lg border px-2.5 h-9 text-xs", staff?.role === role && "border-primary bg-primary/10 font-semibold")}>
+                <span
+                  key={role}
+                  className={cn(
+                    "badge b-slate inline-flex h-9 items-center gap-1.5 px-2.5 text-xs",
+                    staff?.role === role && "b-teal font-semibold",
+                  )}
+                >
                   {t(`staff.role.${role}`)}
-                  {staff?.role === role && <Badge variant="secondary" className="text-[9px]">{t("admin.access.you")}</Badge>}
-                  <Badge variant="secondary" className="tabular-nums font-mono">{t("admin.access.accounts.count", { n })}</Badge>
+                  {staff?.role === role && <Badge variant="outline" className="border-transparent bg-transparent p-0 text-[9px]">{t("admin.access.you")}</Badge>}
+                  <span className="mono tabular-nums">{t("admin.access.accounts.count", { n })}</span>
                 </span>
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <Card className="p-0">
-        <CardHeader className="py-3 px-4 bg-muted/50">
-          <CardTitle className="text-sm flex items-center gap-2"><LayoutGrid className="size-4 text-primary" aria-hidden /> {t("admin.access.matrix")}</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4">
-          <p className="text-xs text-muted-foreground mb-3">{t("admin.access.matrix.hint")}</p>
-          <div className="max-h-96 overflow-auto rounded-lg border">
-            <Table className="min-w-max">
-              <TableHeader className="sticky top-0 bg-background z-10">
-                <TableRow>
-                  <TableHead className="text-start sticky start-0 bg-background z-20 min-w-36">{t("shell.role")}</TableHead>
+      <div className="card p-0">
+        <div className="card-head">
+          <span className="ch-title">
+            <span className="ch-ic"><LayoutGrid className="size-4" aria-hidden /></span>
+            {t("admin.access.matrix")}
+          </span>
+          <span className="ch-sub">{t("admin.access.matrix.hint")}</span>
+        </div>
+        <div className="card-body p-0">
+          <div className="table-wrap max-h-96 overflow-auto">
+            <table className="table sm min-w-max">
+              <thead>
+                <tr>
+                  <th className="sticky start-0 z-20 min-w-36 bg-surface-2">{t("shell.role")}</th>
                   {MODULES.map((m) => (
-                    <TableHead key={m} className="text-center font-mono text-[10px] whitespace-nowrap" dir="ltr">{m}</TableHead>
+                    <th key={m} className="mono whitespace-nowrap text-center text-[10px]" dir="ltr">{m}</th>
                   ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+                </tr>
+              </thead>
+              <tbody>
                 {Object.entries(MATRIX).map(([role, mods]) => (
-                  <TableRow key={role} className={cn(staff?.role === role && "bg-primary/10")}>
-                    <TableCell className="text-start sticky start-0 bg-background z-10 min-w-36">
-                      <div className="text-xs font-medium">{t(`staff.role.${role}`)}</div>
-                      <div className="font-mono text-[9px] text-muted-foreground" dir="ltr">{role}</div>
-                    </TableCell>
+                  <tr key={role} className={cn(staff?.role === role && "bg-primary/10")}>
+                    <td className="sticky start-0 z-10 min-w-36 bg-surface">
+                      <div className="text-xs font-semibold">{t(`staff.role.${role}`)}</div>
+                      <div className="mono text-[9px] text-ink-3" dir="ltr">{role}</div>
+                    </td>
                     {MODULES.map((m) => (
-                      <TableCell key={m} className="text-center">
+                      <td key={m} className="text-center">
                         {mods.includes(m) ? (
-                          <Check className="size-3.5 text-emerald-600 dark:text-emerald-400 inline" aria-label={t("common.yes")} />
+                          <Check className="inline size-3.5 text-green-600 dark:text-green-400" aria-label={t("common.yes")} />
                         ) : (
-                          <Minus className="size-3.5 text-muted-foreground/40 inline" aria-label={t("common.no")} />
+                          <Minus className="inline size-3.5 text-ink-3/40" aria-label={t("common.no")} />
                         )}
-                      </TableCell>
+                      </td>
                     ))}
-                  </TableRow>
+                  </tr>
                 ))}
-              </TableBody>
-            </Table>
+              </tbody>
+            </table>
           </div>
-        </CardContent>
-      </Card>
-    </Section>
+        </div>
+      </div>
+    </div>
   );
 }

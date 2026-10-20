@@ -1,14 +1,15 @@
 "use client";
 /**
- * Messages — notifications feed (kind icon, unread dot, bilingual title/body,
- * Bahrain time) with a secure-messaging policy notice + 999 emergency warning.
- * Demo channel: staff replies land here as notifications.
+ * Messages — notifications feed (kind icon tile, unread dot, bilingual
+ * title/body, Bahrain time) with a secure-messaging policy notice + 999
+ * emergency warning. Demo channel: staff replies land here as notifications.
+ * Shamel skin: `.alert` notices + `.list-group/.list-item` feed rows.
  */
 import { useI18n, bi } from "@/i18n";
 import { apiGet } from "@/lib/api-client";
 import { bhDateString, bhTimeString } from "@/lib/bahrain";
-import { Badge } from "@/components/ui/badge";
 import { EmptyState, ErrorBox, LoadingRows, SectionCard } from "./parts";
+import { PageHead } from "./shell-ui";
 import { useFetch, type NotificationItem } from "./lib";
 import { AlertTriangle, Bell, CalendarDays, FlaskConical, Phone, Pill, Receipt, ShieldCheck, type LucideIcon } from "lucide-react";
 
@@ -21,22 +22,28 @@ const KIND_ICON: Record<string, LucideIcon> = {
   prescription: Pill, invoice: Receipt, billing: Receipt,
 };
 
+const KIND_TONE: Record<string, string> = {
+  "appointment-reminder": "ic-teal", "critical-result": "ic-red",
+  "result-ready": "ic-violet", "lab-result": "ic-violet", refill: "ic-gold",
+  prescription: "ic-gold", invoice: "ic-amber", billing: "ic-amber",
+};
+
 function MsgRow({ m }: { m: MsgItem }) {
   const { t, lang } = useI18n();
   const Icon = KIND_ICON[m.kind] ?? Bell;
   return (
-    <li className="flex items-start gap-3 rounded-xl border p-3">
-      <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary" aria-hidden>
+    <li className="list-item items-start">
+      <span className={`ch-ic ${KIND_TONE[m.kind] ?? "ic-teal"} shrink-0`} aria-hidden>
         <Icon className="size-4" />
       </span>
-      <div className="min-w-0 flex-1">
-        <p className="flex flex-wrap items-center gap-1.5 text-sm font-semibold">
+      <span className="li-body">
+        <span className="li-title flex flex-wrap items-center gap-1.5">
           {bi(lang, m.titleAr, m.titleEn)}
-          {!m.readAt ? <span className="inline-block size-2 shrink-0 rounded-full bg-destructive" role="img" aria-label={t("pp.msg.unread")} /> : null}
-        </p>
-        {m.bodyAr ? <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{m.bodyAr}</p> : null}
-        <p className="mt-1 font-mono text-[11px] text-muted-foreground" dir="ltr">{bhDateString(m.at)} · {bhTimeString(m.at)}</p>
-      </div>
+          {!m.readAt ? <span className="inline-block size-2 shrink-0 rounded-full bg-red-600" role="img" aria-label={t("pp.msg.unread")} /> : null}
+        </span>
+        {m.bodyAr ? <span className="li-sub line-clamp-2">{m.bodyAr}</span> : null}
+        <span className="mono mt-1 block text-[11px] text-ink-3">{bhDateString(m.at)} · {bhTimeString(m.at)}</span>
+      </span>
     </li>
   );
 }
@@ -47,27 +54,27 @@ export default function MessagesScreen() {
 
   return (
     <div className="grid gap-4">
-      <h1 className="flex items-center gap-2 text-xl font-bold"><Bell className="size-5 text-primary" aria-hidden />{t("pp.msg.title")}</h1>
+      <PageHead icon={Bell} title={t("pp.msg.title")} sub={t("pp.msg.sub")} />
 
       <SectionCard title={t("pp.msg.secure")} icon={ShieldCheck}>
-        <div className="grid gap-2 text-sm">
-          <p className="flex items-start gap-2 rounded-xl bg-muted/50 p-2.5 text-muted-foreground">
-            <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />{t("pp.msg.policy")}
+        <div className="stack-sm">
+          <p className="alert alert-info items-start text-sm">
+            <ShieldCheck className="al-ic size-4 shrink-0" aria-hidden />{t("pp.msg.policy")}
           </p>
-          <p className="flex items-start gap-2 rounded-xl border border-destructive/40 bg-destructive/5 p-2.5 font-medium text-destructive" role="alert">
-            <Phone className="mt-0.5 size-4 shrink-0" aria-hidden />{t("pp.msg.emergency")}
+          <p className="alert alert-danger items-start text-sm font-semibold" role="alert">
+            <Phone className="al-ic size-4 shrink-0" aria-hidden />{t("pp.msg.emergency")}
           </p>
-          <p className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Badge variant="outline" className="border-transparent bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200">{t("pp.msg.demoReply")}</Badge>
+          <p className="flex flex-wrap items-center gap-2 text-xs text-ink-3">
+            <span className="badge b-gold">{t("pp.msg.demoReply")}</span>
             {t("pp.msg.secureNote")}
           </p>
         </div>
       </SectionCard>
 
       {list.loading ? <LoadingRows n={4} h="h-20" /> : list.error ? <ErrorBox error={list.error} onRetry={list.reload} /> : (
-        <SectionCard title={t("pp.msg.notifications")} icon={Bell}>
+        <SectionCard title={t("pp.msg.notifications")} icon={Bell} contentClassName="p-0">
           {(list.data ?? []).length ? (
-            <ul className="grid max-h-96 gap-2 overflow-y-auto pe-1" role="list">
+            <ul className="list-group max-h-96 overflow-y-auto pe-1" role="list">
               {(list.data ?? []).map((m) => <MsgRow key={m.id} m={m} />)}
             </ul>
           ) : <EmptyState icon={Bell} text={t("pp.msg.empty")} />}

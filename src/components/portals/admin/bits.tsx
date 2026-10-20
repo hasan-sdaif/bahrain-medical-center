@@ -1,13 +1,14 @@
 "use client";
 /**
- * Shared bits for the admin console — API response shapes + problem+json
- * error surfacing (RFC 7807 bilingual errors from the backend).
+ * Shared bits for the admin console — API response shapes, problem+json error
+ * surfacing (RFC 7807 bilingual errors) and the Shamel `.stat-card` primitive
+ * used by the health dashboard.
  */
 import { useI18n } from "@/i18n";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { TriangleAlert } from "lucide-react";
+import { RefreshCw, TriangleAlert, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 export interface HealthResp {
   ok: boolean;
@@ -52,25 +53,43 @@ export function errText(err: unknown, lang: "ar" | "en"): string {
   return err instanceof Error ? err.message : String(err);
 }
 
-/** Standard error card with server-side-enforcement hint + retry. */
+/** Standard Shamel alert-danger card with server-side-enforcement hint + retry. */
 export function ErrCard({ err, onRetry }: { err: unknown; onRetry?: () => void }) {
   const { t, lang } = useI18n();
   return (
-    <Alert variant="destructive" role="alert">
-      <TriangleAlert className="size-4" />
-      <AlertTitle>{t("common.error")}</AlertTitle>
-      <AlertDescription>
+    <div role="alert" className="alert alert-danger">
+      <span className="al-ic"><TriangleAlert className="size-5" aria-hidden /></span>
+      <div className="min-w-0 flex-1">
+        <p className="al-title">{t("common.error")}</p>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <span>{errText(err, lang)}</span>
           <span className="text-xs opacity-80">{t("admin.err.hint")}</span>
           {onRetry && (
             <Button size="sm" variant="outline" className="h-8" onClick={onRetry}>
-              {t("common.retry")}
+              <RefreshCw className="size-3.5" aria-hidden /> {t("common.retry")}
             </Button>
           )}
         </div>
-      </AlertDescription>
-    </Alert>
+      </div>
+    </div>
+  );
+}
+
+/** Shamel guide .stat-card (05-cards-tables.css): label + tone icon + big num. */
+export function StatCard({
+  label, icon: Icon, tone, value, foot, danger,
+}: {
+  label: string; icon: LucideIcon; tone: string; value: ReactNode; foot?: ReactNode; danger?: boolean;
+}) {
+  return (
+    <div className="card stat-card">
+      <div className="sc-top">
+        <span className="sc-label">{label}</span>
+        <span className={cn("sc-ic", tone)} aria-hidden><Icon className="size-5" /></span>
+      </div>
+      <div className={cn("sc-value", danger && "text-red-600 dark:text-red-400")}>{value}</div>
+      {foot ? <div className="sc-foot">{foot}</div> : null}
+    </div>
   );
 }
 
@@ -78,17 +97,4 @@ export function ErrCard({ err, onRetry }: { err: unknown; onRetry?: () => void }
 export function jsonPreview(v: unknown): string {
   const s = typeof v === "string" ? v : JSON.stringify(v);
   return s.length > 56 ? `${s.slice(0, 56)}…` : s;
-}
-
-/** Section wrapper: small heading + optional sub + content (keeps tabs tidy). */
-export function Section({ title, sub, children }: { title: string; sub?: string; children: ReactNode }) {
-  return (
-    <section className="grid gap-4">
-      <header>
-        <h2 className="text-lg font-bold">{title}</h2>
-        {sub && <p className="text-sm text-muted-foreground">{sub}</p>}
-      </header>
-      {children}
-    </section>
-  );
 }

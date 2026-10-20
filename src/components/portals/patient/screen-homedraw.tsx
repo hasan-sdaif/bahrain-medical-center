@@ -11,14 +11,14 @@ import { apiGet, apiPost } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
 import { BHD3 } from "@/lib/money";
 import { bhDateString, bhTimeString } from "@/lib/bahrain";
-import { MoneyText, StatusBadge } from "@/components/shared/badges";
+import { MoneyText } from "@/components/shared/badges";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EmptyState, ErrorBox, LoadingRows, SectionCard } from "./parts";
+import { PageHead, StBadge, TimeChip } from "./shell-ui";
 import { errText, useFetch, HOME_FLOW, HOME_TESTS, HOME_ZONES, type HomeTrack } from "./lib";
 import { Check, Loader2, MapPin, Send, Syringe, UtensilsCrossed } from "lucide-react";
 
@@ -33,35 +33,43 @@ function TrackCard({ r }: { r: HomeTrack }) {
   const idx = HOME_FLOW.indexOf(r.status);
   const fastingTest = r.tests.some((x) => x.fasting);
   return (
-    <li className="grid gap-3 rounded-2xl border p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="font-mono text-sm font-semibold" dir="ltr">{r.code}</span>
-        <span className="flex items-center gap-2"><StatusBadge status={r.status} /><span className="text-xs text-muted-foreground" dir="ltr">{bhDateString(r.createdAt)}</span></span>
+    <li className="card">
+      <div className="card-head">
+        <div className="ch-title">
+          <span className="ch-ic ic-teal" aria-hidden><Syringe className="size-4" /></span>
+          <span className="mono">{r.code}</span>
+        </div>
+        <div className="ch-tools">
+          <TimeChip>{bhDateString(r.createdAt)}</TimeChip>
+          <StBadge status={r.status} />
+        </div>
       </div>
-      <div className="flex flex-wrap gap-1" aria-label={t("pp.hd.flow")}>
-        {HOME_FLOW.map((s, i) => (
-          <span key={s} className={
-            i < idx ? "flex items-center gap-1 rounded-full border border-transparent bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200"
-              : i === idx ? "flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary"
-                : "flex items-center gap-1 rounded-full border bg-muted/50 px-2 py-0.5 text-[10px] text-muted-foreground"
-          }>
-            {i < idx ? <Check className="size-3" aria-hidden /> : i === idx ? <span className="size-1.5 rounded-full bg-primary" aria-hidden /> : null}
-            {t(`status.${s}`)}
+      <div className="card-body grid gap-3">
+        <div className="flex flex-wrap gap-1" aria-label={t("pp.hd.flow")}>
+          {HOME_FLOW.map((s, i) => (
+            <span key={s} className={
+              i < idx ? "badge b-green"
+                : i === idx ? "badge st-progress"
+                  : "badge b-slate"
+            }>
+              {i < idx ? <Check className="size-3" aria-hidden /> : i === idx ? <span className="dot" aria-hidden /> : null}
+              {t(`status.${s}`)}
+            </span>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-1.5">
+          {r.tests.map((x) => (
+            <span key={x.code} className="tag">{bi(lang, x.nameAr, x.nameEn ?? x.nameAr)} · <MoneyText fils={x.priceFils} currency={false} /></span>
+          ))}
+          {fastingTest ? <span className="badge b-amber"><UtensilsCrossed className="size-3" aria-hidden />{t("pp.hd.fastingTest")}</span> : null}
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+          <span className="flex items-center gap-1.5"><Syringe className="size-4 text-primary" aria-hidden />{r.slot}</span>
+          <span className="flex items-center gap-2">
+            {r.visit?.eta ? <span className="badge b-sky">{t("pp.hd.eta")}: <span className="mono">{bhTimeString(r.visit.eta)}</span></span> : null}
+            <MoneyText fils={r.feeFils} className="font-bold" />
           </span>
-        ))}
-      </div>
-      <div className="flex flex-wrap items-center gap-1.5">
-        {r.tests.map((x) => (
-          <Badge key={x.code} variant="outline" className="text-[11px]">{bi(lang, x.nameAr, x.nameEn ?? x.nameAr)} · <MoneyText fils={x.priceFils} currency={false} /></Badge>
-        ))}
-        {fastingTest ? <Badge variant="outline" className="border-transparent bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200"><UtensilsCrossed className="me-1 size-3" aria-hidden />{t("pp.hd.fastingTest")}</Badge> : null}
-      </div>
-      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-        <span className="flex items-center gap-1.5"><Syringe className="size-4 text-primary" aria-hidden />{r.slot}</span>
-        <span className="flex items-center gap-2">
-          {r.visit?.eta ? <Badge variant="secondary" className="text-xs">{t("pp.hd.eta")}: <span className="font-mono" dir="ltr">{bhTimeString(r.visit.eta)}</span></Badge> : null}
-          <MoneyText fils={r.feeFils} className="font-semibold" />
-        </span>
+        </div>
       </div>
     </li>
   );
@@ -114,7 +122,7 @@ function RequestForm({ onDone }: { onDone: () => void }) {
               const on = sel.includes(x.code);
               return (
                 <button key={x.code} type="button" aria-pressed={on} onClick={() => toggle(x.code, x.fasting)}
-                  className={`flex min-h-11 items-center gap-1.5 rounded-full border px-3 text-sm font-medium transition-colors ${on ? "border-primary bg-primary text-primary-foreground" : "hover:bg-accent"}`}>
+                  className={`chip min-h-11 ${on ? "active" : ""}`}>
                   {on ? <Check className="size-4" aria-hidden /> : null}
                   {bi(lang, x.nameAr, x.nameEn ?? x.nameAr)} · <MoneyText fils={x.priceFils} currency={false} />
                   {x.fasting ? <UtensilsCrossed className="size-3.5 opacity-80" aria-label={t("pp.hd.fastingTest")} /> : null}
@@ -195,15 +203,12 @@ export default function HomeDrawScreen() {
   const track = useFetch<HomeTrack[]>(() => apiGet<HomeTrack[]>("/api/patient/home-tracking"));
   return (
     <div className="grid gap-4">
-      <div>
-        <h1 className="flex items-center gap-2 text-xl font-bold"><Syringe className="size-5 text-primary" aria-hidden />{t("pp.hd.title")}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{t("pp.hd.subtitle")}</p>
-      </div>
+      <PageHead icon={Syringe} title={t("pp.hd.title")} sub={t("pp.hd.subCard")} />
       <RequestForm onDone={track.reload} />
       {track.loading ? <LoadingRows n={2} h="h-40" /> : track.error ? <ErrorBox error={track.error} onRetry={track.reload} /> : (
-        <SectionCard title={t("pp.hd.tracking")} icon={MapPin}>
+        <SectionCard title={t("pp.hd.tracking")} icon={MapPin} contentClassName="p-0">
           {(track.data ?? []).length ? (
-            <ul className="grid gap-3" role="list">{(track.data ?? []).map((r) => <TrackCard key={r.code} r={r} />)}</ul>
+            <ul className="list-group gap-3 p-4" role="list">{(track.data ?? []).map((r) => <TrackCard key={r.code} r={r} />)}</ul>
           ) : <EmptyState icon={Syringe} text={t("pp.hd.empty")} />}
         </SectionCard>
       )}

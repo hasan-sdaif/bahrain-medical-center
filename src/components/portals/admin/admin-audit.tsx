@@ -1,24 +1,22 @@
 "use client";
 /**
- * Tab 2 — سجل التدقيق: GET /api/staff/audit/search (action select + patientId
- * filter, client pagination over the server's take-50 window) + GET
- * /api/staff/audit/chain hash-chain verification banner + explanation card.
+ * Section 2 — سجل التدقيق (Shamel guide admin/audit): GET
+ * /api/staff/audit/search (action select + patientId filter, client
+ * pagination over the server's take-50 window) + GET /api/staff/audit/chain
+ * hash-chain verification alert + explanation card. Shamel .table styling.
  */
 import { useCallback, useEffect, useState } from "react";
 import { useI18n } from "@/i18n";
 import { apiGet } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { bhDateString, bhTimeString } from "@/lib/bahrain";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, Eye, Link2, Lock, ScrollText, Search, ShieldCheck, ShieldX } from "lucide-react";
-import { ErrCard, Section, type AuditRow, type ChainResp } from "./bits";
+import { ErrCard, type AuditRow, type ChainResp } from "./bits";
 
 const ACTIONS = ["view-chart", "create", "sign", "payment", "reader-read", "checkin", "wo-close", "merge", "break-glass", "dispense", "patient-search", "audit-search", "kiosk-checkin", "verify-doc", "recall"];
 const PAGE_SIZE = 10;
@@ -73,123 +71,146 @@ export default function AdminAudit() {
   const slice = rows?.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE) ?? [];
 
   return (
-    <Section title={t("admin.tab.audit")} sub={t("admin.audit.sub")}>
+    <div className="stack-sm">
       {chainErr ? (
         <ErrCard err={chainErr} onRetry={() => void verifyChain()} />
       ) : !chain ? (
-        <Skeleton className="h-16" />
+        <Skeleton className="h-16 rounded-xl" />
       ) : (
-        <div className={cn("rounded-xl border-2 p-4 flex flex-wrap items-center gap-3", chain.ok ? "border-emerald-500/60 bg-emerald-500/5" : "border-red-500/60 bg-red-500/5")} aria-label={t("admin.audit.chain.title")}>
-          <h3 className="sr-only">{t("admin.audit.chain.title")}</h3>
-          {chain.ok ? <ShieldCheck className="size-6 text-emerald-600 dark:text-emerald-400 shrink-0" aria-hidden /> : <ShieldX className="size-6 text-red-600 dark:text-red-400 shrink-0" aria-hidden />}
-          <p className={cn("text-sm font-medium flex-1 min-w-0", chain.ok ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300")}>
+        <div className={cn("alert", chain.ok ? "alert-success" : "alert-danger")} aria-label={t("admin.audit.chain.title")}>
+          <span className="al-ic">
             {chain.ok
-              ? t("admin.audit.chain.ok", { n: chain.checked })
-              : t("admin.audit.chain.broken", { id: chain.brokenAt ?? "—", n: chain.checked })}
-          </p>
-          <Button size="sm" variant="outline" className="h-8 shrink-0" disabled={chainBusy} onClick={() => void verifyChain()}>
-            <Link2 className="size-3.5" /> {chainBusy ? t("admin.audit.chain.checking") : t("admin.audit.chain.run")}
+              ? <ShieldCheck className="size-6" aria-hidden />
+              : <ShieldX className="size-6" aria-hidden />}
+          </span>
+          <div className="min-w-0 flex-1">
+            <h3 className="sr-only">{t("admin.audit.chain.title")}</h3>
+            <p className="font-medium">
+              {chain.ok
+                ? t("admin.audit.chain.ok", { n: chain.checked })
+                : t("admin.audit.chain.broken", { id: chain.brokenAt ?? "—", n: chain.checked })}
+            </p>
+          </div>
+          <Button size="sm" variant="outline" className="h-9 shrink-0" disabled={chainBusy} onClick={() => void verifyChain()}>
+            <Link2 className="size-3.5" aria-hidden /> {chainBusy ? t("admin.audit.chain.checking") : t("admin.audit.chain.run")}
           </Button>
         </div>
       )}
 
-      <Card className="p-0">
-        <CardHeader className="py-3 px-4 bg-muted/50">
-          <CardTitle className="text-sm flex items-center gap-2"><ScrollText className="size-4 text-primary" aria-hidden /> {t("admin.audit.searchTitle")}</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 grid gap-3">
-          <form className="flex flex-wrap items-end gap-2" aria-label={t("admin.audit.filter.title")} onSubmit={(e) => { e.preventDefault(); void search(action, patientId); }}>
+      <div className="card p-0">
+        <div className="card-head">
+          <span className="ch-title">
+            <span className="ch-ic"><ScrollText className="size-4" aria-hidden /></span>
+            {t("admin.audit.searchTitle")}
+          </span>
+        </div>
+        <div className="card-body grid gap-3">
+          <form
+            className="flex flex-wrap items-center gap-2"
+            aria-label={t("admin.audit.filter.title")}
+            onSubmit={(e) => { e.preventDefault(); void search(action, patientId); }}
+          >
             <div className="w-full sm:w-56">
               <Select value={action} onValueChange={setAction}>
-                <SelectTrigger className="w-full h-10" aria-label={t("audit.action")}><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-11 w-full" aria-label={t("audit.action")}><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t("admin.audit.filter.actionAll")}</SelectItem>
-                  {ACTIONS.map((a) => <SelectItem key={a} value={a}><span className="font-mono text-xs">{a}</span></SelectItem>)}
+                  {ACTIONS.map((a) => <SelectItem key={a} value={a}><span className="mono text-xs">{a}</span></SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <Input
-              className="w-full sm:w-64 h-10 font-mono"
+              className="mono h-11 w-full sm:w-64"
               placeholder={t("admin.audit.filter.patient")}
               value={patientId}
               onChange={(e) => setPatientId(e.target.value)}
               aria-label={t("admin.audit.filter.patient")}
             />
-            <Button type="submit" className="h-10"><Search className="size-4" /> {t("common.apply")}</Button>
+            <Button type="submit" className="h-11"><Search className="size-4" aria-hidden /> {t("common.apply")}</Button>
           </form>
 
           {err ? <ErrCard err={err} onRetry={() => void search(action, patientId)} /> : !rows ? (
-            <div className="grid gap-2">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10" />)}</div>
+            <div className="grid gap-2">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-11 rounded-lg" />)}</div>
           ) : rows.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-6 text-center">{t("admin.audit.empty")}</p>
+            <div className="empty-state">
+              <span className="es-ic"><ScrollText className="size-9" aria-hidden /></span>
+              <p>{t("admin.audit.empty")}</p>
+            </div>
           ) : (
             <>
-              <div className="max-h-96 overflow-y-auto rounded-lg border">
-                <Table>
-                  <TableHeader className="sticky top-0 bg-background z-10">
-                    <TableRow>
-                      <TableHead className="text-start">{t("common.time")}</TableHead>
-                      <TableHead className="text-start">{t("audit.actor")}</TableHead>
-                      <TableHead className="text-start">{t("audit.action")}</TableHead>
-                      <TableHead className="text-start">{t("audit.resource")}</TableHead>
-                      <TableHead className="text-start">{t("common.reason")}</TableHead>
-                      <TableHead className="text-start">{t("admin.audit.col.hash")}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+              <div className="table-wrap max-h-96 overflow-y-auto rounded-lg border">
+                <table className="table sticky-head sm">
+                  <thead>
+                    <tr>
+                      <th>{t("common.time")}</th>
+                      <th>{t("audit.actor")}</th>
+                      <th>{t("audit.action")}</th>
+                      <th>{t("audit.resource")}</th>
+                      <th>{t("common.reason")}</th>
+                      <th>{t("admin.audit.col.hash")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
                     {slice.map((r) => (
-                      <TableRow key={r.id}>
-                        <TableCell className="whitespace-nowrap font-mono text-xs" dir="ltr">{bhDateString(r.at)} {bhTimeString(r.at)}</TableCell>
-                        <TableCell className="max-w-36">
-                          <div className="truncate font-mono text-xs" dir="ltr">{r.actorId ?? "system"}</div>
-                          {r.actorRole && <Badge variant="outline" className="text-[9px] mt-0.5">{t(`staff.role.${r.actorRole}`) !== `staff.role.${r.actorRole}` ? t(`staff.role.${r.actorRole}`) : r.actorRole}</Badge>}
-                        </TableCell>
-                        <TableCell><Badge className="font-mono text-[10px] bg-teal-100 text-teal-900 dark:bg-teal-950 dark:text-teal-200 border-transparent">{r.action}</Badge></TableCell>
-                        <TableCell className="text-xs">
-                          <div>{r.resource}</div>
-                          {r.resourceId && <div className="font-mono text-[10px] text-muted-foreground truncate max-w-28" dir="ltr">{r.resourceId}</div>}
-                        </TableCell>
-                        <TableCell className="text-xs text-muted-foreground max-w-32"><div className="truncate">{r.reason ?? "—"}</div></TableCell>
-                        <TableCell className="font-mono text-[10px] text-muted-foreground" dir="ltr">{r.hash}</TableCell>
-                      </TableRow>
+                      <tr key={r.id}>
+                        <td className="num-cell whitespace-nowrap text-xs">{bhDateString(r.at)} {bhTimeString(r.at)}</td>
+                        <td className="max-w-36">
+                          <div className="mono cell-main truncate text-xs" dir="ltr">{r.actorId ?? "system"}</div>
+                          {r.actorRole && (
+                            <span className="badge b-slate sm mt-0.5">
+                              {t(`staff.role.${r.actorRole}`) !== `staff.role.${r.actorRole}` ? t(`staff.role.${r.actorRole}`) : r.actorRole}
+                            </span>
+                          )}
+                        </td>
+                        <td><span className="badge b-teal sm"><span className="mono">{r.action}</span></span></td>
+                        <td>
+                          <div className="cell-main text-xs">{r.resource}</div>
+                          {r.resourceId && <div className="mono cell-sub max-w-28 truncate" dir="ltr">{r.resourceId}</div>}
+                        </td>
+                        <td className="max-w-32 text-xs"><div className="truncate">{r.reason ?? "—"}</div></td>
+                        <td className="mono text-[10px] text-ink-3" dir="ltr">{r.hash}</td>
+                      </tr>
                     ))}
-                  </TableBody>
-                </Table>
+                  </tbody>
+                </table>
               </div>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-xs text-muted-foreground">{t("admin.audit.pageInfo", { page: page + 1, pages, count: rows.length })}</p>
+                <p className="text-xs text-ink-3">{t("admin.audit.pageInfo", { page: page + 1, pages, count: rows.length })}</p>
                 <div className="flex items-center gap-1">
-                  <Button size="sm" variant="outline" className="h-8" disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
-                    {lang === "ar" ? <ChevronRight className="size-3.5" /> : <ChevronLeft className="size-3.5" />} {t("common.prev")}
+                  <Button size="sm" variant="outline" className="h-9" disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
+                    {lang === "ar" ? <ChevronRight className="size-3.5" aria-hidden /> : <ChevronLeft className="size-3.5" aria-hidden />} {t("common.prev")}
                   </Button>
-                  <Button size="sm" variant="outline" className="h-8" disabled={page >= pages - 1} onClick={() => setPage((p) => Math.min(pages - 1, p + 1))}>
-                    {t("common.next")} {lang === "ar" ? <ChevronLeft className="size-3.5" /> : <ChevronRight className="size-3.5" />}
+                  <Button size="sm" variant="outline" className="h-9" disabled={page >= pages - 1} onClick={() => setPage((p) => Math.min(pages - 1, p + 1))}>
+                    {t("common.next")} {lang === "ar" ? <ChevronLeft className="size-3.5" aria-hidden /> : <ChevronRight className="size-3.5" aria-hidden />}
                   </Button>
                 </div>
               </div>
-              <p className="text-[11px] text-muted-foreground">{t("admin.audit.take50")}</p>
+              <p className="text-[11px] text-ink-3">{t("admin.audit.take50")}</p>
             </>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <Card className="p-0">
-        <CardHeader className="py-3 px-4 bg-muted/50">
-          <CardTitle className="text-sm flex items-center gap-2"><Lock className="size-4 text-primary" aria-hidden /> {t("admin.audit.chain.explain")}</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 grid gap-2.5">
+      <div className="card p-0">
+        <div className="card-head">
+          <span className="ch-title">
+            <span className="ch-ic"><Lock className="size-4" aria-hidden /></span>
+            {t("admin.audit.chain.explain")}
+          </span>
+        </div>
+        <div className="list-group">
           {[
             { icon: Lock, text: t("admin.audit.chain.exp1") },
             { icon: Link2, text: t("admin.audit.chain.exp2") },
             { icon: Eye, text: t("admin.audit.chain.exp3") },
           ].map(({ icon: Icon, text }, i) => (
-            <div key={i} className="flex items-start gap-2.5 text-sm">
-              <Icon className="size-4 text-primary mt-0.5 shrink-0" aria-hidden />
-              <span>{text}</span>
+            <div key={i} className="list-item">
+              <span className="ch-ic shrink-0"><Icon className="size-4" aria-hidden /></span>
+              <span className="li-body"><span className="li-sub text-sm leading-relaxed">{text}</span></span>
             </div>
           ))}
-        </CardContent>
-      </Card>
-    </Section>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -1,21 +1,21 @@
 "use client";
 /**
- * admin.website.bh — admin & compliance console. Role gate: sysadmin, auditor,
- * dpo, med-director, center-manager (server enforces the rest — 403s surface
- * as problem+json cards). Login → 5 sub-tabs, lazy-loaded per tab.
+ * admin.website.bh — admin & compliance console in the Shamel staff-shell
+ * (sidebar nav per section + topbar + page-head). Role gate: sysadmin,
+ * auditor, dpo, med-director, center-manager (server enforces the rest —
+ * 403s surface as problem+json cards). Login → 5 sections, lazy-loaded.
  */
 import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { useApp } from "@/store/app";
-import { useI18n } from "@/i18n";
+import { useI18n, bi } from "@/i18n";
 import { apiGet } from "@/lib/api-client";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ShamelAccent } from "@/components/shell/brand";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { bhTime } from "@/lib/bahrain";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { LockKeyhole, LogOut, ShieldCheck, TriangleAlert } from "lucide-react";
+import {
+  HeartPulse, LockKeyhole, ScrollText, Settings2, ShieldCheck, TriangleAlert, UsersRound,
+  type LucideIcon,
+} from "lucide-react";
+import { AdminShell } from "./admin-shell";
 import type { LoginOption } from "./bits";
 
 const Health = lazy(() => import("./admin-health"));
@@ -36,6 +36,14 @@ const TAB_ROLES: Record<string, string[] | null> = {
 const TABS = ["health", "audit", "settings", "access", "security"] as const;
 type TabKey = (typeof TABS)[number];
 
+const TAB_ICONS: Record<TabKey, LucideIcon> = {
+  health: HeartPulse, audit: ScrollText, settings: Settings2, access: UsersRound, security: ShieldCheck,
+};
+const TAB_SUBS: Record<TabKey, string> = {
+  health: "admin.health.sub", audit: "admin.audit.sub", settings: "admin.settings.sub",
+  access: "admin.access.sub", security: "admin.security.sub",
+};
+
 function AdminLogin({ deniedRole }: { deniedRole?: string }) {
   const { t, lang } = useI18n();
   const { setStaff } = useApp();
@@ -55,137 +63,111 @@ function AdminLogin({ deniedRole }: { deniedRole?: string }) {
     }
     return [...g.entries()];
   }, [options]);
+
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-8">
-      <h1 className="text-2xl font-bold mb-1 flex items-center gap-2">
-        <LockKeyhole className="size-6 text-primary" aria-hidden /> {t("admin.login.title")}
-      </h1>
-      <p className="text-sm text-muted-foreground mb-4">{t("admin.login.note")}</p>
+    <div className="mx-auto w-full max-w-4xl p-4 md:p-8">
+      <ShamelAccent />
+      <div className="page-head">
+        <div className="page-head-row">
+          <div className="page-title-wrap">
+            <span className="page-title-ic"><LockKeyhole className="size-7" aria-hidden /></span>
+            <div>
+              <h1>{t("admin.login.title")}</h1>
+              <p className="page-sub">{t("admin.login.note")}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {deniedRole && (
-        <Alert variant="destructive" className="mb-4" role="alert">
-          <TriangleAlert className="size-4" />
-          <AlertTitle>{t("common.error")}</AlertTitle>
-          <AlertDescription>{t("admin.login.denied", { role: deniedRole })}</AlertDescription>
-        </Alert>
+        <div role="alert" className="alert alert-danger mb-4">
+          <span className="al-ic"><TriangleAlert className="size-5" aria-hidden /></span>
+          <div><p className="al-title">{t("common.error")}</p>{t("admin.login.denied", { role: deniedRole })}</div>
+        </div>
       )}
+
       {!options ? (
-        <div className="grid md:grid-cols-2 gap-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24" />)}</div>
+        <div className="grid gap-4 md:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-36 rounded-2xl" />)}
+        </div>
       ) : options.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t("admin.login.empty")}</p>
+        <p className="text-sm text-ink-3">{t("admin.login.empty")}</p>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {grouped.map(([role, list]) => (
-            <Card key={role} className="p-0 overflow-hidden">
-              <CardHeader className="py-3 px-4 bg-muted/50">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <ShieldCheck className="size-4 text-primary" aria-hidden />
+          {grouped.map(([role, list], gi) => (
+            <div key={role} className="card p-0">
+              <div className="card-head">
+                <span className="ch-title">
+                  <span className="ch-ic"><ShieldCheck className="size-4" aria-hidden /></span>
                   {t(`staff.role.${role}`)}
-                  <span className="font-mono text-muted-foreground text-[10px]">{role}</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-2">
-                {list.map((o) => (
-                  <Button
+                  <span className="mono text-[10px] text-ink-3">{role}</span>
+                </span>
+              </div>
+              <div className="list-group">
+                {list.map((o, oi) => (
+                  <button
                     key={o.id}
-                    variant="ghost"
-                    className="w-full justify-between h-11 text-start"
+                    type="button"
                     disabled={busy === o.id}
                     onClick={() => {
                       setBusy(o.id);
                       setStaff({ employeeId: o.id, role: o.role, nameAr: o.nameAr, nameEn: o.nameEn, departmentId: null });
                     }}
+                    className="list-item w-full min-h-11 cursor-pointer text-start disabled:opacity-50"
                   >
-                    <span className="truncate">{lang === "ar" ? o.nameAr : o.nameEn}</span>
-                    <Badge variant="outline" className="font-mono text-[10px] shrink-0">{o.deptCode ?? "—"}</Badge>
-                  </Button>
+                    <span className={`avatar a-sm av-${(gi + oi) % 10 + 1}`} aria-hidden>
+                      {bi(lang, o.nameAr, o.nameEn).split(" ").slice(0, 2).map((w) => w[0]).join("")}
+                    </span>
+                    <span className="li-body">
+                      <span className="li-title">{bi(lang, o.nameAr, o.nameEn)}</span>
+                      <span className="li-sub mono">{o.deptCode ?? "—"}</span>
+                    </span>
+                  </button>
                 ))}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
       )}
-    </div>
-  );
-}
-
-function LiveClock() {
-  const { t } = useI18n();
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(id);
-  }, []);
-  return (
-    <div className="text-end leading-tight" aria-label={t("admin.header.clock")}>
-      <div dir="ltr" className="font-mono text-lg tabular-nums">
-        {bhTime(now).toLocaleTimeString("en-GB")}
-        <span className="text-[10px] text-muted-foreground"> +03</span>
-      </div>
-      <div className="text-[10px] text-muted-foreground">{t("admin.header.clock")}</div>
     </div>
   );
 }
 
 export default function AdminPortal() {
   const { staff } = useApp();
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
+  const [tab, setTab] = useState<TabKey>("health");
   if (!staff || !ADMIN_ROLES.includes(staff.role)) return <AdminLogin deniedRole={staff?.role} />;
+
   const limited = (k: TabKey) => {
     const roles = TAB_ROLES[k];
     return !!roles && !roles.includes(staff.role);
   };
-  const Panel = (k: TabKey) => (k === "health" ? <Health /> : k === "audit" ? <Audit /> : k === "settings" ? <Settings /> : k === "access" ? <Access /> : <Security />);
-  return (
-    <div className="max-w-[1400px] mx-auto p-4 md:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 rounded-xl border bg-primary/5 px-4 py-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <span className="grid size-10 place-items-center rounded-lg bg-primary text-primary-foreground shrink-0" aria-hidden>
-            <ShieldCheck className="size-5" />
-          </span>
-          <div className="min-w-0">
-            <h1 className="text-lg md:text-xl font-bold truncate">{t("admin.header.title")}</h1>
-            <p className="text-xs text-muted-foreground truncate">{t("admin.header.sub")}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 ms-auto">
-          <LiveClock />
-          <div className="hidden sm:block text-end leading-tight max-w-44">
-            <div className="text-sm font-medium truncate">{lang === "ar" ? staff.nameAr : staff.nameEn}</div>
-            <div className="text-xs text-muted-foreground">{t(`staff.role.${staff.role}`)}</div>
-          </div>
-          <Button
-            variant="outline"
-            size="icon"
-            className="size-10 shrink-0"
-            aria-label={t("shell.logout")}
-            onClick={() => useApp.getState().setStaff(null)}
-          >
-            <LogOut className="size-4" />
-          </Button>
-        </div>
-      </div>
+  const Panel = (k: TabKey) =>
+    k === "health" ? <Health /> : k === "audit" ? <Audit /> : k === "settings" ? <Settings /> : k === "access" ? <Access /> : <Security />;
 
-      <Tabs defaultValue="health">
-        <TabsList className="h-auto flex-wrap justify-start gap-1">
-          {TABS.map((k) => (
-            <TabsTrigger key={k} value={k} className="gap-1.5">
-              {t(`admin.tab.${k}`)}
-              {limited(k) && (
-                <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200 border-transparent">
-                  {t("admin.tab.limited")}
-                </Badge>
-              )}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        {TABS.map((k) => (
-          <TabsContent key={k} value={k} className="mt-4">
-            <Suspense fallback={<div className="grid gap-4"><Skeleton className="h-24" /><Skeleton className="h-64" /></div>}>
-              {Panel(k)}
-            </Suspense>
-          </TabsContent>
-        ))}
-      </Tabs>
-    </div>
+  const nav = TABS.map((k) => ({ key: k, icon: TAB_ICONS[k], label: t(`admin.tab.${k}`), limited: limited(k) }));
+
+  return (
+    <AdminShell
+      nav={nav}
+      active={tab}
+      onNavigate={(k) => { setTab(k as TabKey); window.scrollTo({ top: 0 }); }}
+      onLogout={() => { useApp.getState().setStaff(null); setTab("health"); }}
+      titleIcon={TAB_ICONS[tab]}
+      title={t(`admin.tab.${tab}`)}
+      sub={t(TAB_SUBS[tab])}
+    >
+      <Suspense
+        fallback={(
+          <div className="grid gap-4">
+            <Skeleton className="h-24 rounded-2xl" />
+            <Skeleton className="h-64 rounded-2xl" />
+          </div>
+        )}
+      >
+        {Panel(tab)}
+      </Suspense>
+    </AdminShell>
   );
 }
