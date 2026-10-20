@@ -9,8 +9,11 @@ import { useI18n } from "@/i18n";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-const ICONS: Record<DomainKey, string> = {
-  public: "🏥", patient: "🧑‍💼", staff: "🩺", admin: "🛡️", kiosk: "🧾", queue: "📺", verify: "✅",
+import { BadgeCheck, ClipboardList, Hospital, MonitorPlay, ShieldCheck, Stethoscope, UserRound } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+
+const ICONS: Record<DomainKey, LucideIcon> = {
+  public: Hospital, patient: UserRound, staff: Stethoscope, admin: ShieldCheck, kiosk: ClipboardList, queue: MonitorPlay, verify: BadgeCheck,
 };
 
 export function DomainBar() {
@@ -47,7 +50,7 @@ export function DomainBar() {
                         : "text-muted-foreground hover:text-foreground hover:bg-muted",
                     )}
                   >
-                    <span aria-hidden className="me-1">{ICONS[d.key]}</span>
+                    <ICONS[d.key] aria-hidden className="me-1 inline size-4" />
                     <span className="hidden md:inline">{t(`shell.domain.${d.key}`)}</span>
                     <span className="md:hidden">{t(`shell.domain.${d.key}`).split(" ")[0]}</span>
                     <span dir="ltr" className="ms-1.5 hidden lg:inline text-[10px] font-mono opacity-70">{d.host}</span>

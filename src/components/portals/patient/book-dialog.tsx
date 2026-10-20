@@ -18,7 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { BarcodeBlock } from "./parts";
 import { errText, useFetch, type CatalogPayload, type SlotRow } from "./lib";
-import { CheckCircle2, Loader2, UtensilsCrossed } from "lucide-react";
+import { CheckCircle2, Loader2, UtensilsCrossed, Video } from "lucide-react";
 
 const DAYS = [0, 1, 2, 3, 4, 5, 6];
 
@@ -111,7 +111,7 @@ export default function BookDialog({ open, onOpenChange, onBooked }: { open: boo
                 <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   {t("pp.book.min", { n: s.durationMin })}
                   {s.fasting ? <Badge variant="outline" className="h-5 border-transparent bg-amber-100 px-1.5 text-[10px] text-amber-900 dark:bg-amber-950 dark:text-amber-200"><UtensilsCrossed className="me-0.5 size-3" aria-hidden />{t("pp.hd.fastingTest")}</Badge> : null}
-                  {s.isVideo ? <Badge variant="secondary" className="h-5 text-[10px]">📹</Badge> : null}
+                  {s.isVideo ? <Badge variant="secondary" className="h-5 gap-1 px-1.5 text-[10px]"><Video className="size-3" aria-hidden />{t("pp.book.video")}</Badge> : null}
                 </span>
               </Button>
             )) : <p className="text-sm text-muted-foreground">{t("common.empty")}</p>}

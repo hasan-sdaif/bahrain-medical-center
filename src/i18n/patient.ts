@@ -62,6 +62,7 @@ const d: Dict = {
   "pp.book.done": { ar: "تم الحجز بنجاح", en: "Booking confirmed" },
   "pp.book.keepBarcode": { ar: "احتفظ بباركود الحضور للمسح في الكشك", en: "Keep your check-in barcode to scan at the kiosk" },
   "pp.book.min": { ar: "{n} دقيقة", en: "{n} min" },
+  "pp.book.video": { ar: "مرئي", en: "Video" },
   // ── results ──
   "pp.res.title": { ar: "نتائجي", en: "My results" },
   "pp.res.lab": { ar: "نتائج المختبر", en: "Lab results" },

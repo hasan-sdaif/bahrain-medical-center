@@ -8,6 +8,8 @@ import { useApp } from "@/store/app";
 import { useI18n } from "@/i18n";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Droplet, FlaskConical, Inbox, Ruler, Scan, Siren } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { LAB_ROLES, PHLEB_ROLES, RAD_ROLES } from "./lab-shared";
 import PhlebTab from "./lab-phleb";
 import ReceiveTab from "./lab-worklist";
@@ -17,15 +19,15 @@ import QcTab from "./lab-qc";
 import RadTab from "./lab-radiology";
 
 type TabKey = "phleb" | "receive" | "results" | "critical" | "qc" | "rad";
-type TabDef = readonly [TabKey, Set<string>, string];
+type TabDef = readonly [TabKey, Set<string>, LucideIcon];
 
 const TABS: readonly TabDef[] = [
-  ["phleb", PHLEB_ROLES, "🩸"],
-  ["receive", LAB_ROLES, "📥"],
-  ["results", LAB_ROLES, "🔬"],
-  ["critical", LAB_ROLES, "🚨"],
-  ["qc", LAB_ROLES, "📏"],
-  ["rad", RAD_ROLES, "🩻"],
+  ["phleb", PHLEB_ROLES, Droplet],
+  ["receive", LAB_ROLES, Inbox],
+  ["results", LAB_ROLES, FlaskConical],
+  ["critical", LAB_ROLES, Siren],
+  ["qc", LAB_ROLES, Ruler],
+  ["rad", RAD_ROLES, Scan],
 ];
 
 export default function Lab() {
@@ -57,8 +59,8 @@ export default function Lab() {
       <Tabs value={active} onValueChange={(v) => setTab(v as TabKey)}>
         <TabsList className="h-auto w-full flex-wrap justify-start gap-1">
           {tabs.map((key) => (
-            <TabsTrigger key={key} value={key} className="h-9 flex-none px-3">
-              <span aria-hidden>{TABS.find(([k]) => k === key)?.[2]}</span>
+            <TabsTrigger key={key} value={key} className="h-9 flex-none gap-1.5 px-3">
+              {(() => { const Icon = TABS.find(([k]) => k === key)?.[2]; return Icon ? <Icon aria-hidden className="size-4" /> : null; })()}
               {t(`lab.tab.${key}`)}
             </TabsTrigger>
           ))}

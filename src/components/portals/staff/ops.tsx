@@ -8,6 +8,8 @@ import { useApp } from "@/store/app";
 import { useI18n } from "@/i18n";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { ChartColumn, ChartLine, Package, ShieldCheck, Users, Wrench, MonitorCheck } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { INV_ROLES, HR_ROLES, MAINT_ROLES, QUALITY_ROLES, REPORTS_ROLES } from "./ops-shared";
 import AssetsTab from "./ops-assets";
 import WorkOrdersTab from "./ops-workorders";
@@ -18,16 +20,16 @@ import QualityTab from "./ops-quality";
 import ReportsTab from "./ops-reports";
 
 type TabKey = "assets" | "workorders" | "metrics" | "inventory" | "hr" | "quality" | "reports";
-type TabDef = readonly [TabKey, Set<string>, string];
+type TabDef = readonly [TabKey, Set<string>, LucideIcon];
 
 const TABS: readonly TabDef[] = [
-  ["assets", MAINT_ROLES, "🩻"],
-  ["workorders", MAINT_ROLES, "🛠️"],
-  ["metrics", MAINT_ROLES, "📊"],
-  ["inventory", INV_ROLES, "📦"],
-  ["hr", HR_ROLES, "👥"],
-  ["quality", QUALITY_ROLES, "🛡️"],
-  ["reports", REPORTS_ROLES, "📈"],
+  ["assets", MAINT_ROLES, MonitorCheck],
+  ["workorders", MAINT_ROLES, Wrench],
+  ["metrics", MAINT_ROLES, ChartColumn],
+  ["inventory", INV_ROLES, Package],
+  ["hr", HR_ROLES, Users],
+  ["quality", QUALITY_ROLES, ShieldCheck],
+  ["reports", REPORTS_ROLES, ChartLine],
 ];
 
 export default function Ops() {
@@ -58,8 +60,8 @@ export default function Ops() {
       <Tabs value={active} onValueChange={(v) => setTab(v as TabKey)}>
         <TabsList className="h-auto w-full flex-wrap justify-start gap-1">
           {tabs.map((key) => (
-            <TabsTrigger key={key} value={key} className="h-9 flex-none px-3">
-              <span aria-hidden>{TABS.find(([k]) => k === key)?.[2]}</span>
+            <TabsTrigger key={key} value={key} className="h-9 flex-none gap-1.5 px-3">
+              {(() => { const Icon = TABS.find(([k]) => k === key)?.[2]; return Icon ? <Icon aria-hidden className="size-4" /> : null; })()}
               {t(`ops.tab.${key}`)}
             </TabsTrigger>
           ))}

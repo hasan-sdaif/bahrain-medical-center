@@ -13,7 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { bhDateString, bhTimeString } from "@/lib/bahrain";
 import { cn } from "@/lib/utils";
-import { Activity, CalendarDays, Database, RadioTower, RefreshCw, Siren, Ticket, Timer, Users, Wrench } from "lucide-react";
+import { Activity, CalendarDays, Check, Database, RadioTower, RefreshCw, Siren, Ticket, Timer, Users, Wrench, X } from "lucide-react";
 import { ErrCard, Section, type HealthResp } from "./bits";
 
 function StatusCard({ ok, icon: Icon, title, okLabel, badLabel, onRetry }: {
@@ -27,8 +27,9 @@ function StatusCard({ ok, icon: Icon, title, okLabel, badLabel, onRetry }: {
         </span>
         <div className="min-w-0 flex-1">
           <div className="text-sm font-semibold">{title}</div>
-          <div className={cn("text-xs mt-0.5", ok ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400")}>
-            {ok ? `✓ ${okLabel}` : `✗ ${badLabel}`}
+          <div className={cn("mt-0.5 flex items-center gap-1 text-xs", ok ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400")}>
+            {ok ? <Check className="size-3.5 shrink-0" aria-hidden /> : <X className="size-3.5 shrink-0" aria-hidden />}
+            <span>{ok ? okLabel : badLabel}</span>
           </div>
         </div>
         {onRetry && (

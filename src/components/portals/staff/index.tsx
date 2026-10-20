@@ -14,6 +14,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { CreditCard, FlaskConical, LogOut, Menu, ReceiptText, Stethoscope, Wrench, Car } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 const Reception = lazy(() => import("./reception"));
 const Emr = lazy(() => import("./emr"));
@@ -24,13 +26,13 @@ const Ops = lazy(() => import("./ops"));
 
 type ModuleKey = "reception" | "emr" | "lab" | "billing" | "home" | "ops";
 
-const MODULE_DEFS: { key: ModuleKey; roles: string[]; icon: string }[] = [
-  { key: "reception", roles: ["reception", "callcenter", "center-manager", "med-director"], icon: "🧾" },
-  { key: "emr", roles: ["nurse", "doctor", "dentist", "surgeon", "oncologist", "psychiatrist", "nutritionist", "pediatrician", "dept-head", "med-director"], icon: "🩺" },
-  { key: "lab", roles: ["lab-tech", "phlebotomist", "radiologist", "med-director"], icon: "🧪" },
-  { key: "billing", roles: ["cashier", "insurance", "center-manager", "med-director"], icon: "💳" },
-  { key: "home", roles: ["collector", "center-manager", "med-director"], icon: "🚗" },
-  { key: "ops", roles: ["inventory", "maintenance-tech", "maintenance-sup", "hr", "quality", "dpo", "auditor", "sysadmin", "center-manager", "med-director"], icon: "🔧" },
+const MODULE_DEFS: { key: ModuleKey; roles: string[]; icon: LucideIcon }[] = [
+  { key: "reception", roles: ["reception", "callcenter", "center-manager", "med-director"], icon: ReceiptText },
+  { key: "emr", roles: ["nurse", "doctor", "dentist", "surgeon", "oncologist", "psychiatrist", "nutritionist", "pediatrician", "dept-head", "med-director"], icon: Stethoscope },
+  { key: "lab", roles: ["lab-tech", "phlebotomist", "radiologist", "med-director"], icon: FlaskConical },
+  { key: "billing", roles: ["cashier", "insurance", "center-manager", "med-director"], icon: CreditCard },
+  { key: "home", roles: ["collector", "center-manager", "med-director"], icon: Car },
+  { key: "ops", roles: ["inventory", "maintenance-tech", "maintenance-sup", "hr", "quality", "dpo", "auditor", "sysadmin", "center-manager", "med-director"], icon: Wrench },
 ];
 
 interface LoginOption { id: string; role: string; nameAr: string; nameEn: string; deptAr: string | null; deptCode: string | null }
@@ -55,7 +57,7 @@ function StaffLogin() {
   const login = (o: LoginOption) => {
     setBusy(o.id);
     setStaff({ employeeId: o.id, role: o.role, nameAr: o.nameAr, nameEn: o.nameEn, departmentId: null });
-    apiPost("/api/staff/me/modules").catch(() => null);
+    apiGet("/api/staff/me/modules").catch(() => null);
   };
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-8">
@@ -121,7 +123,7 @@ export default function StaffPortal() {
             <div className="font-semibold text-sm truncate">{lang === "ar" ? staff.nameAr : staff.nameEn}</div>
             <div className="text-xs text-muted-foreground">{t(`staff.role.${staff.role}`)}</div>
           </div>
-          <span className="md:hidden text-lg">☰</span>
+          <span className="md:hidden"><Menu className="size-5" aria-hidden /></span>
         </div>
         <ScrollArea className="flex-1">
           <nav className="p-2 flex flex-col gap-1">
@@ -135,7 +137,7 @@ export default function StaffPortal() {
                 )}
                 aria-current={active === key ? "page" : undefined}
               >
-                <span aria-hidden className="text-base">{MODULE_DEFS.find((m) => m.key === key)?.icon}</span>
+                {(() => { const Icon = MODULE_DEFS.find((m) => m.key === key)?.icon; return Icon ? <Icon aria-hidden className="size-4 shrink-0" /> : null; })()}
                 <span className="truncate">{t(`staff.module.${key}`)}</span>
                 {key === "reception" && inboxCount > 0 && <Badge className="ms-auto size-5 justify-center p-0 text-[10px] bg-red-600">{inboxCount}</Badge>}
               </button>
@@ -143,8 +145,8 @@ export default function StaffPortal() {
           </nav>
         </ScrollArea>
         <div className="p-2 border-t">
-          <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground" onClick={() => useApp.getState().setStaff(null)}>
-            ⏻ {t("shell.logout")}
+          <Button variant="ghost" size="sm" className="w-full justify-start gap-2 text-muted-foreground" onClick={() => useApp.getState().setStaff(null)}>
+            <LogOut className="size-4" aria-hidden /> {t("shell.logout")}
           </Button>
         </div>
       </aside>
