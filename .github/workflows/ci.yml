@@ -40,7 +40,18 @@ jobs:
       - name: Build
         run: bun run build
 
-      - name: Start production server
+      - name: Start realtime mini-service (:3003)
+        run: |
+          cd mini-services/realtime
+          bun install --frozen-lockfile || bun install
+          nohup bun run start > rt.out 2>&1 &
+          for i in $(seq 1 15); do
+            sleep 2
+            if curl -sf http://localhost:3003/ > /dev/null 2>&1; then echo "realtime up"; exit 0; fi
+          done
+          echo "::error::realtime service did not boot"; cat rt.out; exit 1
+
+      - name: Start production server (:3000)
         run: |
           nohup bun run start > server.out 2>&1 &
           for i in $(seq 1 30); do
@@ -54,11 +65,7 @@ jobs:
       - name: System self-check (API smoke)
         run: bun scripts/verify-system.mjs
 
-      - name: Realtime service check
+      - name: Realtime emit round-trip
         run: |
-          cd mini-services/realtime
-          bun install --frozen-lockfile || bun install
-          nohup bun run start > rt.out 2>&1 &
-          sleep 4
-          curl -sf http://localhost:3003/ | grep -q '"ok":true' && echo "realtime OK"
-          cd ../..
+          curl -sf -X POST http://localhost:3003/emit -H "content-type: application/json" -H "x-bmc-internal: $BMC_INTERNAL_KEY" -d '{"event":"ci:ping","payload":{"ok":true}}' && echo " emit ok"
+          curl -sf http://localhost:3003/ | grep -q '"ok":true' && echo "realtime still healthy"
