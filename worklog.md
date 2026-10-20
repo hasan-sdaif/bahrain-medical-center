@@ -341,3 +341,26 @@ Stage Summary:
 - E2E (agent-browser): reception waitlist tab renders rows/status badges; add dialog (search حسن → pick → reason → submit → row appears); offer dialog → A-261020-9003 GP-NEW 15000 fils created + row flips to عُرض موعد; doctor chart → البرامج العلاجية card shows done instance 7/7 with dates; enroll dialog → active instance step chips 1/7; advance → 2/7. Zero browser errors.
 - Verified: bunx tsc --noEmit 0 errors; bunx eslint 13 changed files 0 problems; dev.log clean; files ≤250 ln (new UI 250/210).
 - Files changed: prisma/schema.prisma, src/server/staff/{core,clinical,ops}.ts, src/server/scheduler.ts, src/components/portals/staff/{reception.tsx, reception-waitlist.tsx (NEW), emr-chart.tsx, emr-programs.tsx (NEW), ops-shared.tsx, ops-workorders.tsx, ops-quality.tsx}, src/i18n/{staff-a,staff-d}.ts.
+
+---
+Task ID: MAIN-2 (orchestrator continuation)
+Agent: main (Z.ai Code)
+Task: متابعة الجلسة — إزالة كل الإيموجي، إصلاح me/modules 404 وFHIR prefix، إكمال البوابة العامة، استنساخ الأنظمة المرجعية، فحص تقاطعي + تنفيذ الفجوات، إصلاح CI، E2E شامل
+
+Work Log:
+- فحص الحالة: dev server كان ميتاً (عمليتان قديمتان) → إعادة تشغيل نظيفة على 3000 + إعادة تشغيل realtime 3003.
+- إصلاح POST /api/staff/me/modules 404 (الواجهة كانت ترسل POST والخادم GET) + استبدال أيقونات الوحدات (🧾🩺🧪💳🚗🔧/☰/⏻) بأيقونات Lucide في staff/index.tsx وdomain-bar.tsx وops.tsx وlab.tsx وbook-dialog (📹→Video) وadmin-health (✓/✗→Check/X).
+- إطلاق وكلاء E1/E2/E3 المتوازيين: إزالة ~127 إيموجي من 35 ملف وحدات الموظفين واستبدالها بأيقونات Lucide (tsc+eslint نظيفان، صفر إيموجي في src/).
+- اكتشاف أن البوابة العامة كانت placeholder رغم وجود 1352 سطراً من الأقسام الجاهزة → بناء index.tsx كاملاً (SubNav بمرساة IntersectionObserver + Hero + 10 أقسام + PreFooter + BookingDialog + AiAssistant) + بناء faq.tsx وcontact.tsx (نموذج تواصل بترقيم تتبع CMP-) وai-assistant.tsx (widget عائم POST /api/ai/chat مع z-ai-web-dev-sdk) + إصلاح تسمية حقل الاسم وإضافة مفاتيح i18n.
+- reader-sdk: تنزيل SCardReadServer.7z (30MB) + eRevealerSetup.7z (49MB) من مصدر S3 الرسمي + SHA256SUMS + README توثيقي كامل بالاحتياطات الأربع (§3.6) + إضافة POST /api/kiosk/reader-scan (Identity Reader Adapter بمطابقة blind-index).
+- إصلاح bug مسارات FHIR المزدوجة (fhir/fhir/* → /*) — 9 موارد + metadata تعمل الآن بالمسار القياسي.
+- إصلاح CI (كان يفشل: Prisma Permission denied لأن DATABASE_URL مطلق غير ملتزم): env على مستوى المهمة file:/tmp/ci.db + بوابة إقلاع الخادم + بدء realtime قبل فحص الدخان + إنشاء scripts/verify-system.mjs (14 فحصاً عبر كل النطاقات) — CI: success على c32f982.
+- استنساخ الأنظمة المرجعية الـ12 (spec §2.1) في reference-systems/ (gitignored، محلي فقط): openemr 151M + openmrs-core 33M + bahmni-core + openhospital(core/ui) + frappe-health + erpnext 188M + care + medplum 261M + foo-medical + openelis 264M + ohif-viewers 136M + icoms (~1.1GB) عبر codeload tarballs مع استئناف مرن (scripts/fetch-order.sh).
+- وكلاء R1/R2/R3: فحص تقاطعي (§2.3) أنتج 11 تقريراً في docs/references/ مع فجوات مصنفة بالأولوية.
+- وكلاء G1/G2: تنفيذ الفجوات عالية الأولوية بدون تغيير مخطط جذري — التطعيمات (3 نقاط نهاية + emr-immunizations + بطاقة بوابة المريض)، قائمة الانتظار/الاستدعاءات (3 نقاط + تبويب reception-waitlist + تحويل لموعد A-…)، البرامج العلاجية (4 نقاط + emr-programs بإدارة دورة الحياة)، أتمتة إعادة الطلب في المجدول (WorkOrders + مهام + إشعارات، idempotent).
+- تحديث docs/API.md (immunizations/waitlist/pathways/reader-scan/FHIR bridge) + docs/references/gnu-health.md (خارج GitHub — توثيق وظيفي).
+- E2E بالمتصفح: الموقع العام (حجز ضيف كامل بقسم/طبيب/موعد/OTP→A-261020-9001+MRN جديد، مساعد AI بردّ حقيقي، نموذج تواصل CMP-MVGGT8JH) + بوابة المريض (11 شاشة) + الموظفين (بحث عربي ضبابي→ملف طبي 8 تبويبات) + الكشك (تذكرة C-001 عبر موعد مؤكد) + شاشة الانتظار (حية) + التحقق (مستند BI-RADS صالح) + الإدارة (حجب طبيب 403 + فحص صحة بعودة realtime) — صفر أخطاء وحدة تحكم.
+- حلقة المزامنة الساعية تعمل (scripts/sync-loop) + دفعات يدوية عند كل معلم.
+
+Stage Summary:
+- المشروع الآن: صفر إيموجي، CI أخضر مع verify-system 14/14، البوابة العامة مكتملة (كانت placeholder!)، FHIR بالمسار القياسي، الأنظمة المرجعية الـ12 مستنسخة محلياً + 11 تقرير فحص تقاطعي، 4 فجوات عالية الأولوية منفذة (تطعيمات/انتظار/برامج/إعادة طلب)، reader-sdk موثق مع adapter فعلي، tsc 0 أخطاء، eslint 0 مشاكل، كل البوابات السبع مختبرة E2E.
