@@ -1,0 +1,1105 @@
+/* ============================================================
+   شامل | Shamel Medical Center — Medical Components
+   الملف 07: المكونات الطبية المتخصصة
+   (لافتة المريض، العلامات الحيوية، النتائج، الوصفات، الباركود، الفرز، الطوابير، الجدولة، المحادثة، العارض الطبي)
+   ============================================================ */
+
+/* ============ لافتة المريض ============ */
+.pt-banner {
+  border-radius:var(--r-lg);
+  background:var(--grad-hero);
+  color:#fff;
+  padding:24px 26px;
+  position:relative;
+  overflow:hidden;
+}
+.pt-banner::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  background-image:radial-gradient(circle at 85% 20%, rgba(255,255,255,.09), transparent 42%);
+  pointer-events:none;
+}
+.pt-banner .pt-row {
+  display:flex;
+  align-items:center;
+  gap:18px;
+  flex-wrap:wrap;
+  position:relative;
+  z-index:1;
+}
+.pt-banner .avatar { border:3.5px solid rgba(255,255,255,.4); }
+.pt-banner .pt-name { font-family:var(--font-display); font-size:var(--fs-2xl); font-weight:800; color:#fff; line-height:1.3; }
+.pt-banner .pt-tags { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+.pt-banner .pt-tag {
+  background:rgba(255,255,255,.15);
+  border:1px solid rgba(255,255,255,.25);
+  color:#fff;
+  font-size:var(--fs-xs);
+  font-weight:600;
+  padding:3px 11px;
+  border-radius:var(--r-full);
+  display:inline-flex;
+  gap:6px;
+  align-items:center;
+}
+.pt-banner .pt-tag .num { font-family:var(--font-num); direction:ltr; }
+.pt-metabar {
+  display:flex;
+  gap:26px;
+  flex-wrap:wrap;
+  margin-top:18px;
+  padding-top:16px;
+  border-top:1px solid rgba(255,255,255,.18);
+  position:relative;
+  z-index:1;
+}
+.pt-metabar .pm-item { display:flex; align-items:center; gap:9px; font-size:var(--fs-sm); color:rgba(255,255,255,.85); }
+.pt-metabar .pm-item b { color:#fff; font-family:var(--font-num); direction:ltr; }
+.pt-banner .pt-actions { margin-inline-start:auto; display:flex; gap:9px; flex-wrap:wrap; }
+
+/* شريط التحسس الحرج */
+.allergy-band {
+  background:var(--grad-red);
+  color:#fff;
+  border-radius:var(--r-md);
+  padding:12px 18px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  font-weight:700;
+  font-size:var(--fs-sm);
+  box-shadow:var(--shadow-red);
+  flex-wrap:wrap;
+}
+.allergy-band .ab-items { display:flex; gap:8px; flex-wrap:wrap; }
+.allergy-band .ab-chip {
+  background:rgba(255,255,255,.2);
+  border:1px solid rgba(255,255,255,.4);
+  padding:3px 12px;
+  border-radius:var(--r-full);
+  font-size:var(--fs-xs);
+}
+.critical-band {
+  background:var(--warning-soft);
+  border:1.5px solid rgba(217,119,6,.4);
+  color:#78350F;
+  border-radius:var(--r-md);
+  padding:12px 18px;
+  display:flex;
+  gap:12px;
+  align-items:center;
+  font-size:var(--fs-sm);
+  font-weight:600;
+}
+
+/* ============ العلامات الحيوية ============ */
+.vital-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  padding:17px 18px 14px;
+  position:relative;
+  overflow:hidden;
+  transition:box-shadow var(--t-base), transform var(--t-base);
+}
+.vital-card:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); }
+.vital-card::before {
+  content:"";
+  position:absolute;
+  top:0; inset-inline-start:0;
+  width:100%; height:4px;
+  border-radius:4px 4px 0 0;
+}
+.vital-card.v-hr::before { background:var(--vital-hr); }
+.vital-card.v-bp::before { background:var(--vital-bp); }
+.vital-card.v-o2::before { background:var(--vital-o2); }
+.vital-card.v-temp::before { background:var(--vital-temp); }
+.vital-card.v-rr::before { background:var(--vital-rr); }
+.vital-card.v-glucose::before { background:var(--vital-glucose); }
+.vital-card.v-bmi::before { background:var(--vital-bmi); }
+.vital-card.v-pain::before { background:var(--vital-pain); }
+.vital-card .vc-head {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin-bottom:10px;
+}
+.vital-card .vc-head svg { width:19px; height:19px; }
+.vital-card .vc-lbl { font-size:var(--fs-sm); font-weight:700; color:var(--text-2); }
+.vital-card .vc-time { margin-inline-start:auto; font-size:10px; color:var(--text-3); }
+.vital-card .vc-val {
+  display:flex;
+  align-items:baseline;
+  gap:7px;
+  direction:ltr;
+  unicode-bidi:isolate;
+  justify-content:flex-end;
+}
+.vital-card .vc-val .v {
+  font-family:var(--font-num);
+  font-size:var(--fs-4xl);
+  font-weight:800;
+  line-height:1;
+  letter-spacing:-.02em;
+}
+.vital-card .vc-val .u { font-size:var(--fs-xs); color:var(--text-3); font-weight:600; }
+.vital-card .vc-spark { margin-top:8px; opacity:.9; }
+.vital-card .vc-foot {
+  display:flex;
+  gap:7px;
+  margin-top:9px;
+  flex-wrap:wrap;
+}
+.vital-card .vc-chip {
+  font-family:var(--font-num);
+  direction:ltr;
+  font-size:10px;
+  font-weight:700;
+  padding:2px 9px;
+  border-radius:var(--r-full);
+  background:var(--surface-3);
+  color:var(--text-3);
+}
+.vital-card .vc-chip.warn { background:var(--warning-soft); color:var(--warning); }
+.vital-card .vc-chip.crit { background:var(--danger-soft); color:var(--danger); }
+.vital-card.v-hr .vc-head svg { color:var(--vital-hr); }
+.vital-card.v-bp .vc-head svg { color:var(--vital-bp); }
+.vital-card.v-o2 .vc-head svg { color:var(--vital-o2); }
+.vital-card.v-temp .vc-head svg { color:var(--vital-temp); }
+.vital-card.v-rr .vc-head svg { color:var(--vital-rr); }
+.vital-card.v-glucose .vc-head svg { color:var(--vital-glucose); }
+.vital-card.v-bmi .vc-head svg { color:var(--vital-bmi); }
+
+/* ============ نتائج المختبر ============ */
+.flag {
+  display:inline-grid;
+  place-items:center;
+  width:24px; height:24px;
+  border-radius:7px;
+  font-family:var(--font-num);
+  font-weight:800;
+  font-size:var(--fs-xs);
+  direction:ltr;
+}
+.flag.h { background:var(--danger-soft); color:var(--danger); }
+.flag.l { background:var(--sky-100); color:var(--sky-700); }
+.flag.n { background:var(--success-soft); color:var(--success); }
+.flag.crit { background:var(--danger); color:#fff; animation:pulse-flag 1.6s infinite; }
+@keyframes pulse-flag { 0%,100% { box-shadow:0 0 0 0 rgba(220,38,38,.4); } 50% { box-shadow:0 0 0 7px rgba(220,38,38,0); } }
+.result-val { font-family:var(--font-num); direction:ltr; font-weight:700; color:var(--text); }
+.result-val.ab-h { color:var(--danger); }
+.result-val.ab-l { color:var(--sky-700); }
+.ref-range { font-family:var(--font-num); direction:ltr; color:var(--text-3); font-size:var(--fs-xs); }
+.trend-arrow { display:inline-flex; align-items:center; font-family:var(--font-num); font-size:var(--fs-xs); font-weight:700; gap:3px; }
+.trend-arrow.up { color:var(--danger); }
+.trend-arrow.down { color:var(--sky-600); }
+.trend-arrow.flat { color:var(--text-3); }
+
+.lab-panel { border-inline-start:4px solid var(--violet-500); }
+
+/* ============ الوصفة الطبية Rx ============ */
+.rx-sheet {
+  background:var(--surface);
+  border:1.5px solid var(--border-2);
+  border-radius:var(--r-lg);
+  max-width:820px;
+  margin-inline:auto;
+  box-shadow:var(--shadow-md);
+  overflow:hidden;
+}
+.rx-head {
+  display:flex;
+  align-items:center;
+  gap:16px;
+  padding:20px 28px;
+  border-bottom:2.5px dashed var(--border-2);
+  flex-wrap:wrap;
+}
+.rx-head .rx-logo { display:flex; align-items:center; gap:12px; }
+.rx-head .rx-info { flex:1; min-width:200px; }
+.rx-head h3 { font-size:var(--fs-lg); }
+.rx-head .rx-sub { font-size:var(--fs-xs); color:var(--text-3); }
+.rx-head .rx-license {
+  text-align:center;
+  font-size:var(--fs-xs);
+  color:var(--text-3);
+  border-inline-start:1px solid var(--border);
+  padding-inline:18px;
+}
+.rx-patient {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:10px 18px;
+  padding:16px 28px;
+  background:var(--surface-2);
+  border-bottom:1px solid var(--border);
+  font-size:var(--fs-sm);
+}
+.rx-patient .rp-item b { display:block; font-size:var(--fs-xs); color:var(--text-3); font-weight:600; }
+.rx-patient .rp-item span { font-weight:600; color:var(--text); }
+.rx-rx-symbol {
+  font-family:var(--font-num);
+  font-size:var(--fs-3xl);
+  font-weight:800;
+  color:var(--primary);
+  padding:10px 28px 0;
+  direction:ltr;
+}
+.rx-meds { padding:8px 28px 4px; }
+.rx-med {
+  display:flex;
+  gap:14px;
+  padding:13px 0;
+  border-bottom:1px dashed var(--border);
+  align-items:flex-start;
+}
+.rx-med:last-child { border-bottom:none; }
+.rx-med .rm-num {
+  width:26px; height:26px;
+  border-radius:8px;
+  background:var(--primary-soft);
+  color:var(--primary);
+  font-family:var(--font-num);
+  font-weight:800;
+  font-size:var(--fs-xs);
+  display:grid;
+  place-items:center;
+  flex-shrink:0;
+  margin-top:2px;
+}
+.rx-med .rm-body { flex:1; min-width:0; }
+.rx-med .rm-name { font-weight:700; font-size:var(--fs-md); }
+.rx-med .rm-name .strength { color:var(--text-3); font-family:var(--font-num); direction:ltr; font-weight:600; }
+.rx-med .rm-sig { font-size:var(--fs-sm); color:var(--text-2); margin-top:4px; line-height:1.75; }
+.rx-med .rm-tags { display:flex; gap:6px; margin-top:7px; flex-wrap:wrap; }
+.rx-foot {
+  display:flex;
+  align-items:flex-end;
+  gap:30px;
+  padding:18px 28px 26px;
+  flex-wrap:wrap;
+  border-top:2.5px dashed var(--border-2);
+}
+.rx-foot .rx-notes { flex:1; min-width:220px; font-size:var(--fs-xs); color:var(--text-3); line-height:1.8; }
+.rx-sign { text-align:center; }
+.rx-sign .sig-line {
+  width:210px;
+  border-bottom:2px solid var(--border-2);
+  margin-bottom:7px;
+  height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--primary);
+  font-family:"Segoe Script","Gabriola",cursive;
+  font-size:1.15rem;
+}
+.rx-sign .sig-name { font-size:var(--fs-xs); font-weight:700; color:var(--text-2); }
+.rx-sign .sig-sub { font-size:10px; color:var(--text-3); }
+
+/* ============ الباركود ============ */
+.barcode {
+  direction:ltr;
+  display:inline-flex;
+  flex-direction:column;
+  align-items:center;
+  gap:7px;
+  padding:14px 18px 11px;
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  position:relative;
+}
+[data-theme="dark"] .barcode { background:#F5F7F8; }
+.barcode .bc-bars { display:flex; align-items:stretch; height:58px; }
+.barcode.lg .bc-bars { height:84px; }
+.barcode .bc-b { background:#101828; }
+.barcode .bc-code {
+  font-family:var(--font-num);
+  font-weight:700;
+  font-size:var(--fs-sm);
+  letter-spacing:.32em;
+  color:#101828;
+  direction:ltr;
+}
+[data-theme="dark"] .barcode .bc-code { color:#101828; }
+.barcode.sm { padding:8px 12px 6px; gap:4px; }
+.barcode.sm .bc-bars { height:30px; }
+.barcode.sm .bc-code { font-size:10px; letter-spacing:.2em; }
+.scan-frame { position:relative; display:inline-block; }
+.scan-frame::before, .scan-frame::after,
+.scan-frame .sf-b::before, .scan-frame .sf-b::after {
+  content:"";
+  position:absolute;
+  width:36px; height:36px;
+  border:4px solid var(--accent, var(--primary));
+  z-index:2;
+}
+.scan-frame::before { top:-10px; inset-inline-start:-10px; border-inline-end:none; border-bottom:none; border-start-start-radius:12px; }
+.scan-frame::after { top:-10px; inset-inline-end:-10px; border-inline-start:none; border-bottom:none; border-start-end-radius:12px; }
+.scan-frame .sf-b::before { bottom:-10px; inset-inline-start:-10px; border-inline-end:none; border-top:none; border-end-start-radius:12px; }
+.scan-frame .sf-b::after { bottom:-10px; inset-inline-end:-10px; border-inline-start:none; border-top:none; border-end-end-radius:12px; }
+.scan-line {
+  position:absolute;
+  inset-inline:12px;
+  height:3px;
+  background:var(--danger);
+  border-radius:3px;
+  box-shadow:0 0 14px var(--danger);
+  top:14px;
+  animation:scanline 2.4s ease-in-out infinite;
+  z-index:3;
+}
+@keyframes scanline { 0%,100% { top:14px; } 50% { top:calc(100% - 18px); } }
+
+/* ============ درجات الفرز ============ */
+.triage-chip {
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  font-weight:800;
+  font-size:var(--fs-xs);
+  padding:4px 12px;
+  border-radius:var(--r-full);
+  direction:rtl;
+}
+.triage-1 { background:var(--triage-1-bg); color:var(--triage-1); }
+.triage-2 { background:var(--triage-2-bg); color:var(--triage-2); }
+.triage-3 { background:var(--triage-3-bg); color:var(--triage-3); }
+.triage-4 { background:var(--triage-4-bg); color:var(--triage-4); }
+.triage-5 { background:var(--triage-5-bg); color:var(--triage-5); }
+
+/* ============ لوحة كانبان / الطوارئ ============ */
+.kanban {
+  display:grid;
+  grid-auto-flow:column;
+  grid-auto-columns:minmax(288px,1fr);
+  gap:16px;
+  overflow-x:auto;
+  padding-bottom:14px;
+  align-items:start;
+}
+.kb-col {
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  padding:12px;
+  min-height:340px;
+}
+.kb-col-head {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:6px 8px 12px;
+}
+.kb-col-head .kb-dot { width:10px; height:10px; border-radius:4px; }
+.kb-col-head h6 { margin:0; font-size:var(--fs-sm); font-weight:800; }
+.kb-col-head .kb-count {
+  margin-inline-start:auto;
+  background:var(--surface);
+  border:1px solid var(--border);
+  font-family:var(--font-num);
+  font-size:var(--fs-xs);
+  font-weight:800;
+  padding:2px 10px;
+  border-radius:var(--r-full);
+}
+.kb-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  padding:13px 14px;
+  margin-bottom:10px;
+  box-shadow:var(--shadow-xs);
+  transition:box-shadow var(--t-fast), transform var(--t-fast);
+  cursor:grab;
+}
+.kb-card:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); }
+.kb-card .kbc-head { display:flex; align-items:center; gap:9px; margin-bottom:9px; }
+.kb-card .kbc-name { font-weight:700; font-size:var(--fs-sm); flex:1; min-width:0; }
+.kb-card .kbc-meta { display:flex; gap:12px; flex-wrap:wrap; font-size:var(--fs-xs); color:var(--text-3); margin-bottom:9px; }
+.kb-card .kbc-meta span { display:inline-flex; gap:5px; align-items:center; }
+.kb-card .kbc-foot { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.kb-timer {
+  font-family:var(--font-num);
+  direction:ltr;
+  font-size:var(--fs-xs);
+  font-weight:800;
+  background:var(--surface-3);
+  padding:3px 9px;
+  border-radius:var(--r-full);
+  color:var(--text-3);
+}
+.kb-timer.warn { background:var(--warning-soft); color:var(--warning); }
+.kb-timer.crit { background:var(--danger-soft); color:var(--danger); }
+
+/* شريط الإسعاف القادم */
+.amb-strip {
+  background:var(--grad-red);
+  color:#fff;
+  border-radius:var(--r-md);
+  padding:14px 20px;
+  display:flex;
+  align-items:center;
+  gap:16px;
+  font-weight:700;
+  box-shadow:var(--shadow-red);
+  flex-wrap:wrap;
+  animation:amb-pulse 2.2s infinite;
+}
+@keyframes amb-pulse { 0%,100% { box-shadow:0 0 0 0 rgba(220,38,38,.35); } 55% { box-shadow:0 0 0 13px rgba(220,38,38,0); } }
+.amb-strip .amb-eta {
+  margin-inline-start:auto;
+  background:#fff;
+  color:var(--red-700);
+  font-family:var(--font-num);
+  direction:ltr;
+  font-weight:800;
+  padding:5px 15px;
+  border-radius:var(--r-full);
+}
+
+/* شاشة الانتظار queue screen */
+.queue-screen {
+  background:var(--navy-950);
+  color:#fff;
+  border-radius:var(--r-lg);
+  padding:30px;
+}
+.qs-now {
+  text-align:center;
+  padding:22px 10px;
+  border-bottom:1px solid rgba(255,255,255,.12);
+  margin-bottom:20px;
+}
+.qs-now .qs-lbl { color:var(--teal-300); font-weight:700; letter-spacing:var(--ls-wider); font-size:var(--fs-md); }
+.qs-now .qs-num {
+  font-family:var(--font-num);
+  direction:ltr;
+  font-size:110px;
+  font-weight:800;
+  line-height:1.05;
+  color:#fff;
+  text-shadow:0 0 46px rgba(45,212,191,.45);
+}
+.qs-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; }
+.qs-item {
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:var(--r-md);
+  padding:14px;
+  text-align:center;
+}
+.qs-item .qsi-num { font-family:var(--font-num); direction:ltr; font-size:var(--fs-2xl); font-weight:800; color:var(--teal-300); }
+.qs-item .qsi-room { font-size:var(--fs-xs); color:var(--slate-400); margin-top:4px; }
+
+/* ============ شبكة الجدولة ============ */
+.sched {
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  overflow:hidden;
+  background:var(--surface);
+}
+.sched-head {
+  display:grid;
+  grid-template-columns:76px repeat(var(--cols,4),1fr);
+  background:var(--surface-2);
+  border-bottom:2px solid var(--border);
+}
+.sched-head .sc-doc {
+  padding:12px 10px;
+  text-align:center;
+  border-inline-start:1px solid var(--border);
+}
+.sched-head .sc-doc .sc-name { font-size:var(--fs-xs); font-weight:700; color:var(--text-2); line-height:1.4; }
+.sched-head .sc-doc .sc-spec { font-size:10px; color:var(--text-3); }
+.sched-row {
+  display:grid;
+  grid-template-columns:76px repeat(var(--cols,4),1fr);
+  border-bottom:1px solid var(--border);
+  min-height:56px;
+}
+.sched-row:last-child { border-bottom:none; }
+.sched-row .sc-time {
+  font-family:var(--font-num);
+  direction:ltr;
+  font-size:var(--fs-xs);
+  font-weight:700;
+  color:var(--text-3);
+  padding:9px 10px;
+  background:var(--surface-2);
+  border-inline-end:1px solid var(--border);
+}
+.sched-row .sc-cell {
+  padding:4px;
+  border-inline-start:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+.slot {
+  border-radius:8px;
+  padding:6px 10px;
+  font-size:var(--fs-xs);
+  font-weight:600;
+  border:1px dashed var(--border-2);
+  color:var(--text-3);
+  background:var(--surface-2);
+  cursor:pointer;
+  transition:all var(--t-fast);
+  text-align:center;
+}
+.slot:hover { border-color:var(--primary); color:var(--primary); background:var(--primary-soft-2); }
+.slot.booked {
+  border:1px solid transparent;
+  background:var(--primary-soft);
+  color:var(--primary-active);
+  cursor:default;
+}
+.slot.booked.waiting { background:var(--warning-soft); color:var(--warning); }
+.slot.booked.done { background:var(--success-soft); color:var(--success); }
+.slot.booked.nohow { background:var(--st-nohow-bg); color:var(--st-nohow); text-decoration:line-through; }
+.slot.selected { outline:2.5px solid var(--primary); outline-offset:1px; background:var(--primary); color:var(--primary-contrast); border-color:var(--primary); }
+.slot small { display:block; font-weight:500; opacity:.85; }
+
+/* تقويم شهري */
+.cal { border:1px solid var(--border); border-radius:var(--r-lg); overflow:hidden; background:var(--surface); }
+.cal-head {
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  background:var(--surface-2);
+  border-bottom:1px solid var(--border);
+}
+.cal-head div { padding:9px; text-align:center; font-size:var(--fs-xs); font-weight:800; color:var(--text-3); }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); }
+.cal-day {
+  min-height:88px;
+  padding:7px;
+  border-inline-start:1px solid var(--border);
+  border-top:1px solid var(--border);
+  position:relative;
+  font-family:var(--font-num);
+  direction:ltr;
+  font-size:var(--fs-xs);
+  font-weight:600;
+  color:var(--text-2);
+}
+.cal-day:hover { background:var(--primary-soft-2); }
+.cal-day .cd-events { display:flex; flex-direction:column; gap:3px; margin-top:5px; }
+.cal-day .cd-ev {
+  font-size:9.5px;
+  font-weight:700;
+  padding:2px 6px;
+  border-radius:5px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.cal-day.out { background:var(--surface-2); color:var(--text-3); opacity:.55; }
+.cal-day.today .cd-num {
+  background:var(--primary);
+  color:var(--primary-contrast);
+  width:24px; height:24px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+}
+.cal-day .cd-num { width:24px; height:24px; display:grid; place-items:center; }
+
+/* ============ الخط الزمني السريري ============ */
+.tl { position:relative; padding-inline-start:30px; }
+.tl::before {
+  content:"";
+  position:absolute;
+  inset-inline-start:9px;
+  top:8px; bottom:8px;
+  width:2.5px;
+  border-radius:3px;
+  background:linear-gradient(180deg, var(--primary) 0%, var(--border) 100%);
+}
+.tl-item { position:relative; padding-bottom:26px; }
+.tl-item:last-child { padding-bottom:0; }
+.tl-item::before {
+  content:"";
+  position:absolute;
+  inset-inline-start:-27px;
+  top:2px;
+  width:18px; height:18px;
+  border-radius:50%;
+  background:var(--surface);
+  border:3.5px solid var(--primary);
+  z-index:1;
+}
+.tl-item.tl-danger::before { border-color:var(--danger); }
+.tl-item.tl-warning::before { border-color:var(--warning); }
+.tl-item.tl-success::before { border-color:var(--success); }
+.tl-item.tl-violet::before { border-color:var(--violet-500); }
+.tl-item.tl-gold::before { border-color:var(--gold); }
+.tl-item .tl-head { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+.tl-item .tl-title { font-weight:700; font-size:var(--fs-sm); color:var(--text); }
+.tl-item .tl-date { font-size:var(--fs-xs); color:var(--text-3); font-family:var(--font-num); direction:ltr; margin-inline-start:auto; }
+.tl-item .tl-body {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  padding:13px 15px;
+  font-size:var(--fs-sm);
+  color:var(--text-2);
+  line-height:1.75;
+}
+
+/* ============ المحادثة ============ */
+.chat { display:flex; flex-direction:column; height:100%; min-height:420px; }
+.chat-thread { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:15px; }
+.msg { display:flex; gap:11px; max-width:78%; }
+.msg .m-body {
+  border-radius:16px;
+  padding:11px 15px;
+  font-size:var(--fs-sm);
+  line-height:1.7;
+  position:relative;
+}
+.msg .m-time { display:block; font-size:9.5px; opacity:.65; margin-top:5px; font-family:var(--font-num); direction:ltr; text-align:end; }
+.msg.them { align-self:flex-start; }
+.msg.them .m-body { background:var(--surface-2); border:1px solid var(--border); color:var(--text-2); border-start-start-radius:4px; }
+.msg.me { align-self:flex-end; flex-direction:row-reverse; }
+.msg.me .m-body { background:var(--primary); color:var(--primary-contrast); border-start-end-radius:4px; }
+.msg .m-attach {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin-top:8px;
+  background:rgba(255,255,255,.14);
+  border-radius:9px;
+  padding:7px 11px;
+  font-size:var(--fs-xs);
+  font-weight:600;
+}
+.msg.them .m-attach { background:var(--surface-3); }
+.typing { display:inline-flex; gap:5px; padding:13px 16px; background:var(--surface-2); border-radius:16px; border-start-start-radius:4px; }
+.typing span {
+  width:7px; height:7px;
+  border-radius:50%;
+  background:var(--text-3);
+  animation:typing 1.3s infinite;
+}
+.typing span:nth-child(2) { animation-delay:.18s; }
+.typing span:nth-child(3) { animation-delay:.36s; }
+@keyframes typing { 0%,60%,100% { transform:translateY(0); opacity:.5; } 30% { transform:translateY(-5px); opacity:1; } }
+.chat-composer {
+  border-top:1px solid var(--border);
+  padding:14px 18px;
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+.chat-composer .input {
+  flex:1;
+  border-radius:var(--r-full);
+  height:44px;
+}
+.chat-quick { display:flex; gap:8px; flex-wrap:wrap; padding:0 18px 12px; }
+
+/* ============ عارض الصور الطبية ============ */
+.viewer { display:flex; height:calc(100vh - var(--topbar-h) - 46px); min-height:540px; background:var(--navy-950); border-radius:var(--r-lg); overflow:hidden; }
+.v-tools {
+  width:62px;
+  background:var(--navy-900);
+  border-inline-end:1px solid rgba(255,255,255,.09);
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  padding:12px 9px;
+  align-items:center;
+}
+.v-tool {
+  width:42px; height:42px;
+  border-radius:var(--r-sm);
+  border:none;
+  background:transparent;
+  color:var(--slate-400);
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  transition:all var(--t-fast);
+}
+.v-tool:hover { background:rgba(255,255,255,.09); color:#fff; }
+.v-tool.active { background:var(--teal-500); color:var(--navy-950); }
+.v-tool-div { width:70%; height:1px; background:rgba(255,255,255,.12); margin:5px 0; }
+.v-main { flex:1; display:flex; flex-direction:column; min-width:0; }
+.v-viewport {
+  flex:1;
+  position:relative;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  background:
+    radial-gradient(ellipse at center, #16283A 0%, #0B1725 75%);
+  direction:ltr;
+}
+.v-viewport .vp-hud {
+  position:absolute;
+  top:14px; left:14px;
+  background:rgba(11,23,37,.78);
+  backdrop-filter:blur(6px);
+  color:var(--slate-200);
+  font-family:var(--font-num);
+  font-size:11px;
+  line-height:1.8;
+  padding:10px 15px;
+  border-radius:9px;
+  border:1px solid rgba(255,255,255,.13);
+  z-index:4;
+}
+.v-viewport .vp-zoom {
+  position:absolute;
+  bottom:14px; left:14px;
+  display:flex;
+  gap:6px;
+  z-index:4;
+}
+.v-viewport .vp-zoom span {
+  background:rgba(11,23,37,.78);
+  color:var(--teal-300);
+  font-family:var(--font-num);
+  font-size:11px;
+  font-weight:700;
+  padding:4px 11px;
+  border-radius:7px;
+  border:1px solid rgba(255,255,255,.13);
+}
+.v-thumbs {
+  height:86px;
+  background:var(--navy-900);
+  border-top:1px solid rgba(255,255,255,.09);
+  display:flex;
+  gap:8px;
+  padding:10px;
+  overflow-x:auto;
+  direction:ltr;
+}
+.v-thumb {
+  width:86px; height:66px;
+  border-radius:8px;
+  border:2px solid rgba(255,255,255,.14);
+  background:#122031;
+  flex-shrink:0;
+  display:grid;
+  place-items:center;
+  color:var(--slate-500);
+  font-family:var(--font-num);
+  font-size:10px;
+  cursor:pointer;
+  position:relative;
+}
+.v-thumb.active { border-color:var(--teal-400); color:var(--teal-300); background:#0E2E38; }
+.v-meta {
+  width:296px;
+  background:var(--navy-900);
+  border-inline-start:1px solid rgba(255,255,255,.09);
+  color:var(--slate-300);
+  overflow-y:auto;
+  padding:20px;
+}
+.v-meta h5 { color:#fff; margin-bottom:16px; }
+.v-meta .vm-row {
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  font-size:var(--fs-xs);
+  padding:8px 0;
+  border-bottom:1px solid rgba(255,255,255,.07);
+}
+.v-meta .vm-row b { color:#fff; font-family:var(--font-num); direction:ltr; text-align:left; }
+@media (max-width:1080px) { .v-meta { display:none; } }
+
+/* ============ بطاقات الدواء والأدوية ============ */
+.drug-card { padding:16px 18px; }
+.drug-card .dc-headline { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.drug-card .dc-name { font-weight:800; font-size:var(--fs-md); }
+.drug-card .dc-name .gen { color:var(--text-3); font-family:var(--font-num); direction:ltr; font-size:var(--fs-xs); font-weight:600; }
+.drug-card .dc-form {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:var(--surface-3);
+  border-radius:var(--r-full);
+  font-size:10px;
+  font-weight:700;
+  padding:3px 10px;
+  color:var(--text-3);
+}
+.drug-card .dc-class { font-size:var(--fs-xs); color:var(--text-3); margin-bottom:10px; }
+.dose-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(86px,1fr));
+  gap:8px;
+  margin-top:10px;
+}
+.dose-cell {
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:var(--r-sm);
+  padding:8px;
+  text-align:center;
+}
+.dose-cell .d-lbl { font-size:9.5px; color:var(--text-3); font-weight:700; }
+.dose-cell .d-val { font-family:var(--font-num); direction:ltr; font-size:var(--fs-sm); font-weight:800; margin-top:2px; }
+.dose-cell.taken { background:var(--success-soft); border-color:rgba(22,163,74,.3); }
+.dose-cell.taken .d-val { color:var(--success); }
+.dose-cell.due { background:var(--warning-soft); border-color:rgba(217,119,6,.3); }
+.dose-cell.due .d-val { color:var(--warning); }
+.dose-cell.next { border-style:dashed; }
+
+/* سجل التطعيمات */
+.imRow {
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:14px 18px;
+  border-bottom:1px solid var(--border);
+}
+.imRow:last-child { border-bottom:none; }
+.imRow .im-ic {
+  width:40px; height:40px;
+  border-radius:var(--r-sm);
+  background:var(--violet-100);
+  color:var(--violet-700);
+  display:grid;
+  place-items:center;
+  flex-shrink:0;
+}
+.imRow .im-body { flex:1; min-width:0; }
+.imRow .im-name { font-weight:700; font-size:var(--fs-sm); }
+.imRow .im-dose { font-size:var(--fs-xs); color:var(--text-3); }
+.imRow .im-next { font-size:var(--fs-xs); color:var(--warning); font-weight:700; }
+
+/* ============ البطاقات والتذاكر المالية ============ */
+.ins-card {
+  border-radius:var(--r-lg);
+  padding:24px;
+  color:#fff;
+  position:relative;
+  overflow:hidden;
+  min-height:200px;
+  display:flex;
+  flex-direction:column;
+  box-shadow:var(--shadow-lg);
+  background:var(--grad-navy);
+}
+.ins-card.ins-teal { background:var(--grad-teal); }
+.ins-card.ins-gold { background:linear-gradient(135deg,#856A17,#C9A227 60%,#E3C866); }
+.ins-card::after {
+  content:"";
+  position:absolute;
+  top:-60px; inset-inline-end:-30px;
+  width:210px; height:210px;
+  border-radius:50%;
+  background:rgba(255,255,255,.09);
+}
+.ins-card .ic-brand { display:flex; align-items:center; gap:10px; font-weight:800; margin-bottom:auto; }
+.ins-card .ic-chip {
+  width:44px; height:33px;
+  border-radius:7px;
+  background:linear-gradient(135deg,#E3C866,#A8861D);
+  margin:14px 0;
+  position:relative;
+}
+.ins-card .ic-chip::before {
+  content:"";
+  position:absolute;
+  inset:6px;
+  border:1.5px solid rgba(0,0,0,.25);
+  border-radius:4px;
+}
+.ins-card .ic-num {
+  font-family:var(--font-num);
+  direction:ltr;
+  letter-spacing:.24em;
+  font-size:var(--fs-lg);
+  font-weight:700;
+}
+.ins-card .ic-row { display:flex; justify-content:space-between; margin-top:16px; font-size:var(--fs-xs); position:relative; z-index:1; }
+.ins-card .ic-row b { display:block; font-size:9.5px; opacity:.75; font-weight:600; }
+
+/* تذكرة الدخول */
+.entry-ticket {
+  background:var(--surface);
+  border:1.5px solid var(--border-2);
+  border-radius:var(--r-xl);
+  max-width:460px;
+  margin-inline:auto;
+  overflow:hidden;
+  box-shadow:var(--shadow-lg);
+}
+.entry-ticket .et-head {
+  background:var(--grad-hero);
+  color:#fff;
+  padding:20px 24px;
+  text-align:center;
+}
+.entry-ticket .et-body { padding:22px 24px; text-align:center; }
+.entry-ticket .et-num {
+  font-family:var(--font-num);
+  direction:ltr;
+  font-size:var(--fs-5xl);
+  font-weight:800;
+  color:var(--primary);
+  line-height:1.1;
+}
+.entry-ticket .et-meta {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin:18px 0;
+  text-align:start;
+  font-size:var(--fs-sm);
+}
+.entry-ticket .et-meta div b { display:block; font-size:var(--fs-xs); color:var(--text-3); font-weight:600; }
+.entry-ticket .et-foot {
+  border-top:2px dashed var(--border-2);
+  padding:16px 24px 20px;
+  display:flex;
+  justify-content:center;
+}
+
+/* ============ شهادة / فاتورة ============ */
+.doc-sheet {
+  background:var(--surface);
+  border:1px solid var(--border-2);
+  border-radius:var(--r-md);
+  padding:34px 38px;
+  box-shadow:var(--shadow-md);
+  position:relative;
+}
+.doc-sheet .doc-gmark {
+  position:absolute;
+  top:22px;
+  inset-inline-end:30px;
+  width:74px;
+  opacity:.85;
+}
+.doc-title {
+  text-align:center;
+  font-family:var(--font-display);
+  font-weight:800;
+  font-size:var(--fs-2xl);
+  margin-bottom:4px;
+}
+.doc-subtitle { text-align:center; color:var(--text-3); font-size:var(--fs-sm); margin-bottom:24px; }
+
+.invoice-total {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:var(--primary-soft-2);
+  border:1.5px solid rgba(13,148,136,.25);
+  border-radius:var(--r-md);
+  padding:16px 20px;
+  font-weight:800;
+}
+.invoice-total .it-val { font-family:var(--font-num); direction:ltr; font-size:var(--fs-2xl); color:var(--primary); }
+.tax-row { font-size:var(--fs-xs); color:var(--text-3); display:flex; justify-content:space-between; padding:5px 0; }
+
+/* ============ الصيانة والأصول ============ */
+.wo-card { padding:16px 18px; border-inline-start:4px solid var(--warning); }
+.wo-card.wo-open { border-inline-start-color:var(--warning); }
+.wo-card.wo-progress { border-inline-start-color:var(--sky-500); }
+.wo-card.wo-done { border-inline-start-color:var(--success); }
+.wo-card.wo-blocked { border-inline-start-color:var(--danger); }
+.wo-priority { display:inline-flex; align-items:center; gap:6px; font-size:var(--fs-xs); font-weight:800; }
+.wo-meta { display:flex; gap:16px; flex-wrap:wrap; font-size:var(--fs-xs); color:var(--text-3); margin-top:10px; }
+.wo-meta span { display:inline-flex; align-items:center; gap:5px; }
+
+.asset-card { padding:18px; }
+.asset-card .as-head { display:flex; align-items:flex-start; gap:13px; }
+.asset-card .as-ic {
+  width:46px; height:46px;
+  border-radius:var(--r-md);
+  background:var(--amber-100);
+  color:var(--amber-700);
+  display:grid;
+  place-items:center;
+  flex-shrink:0;
+}
+.asset-status {
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  font-size:var(--fs-xs);
+  font-weight:800;
+}
+.asset-status .as-dot { width:9px; height:9px; border-radius:50%; }
+.as-op { background:var(--success-soft); color:var(--success); }
+.as-down { background:var(--danger-soft); color:var(--danger); }
+.as-maint { background:var(--warning-soft); color:var(--warning); }
+.as-retired { background:var(--surface-3); color:var(--text-3); }
+
+/* ============ شاشة كشك ============ */
+.kiosk-shell {
+  min-height:100vh;
+  background:var(--grad-hero);
+  display:flex;
+  flex-direction:column;
+  color:#fff;
+}
+.kiosk-head {
+  padding:26px 44px;
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+.kiosk-body {
+  flex:1;
+  display:grid;
+  place-items:center;
+  padding:20px;
+}
+.kiosk-card {
+  background:rgba(255,255,255,.08);
+  backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:var(--r-2xl);
+  padding:52px 58px;
+  text-align:center;
+  max-width:640px;
+  width:100%;
+}
+.kiosk-foot {
+  padding:18px 44px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:var(--fs-sm);
+  color:rgba(255,255,255,.65);
+  flex-wrap:wrap;
+  gap:10px;
+}
+.kiosk-num-key {
+  width:100%;
+  height:64px;
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:var(--r-md);
+  color:#fff;
+  font-family:var(--font-num);
+  font-size:var(--fs-2xl);
+  font-weight:800;
+  cursor:pointer;
+  transition:all var(--t-fast);
+}
+.kiosk-num-key:hover { background:rgba(255,255,255,.22); transform:translateY(-2px); }
+.kiosk-num-key:active { transform:scale(.96); }
+.kiosk-cpr-display {
+  font-family:var(--font-num);
+  direction:ltr;
+  font-size:var(--fs-6xl);
+  letter-spacing:.3em;
+  text-align:center;
+  background:rgba(0,0,0,.25);
+  border-radius:var(--r-lg);
+  padding:18px 10px;
+  border:2px dashed rgba(255,255,255,.3);
+  min-height:96px;
+}

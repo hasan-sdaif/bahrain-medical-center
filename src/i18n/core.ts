@@ -1,7 +1,7 @@
 import type { Dict } from "./index";
 const d: Dict = {
   // ── shell / domains ──
-  "shell.app.name": { ar: "المركز الطبي — البحرين", en: "Bahrain Medical Center" },
+  "shell.app.name": { ar: "مركز شامل الطبي", en: "Shamel Medical Center" },
   "shell.app.tagline": { ar: "رعاية متكاملة… من التسجيل حتى النتيجة", en: "Integrated care — from check-in to results" },
   "shell.domain.public": { ar: "الموقع العام", en: "Public Website" },
   "shell.domain.patient": { ar: "بوابة المريض", en: "Patient Portal" },

@@ -1,0 +1,255 @@
+/* ============================================================
+   شامل | Shamel Medical Center — Design Tokens
+   الملف 01: رموز التصميم (الألوان، الخطوط، المسافات، الظلال)
+   RTL-First · Bahrain · v1.0
+   ============================================================ */
+
+:root {
+  /* ---------- سلالة اللون الأساسي (Teal — الثقة الطبية) ---------- */
+  --teal-50:#F0FDFA; --teal-100:#CCFBF1; --teal-200:#99F6E4; --teal-300:#5EEAD4;
+  --teal-400:#2DD4BF; --teal-500:#14B8A6; --teal-600:#0D9488; --teal-700:#0F766E;
+  --teal-800:#115E59; --teal-900:#134E4A; --teal-950:#042F2E;
+
+  /* ---------- الكحلي البحري (Navy — العمق والاحتراف) ---------- */
+  --navy-50:#F5F8FB; --navy-100:#E7EEF5; --navy-200:#C9D8E6; --navy-300:#9BB8D0;
+  --navy-400:#6A93B5; --navy-500:#4A7499; --navy-600:#395D7E; --navy-700:#2E4B66;
+  --navy-800:#263E53; --navy-900:#1C2E3F; --navy-950:#12202D;
+
+  /* ---------- الذهبي (لؤلؤة البحرين — اللمسة الفاخرة) ---------- */
+  --gold-50:#FBF9EB; --gold-100:#F5EFD2; --gold-200:#EBDFA6; --gold-300:#E3C866;
+  --gold-400:#D9B44A; --gold-500:#C9A227; --gold-600:#A8861D; --gold-700:#856A17;
+  --gold-800:#6B5415; --gold-900:#574411; --gold-950:#362A0B;
+
+  /* ---------- أحمر البحرين (العلم + الطوارئ) ---------- */
+  --red-50:#FEF2F2; --red-100:#FEE2E2; --red-200:#FECACA; --red-300:#FCA5A5;
+  --red-400:#F87171; --red-500:#EF4444; --red-600:#DC2626; --red-700:#B91C1C;
+  --red-800:#991B1B; --red-900:#7F1D1D; --red-950:#450A0A;
+
+  /* ---------- الدلالات الدلالية ---------- */
+  --green-50:#F0FDF4; --green-100:#DCFCE7; --green-200:#BBF7D0; --green-300:#86EFAC;
+  --green-400:#4ADE80; --green-500:#22C55E; --green-600:#16A34A; --green-700:#15803D;
+  --green-800:#166534; --green-900:#14532D;
+
+  --amber-50:#FFFBEB; --amber-100:#FEF3C7; --amber-200:#FDE68A; --amber-300:#FCD34D;
+  --amber-400:#FBBF24; --amber-500:#F59E0B; --amber-600:#D97706; --amber-700:#B45309;
+  --amber-800:#92400E; --amber-900:#78350F;
+
+  --sky-50:#F0F9FF; --sky-100:#E0F2FE; --sky-200:#BAE6FD; --sky-300:#7DD3FC;
+  --sky-400:#38BDF8; --sky-500:#0EA5E9; --sky-600:#0284C7; --sky-700:#0369A1;
+  --sky-800:#075985; --sky-900:#0C4A6E;
+
+  --violet-50:#F5F3FF; --violet-100:#EDE9FE; --violet-200:#DDD6FE; --violet-300:#C4B5FD;
+  --violet-400:#A78BFA; --violet-500:#8B5CF6; --violet-600:#7C3AED; --violet-700:#6D28D9;
+  --violet-800:#5B21B6; --violet-900:#4C1D95;
+
+  --cyan-50:#ECFEFF; --cyan-100:#CFFAFE; --cyan-200:#A5F3FC; --cyan-300:#67E8F9;
+  --cyan-400:#22D3EE; --cyan-500:#06B6D4; --cyan-600:#0891B2; --cyan-700:#0E7490;
+  --cyan-800:#155E75; --cyan-900:#164E63;
+
+  --rose-50:#FFF1F2; --rose-100:#FFE4E6; --rose-200:#FECDD3; --rose-300:#FDA4AF;
+  --rose-400:#FB7185; --rose-500:#F43F5E; --rose-600:#E11D48; --rose-700:#BE123C;
+  --rose-800:#9F1239; --rose-900:#881337;
+
+  --fuchsia-50:#FDF4FF; --fuchsia-100:#FAE8FF; --fuchsia-600:#C026D3; --fuchsia-700:#A21CAF;
+
+  --slate-50:#F8FAFC; --slate-100:#F1F5F9; --slate-200:#E2E8F0; --slate-300:#CBD5E1;
+  --slate-400:#94A3B8; --slate-500:#64748B; --slate-600:#475569; --slate-700:#334155;
+  --slate-800:#1E293B; --slate-900:#0F172A; --slate-950:#020617;
+
+  /* ---------- الأسطح والنصوص (فاتح) ---------- */
+  --bg:#F4F8F9;
+  --bg-2:#EDF3F4;
+  --surface:#FFFFFF;
+  --surface-2:#F8FAFB;
+  --surface-3:#F1F5F6;
+  --overlay:rgba(18,32,45,.55);
+  --text:#12202D;
+  --text-2:#3E5866;
+  --text-3:#6B8494;
+  --text-invert:#FFFFFF;
+  --border:#E1E9EC;
+  --border-2:#CBD9DF;
+
+  /* ---------- الألوان الدلالية ---------- */
+  --primary:#0F766E;
+  --primary-hover:#0D9488;
+  --primary-active:#134E4A;
+  --primary-soft:#CCFBF1;
+  --primary-soft-2:#F0FDFA;
+  --primary-contrast:#FFFFFF;
+  --accent:#0F766E;
+  --accent-soft:#CCFBF1;
+  --accent-ink:#115E59;
+  --navy:#1C2E3F;
+  --navy-soft:#E7EEF5;
+  --gold:#C9A227;
+  --gold-soft:#F5EFD2;
+  --success:#16A34A;  --success-soft:#DCFCE7;
+  --warning:#D97706;  --warning-soft:#FEF3C7;
+  --danger:#DC2626;   --danger-soft:#FEE2E2;
+  --info:#0284C7;     --info-soft:#E0F2FE;
+
+  /* ---------- حالات المواعيد ---------- */
+  --st-scheduled:#0284C7;  --st-scheduled-bg:#E0F2FE;
+  --st-confirmed:#0D9488;  --st-confirmed-bg:#CCFBF1;
+  --st-checkedin:#7C3AED;  --st-checkedin-bg:#EDE9FE;
+  --st-progress:#D97706;  --st-progress-bg:#FEF3C7;
+  --st-completed:#16A34A;  --st-completed-bg:#DCFCE7;
+  --st-cancelled:#DC2626;  --st-cancelled-bg:#FEE2E2;
+  --st-nohow:#64748B;      --st-nohow-bg:#F1F5F9;
+
+  /* ---------- العلامات الحيوية ---------- */
+  --vital-hr:#E11D48; --vital-bp:#2563EB; --vital-o2:#0891B2; --vital-temp:#EA580C;
+  --vital-rr:#14B8A6; --vital-glucose:#9333EA; --vital-bmi:#65A30D; --vital-pain:#7C3AED;
+
+  /* ---------- درجات الفرز (Triage 1-5) ---------- */
+  --triage-1:#7F1D1D; --triage-1-bg:#FEE2E2;
+  --triage-2:#C2410C; --triage-2-bg:#FFEDD5;
+  --triage-3:#B45309; --triage-3-bg:#FEF3C7;
+  --triage-4:#15803D; --triage-4-bg:#DCFCE7;
+  --triage-5:#1D4ED8; --triage-5-bg:#DBEAFE;
+
+  /* ---------- الخطوط (متغيرات next/font — Cairo/Tajawal/Inter/IBM Plex Mono) ---------- */
+  --font-ar:var(--font-tajawal),"Cairo","IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
+  --font-display:var(--font-cairo),"IBM Plex Sans Arabic","Tajawal","Segoe UI",sans-serif;
+  --font-latin:var(--font-inter),"Segoe UI",system-ui,sans-serif;
+  --font-num:var(--font-inter),"Tajawal",sans-serif;
+  --font-mono:var(--font-plex-mono),"JetBrains Mono",ui-monospace,monospace;
+
+  /* ---------- مقاسات الخط ---------- */
+  --fs-xs:0.75rem;     /* 12 */
+  --fs-sm:0.8125rem;   /* 13 */
+  --fs-base:0.875rem;  /* 14 */
+  --fs-md:0.9375rem;   /* 15 */
+  --fs-lg:1.0625rem;   /* 17 */
+  --fs-xl:1.1875rem;   /* 19 */
+  --fs-2xl:1.375rem;   /* 22 */
+  --fs-3xl:1.625rem;   /* 26 */
+  --fs-4xl:1.875rem;   /* 30 */
+  --fs-5xl:2.375rem;   /* 38 */
+  --fs-6xl:3rem;       /* 48 */
+  --fs-7xl:3.75rem;    /* 60 */
+
+  --lh-tight:1.25; --lh-base:1.65; --lh-loose:1.9;
+  --ls-wide:0.02em; --ls-wider:0.06em;
+
+  /* ---------- المسافات (شبكة 4px) ---------- */
+  --s-0:0;   --s-1:0.25rem;  --s-2:0.5rem;   --s-3:0.75rem;  --s-4:1rem;
+  --s-5:1.25rem; --s-6:1.5rem; --s-8:2rem;   --s-10:2.5rem;  --s-12:3rem;
+  --s-16:4rem; --s-20:5rem;  --s-24:6rem;   --s-32:8rem;
+
+  /* ---------- الحواف ---------- */
+  --r-xs:6px; --r-sm:10px; --r-md:12px; --r-lg:16px;
+  --r-xl:22px; --r-2xl:28px; --r-full:999px;
+
+  /* ---------- الظلال ---------- */
+  --shadow-xs:0 1px 2px rgba(18,32,45,.05);
+  --shadow-sm:0 1px 3px rgba(18,32,45,.07), 0 1px 2px rgba(18,32,45,.05);
+  --shadow-md:0 4px 12px rgba(18,32,45,.08), 0 2px 4px rgba(18,32,45,.05);
+  --shadow-lg:0 12px 28px rgba(18,32,45,.12), 0 4px 10px rgba(18,32,45,.07);
+  --shadow-xl:0 24px 52px rgba(18,32,45,.16);
+  --shadow-teal:0 10px 26px rgba(15,118,110,.28);
+  --shadow-gold:0 10px 26px rgba(201,162,39,.30);
+  --shadow-red:0 10px 26px rgba(220,38,38,.28);
+
+  /* ---------- حلقات التركيز ---------- */
+  --ring:0 0 0 3px rgba(13,148,136,.22);
+  --ring-danger:0 0 0 3px rgba(220,38,38,.20);
+
+  /* ---------- الطبقات z ---------- */
+  --z-dropdown:100; --z-sticky:200; --z-topbar:300; --z-sidebar:400;
+  --z-backdrop:500; --z-modal:600; --z-toast:700; --z-tooltip:800;
+
+  /* ---------- الحركة ---------- */
+  --t-fast:140ms cubic-bezier(.4,0,.2,1);
+  --t-base:220ms cubic-bezier(.4,0,.2,1);
+  --t-slow:360ms cubic-bezier(.22,1,.36,1);
+  --t-spring:520ms cubic-bezier(.34,1.56,.64,1);
+
+  /* ---------- أبعاد الهيكل ---------- */
+  --sidebar-w:282px;
+  --sidebar-w-min:78px;
+  --topbar-h:66px;
+  --content-max:1480px;
+  --public-max:1200px;
+
+  /* ---------- عنصر تحكم أكورديون الشرائط ---------- */
+  --grad-hero:linear-gradient(135deg,#0F766E 0%,#115E59 45%,#1C2E3F 100%);
+  --grad-teal:linear-gradient(160deg,#14B8A6,#0F766E);
+  --grad-navy:linear-gradient(160deg,#395D7E,#12202D);
+  --grad-gold:linear-gradient(160deg,#E3C866,#A8861D);
+  --grad-red:linear-gradient(160deg,#EF4444,#7F1D1D);
+  --grad-violet:linear-gradient(160deg,#8B5CF6,#4C1D95);
+}
+
+/* ============================================================
+   الوضع الليلي — سطح كحلي عميق
+   ============================================================ */
+[data-theme="dark"] {
+  --bg:#0B1620;
+  --bg-2:#0E1B26;
+  --surface:#10222E;
+  --surface-2:#16303D;
+  --surface-3:#1B3A49;
+  --overlay:rgba(2,6,12,.66);
+  --text:#E8F0F4;
+  --text-2:#AEC4D0;
+  --text-3:#7E99A9;
+  --border:rgba(155,184,205,.16);
+  --border-2:rgba(155,184,205,.28);
+  --primary:#2DD4BF;
+  --primary-hover:#5EEAD4;
+  --primary-active:#99F6E4;
+  --primary-soft:rgba(45,212,191,.14);
+  --primary-soft-2:rgba(45,212,191,.07);
+  --primary-contrast:#042F2E;
+  --navy:#9BB8D0;
+  --navy-soft:rgba(155,184,208,.14);
+  --gold:#E3C866;
+  --gold-soft:rgba(227,200,102,.14);
+  --success:#4ADE80;  --success-soft:rgba(74,222,128,.14);
+  --warning:#FBBF24;  --warning-soft:rgba(251,191,36,.14);
+  --danger:#F87171;   --danger-soft:rgba(248,113,113,.14);
+  --info:#38BDF8;      --info-soft:rgba(56,189,248,.14);
+  --shadow-xs:0 1px 2px rgba(0,0,0,.3);
+  --shadow-sm:0 1px 3px rgba(0,0,0,.35);
+  --shadow-md:0 4px 12px rgba(0,0,0,.4);
+  --shadow-lg:0 12px 28px rgba(0,0,0,.5);
+  --shadow-xl:0 24px 52px rgba(0,0,0,.6);
+  --shadow-teal:0 10px 26px rgba(0,0,0,.5);
+  --ring:0 0 0 3px rgba(45,212,191,.28);
+}
+
+/* ============================================================
+   لمسات الألوان لكل وحدة (data-accent على body)
+   ============================================================ */
+[data-accent="patient"]  { --accent:#0D9488; --accent-soft:var(--teal-100);   --accent-ink:#115E59; }
+[data-accent="doctor"]   { --accent:#0369A1; --accent-soft:var(--sky-100);     --accent-ink:#075985; }
+[data-accent="reception"]{ --accent:#4A7499; --accent-soft:var(--navy-100);   --accent-ink:#263E53; }
+[data-accent="er"]       { --accent:#DC2626; --accent-soft:var(--red-100);    --accent-ink:#991B1B; }
+[data-accent="nurse"]   { --accent:#0891B2; --accent-soft:var(--cyan-100);    --accent-ink:#155E75; }
+[data-accent="lab"]     { --accent:#7C3AED; --accent-soft:var(--violet-100);  --accent-ink:#5B21B6; }
+[data-accent="radiology"]{ --accent:#0891B2; --accent-soft:var(--cyan-100);    --accent-ink:#155E75; }
+[data-accent="pharmacy"] { --accent:#16A34A; --accent-soft:var(--green-100);   --accent-ink:#166534; }
+[data-accent="inventory"]{ --accent:#B45309; --accent-soft:var(--amber-100);  --accent-ink:#92400E; }
+[data-accent="admin"]   { --accent:#395D7E; --accent-soft:var(--navy-100);    --accent-ink:#263E53; }
+[data-accent="hr"]     { --accent:#BE123C; --accent-soft:var(--rose-100);    --accent-ink:#9F1239; }
+[data-accent="finance"] { --accent:#A8861D; --accent-soft:var(--gold-100);   --accent-ink:#6B5415; }
+[data-accent="quality"] { --accent:#6D28D9; --accent-soft:var(--violet-100);  --accent-ink:#5B21B6; }
+[data-accent="guide"]   { --accent:#0D9488; --accent-soft:var(--teal-100);    --accent-ink:#115E59; }
+[data-accent="public"]  { --accent:#0D9488; --accent-soft:var(--teal-100);    --accent-ink:#115E59; }
+
+[data-theme="dark"] [data-accent="patient"], [data-theme="dark"][data-accent="patient"] { --accent-soft:rgba(13,148,136,.16); }
+[data-theme="dark"] [data-accent="doctor"],  [data-theme="dark"][data-accent="doctor"]  { --accent-soft:rgba(2,132,199,.16); }
+[data-theme="dark"] [data-accent="er"],      [data-theme="dark"][data-accent="er"]      { --accent-soft:rgba(220,38,38,.16); }
+[data-theme="dark"] [data-accent="lab"],     [data-theme="dark"][data-accent="lab"]     { --accent-soft:rgba(124,58,237,.16); }
+[data-theme="dark"] [data-accent="pharmacy"],[data-theme="dark"][data-accent="pharmacy"]{ --accent-soft:rgba(22,163,74,.16); }
+[data-theme="dark"] [data-accent="inventory"],[data-theme="dark"][data-accent="inventory"]{--accent-soft:rgba(180,83,9,.16); }
+[data-theme="dark"] [data-accent="hr"],      [data-theme="dark"][data-accent="hr"]      { --accent-soft:rgba(190,18,60,.16); }
+[data-theme="dark"] [data-accent="finance"], [data-theme="dark"][data-accent="finance"] { --accent-soft:rgba(168,134,29,.18); }
+
+/* ألوان الأفاتار الابتدائية */
+:root {
+  --av-1:#0D9488; --av-2:#0369A1; --av-3:#7C3AED; --av-4:#DC2626; --av-5:#D97706;
+  --av-6:#0891B2; --av-7:#16A34A; --av-8:#BE123C; --av-9:#4A7499; --av-10:#A8861D;
+}
